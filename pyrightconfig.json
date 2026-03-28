@@ -1,0 +1,6 @@
+{
+  "include": ["c:/Users/sanja/.vscode/VSCODE_GITHUB/Finance_app/backend"],
+  "extraPaths": ["c:/Users/sanja/.vscode/VSCODE_GITHUB/Finance_app/backend"],
+  "venvPath": "c:/Users/sanja/.vscode/VSCODE_GITHUB/Finance_app/backend",
+  "venv": "venv"
+}
