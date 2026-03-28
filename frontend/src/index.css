@@ -6,107 +6,97 @@
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
   body {
-    @apply bg-surface text-gray-100 font-sans antialiased;
-    background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%);
+    @apply bg-surface text-slate-200 font-sans antialiased overflow-x-hidden;
+    background: #020617;
+    position: relative;
     min-height: 100vh;
   }
-  ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { @apply bg-surface-dark; }
-  ::-webkit-scrollbar-thumb { @apply bg-primary-600 rounded-full; }
+  
+  /* The "Organic" Mesh Background — pure CSS */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -50%; left: -50%; width: 200%; height: 200%;
+    background: radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.05) 0%, transparent 60%);
+    z-index: -1;
+    filter: blur(80px);
+    animation: meshFlow 20s ease-in-out infinite alternate;
+  }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { @apply bg-transparent; }
+  ::-webkit-scrollbar-thumb { @apply bg-white/10 rounded-full hover:bg-white/20; }
+}
+
+@keyframes meshFlow {
+  from { transform: rotate(0deg) scale(1); }
+  to { transform: rotate(5deg) scale(1.1); }
 }
 
 @layer components {
   .card {
-    @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-xl;
-    transition: all 0.3s ease;
+    @apply bg-slate-900/40 backdrop-blur-2xl border border-white/10 rounded-[32px] p-8;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255,255,255,0.05);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   }
-  .card:hover { @apply border-white/20 shadow-2xl; transform: translateY(-2px); }
+  .card:hover {
+    @apply bg-slate-900/60 border-white/20;
+    transform: translateY(-4px) scale(1.01);
+  }
 
   .btn-primary {
-    @apply bg-gradient-to-r from-primary-600 to-primary-700 text-white font-semibold
-           px-6 py-3 rounded-xl hover:from-primary-500 hover:to-primary-600
-           transition-all duration-200 shadow-lg hover:shadow-primary-500/25
-           active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed;
+    @apply bg-primary-500 text-white font-bold text-[15px]
+           px-8 py-4 rounded-2xl hover:bg-primary-400
+           transition-all duration-300 shadow-xl shadow-primary-500/25
+           active:scale-[0.97] uppercase tracking-wider;
   }
 
   .btn-secondary {
-    @apply bg-white/10 text-gray-200 font-medium px-6 py-3 rounded-xl
-           hover:bg-white/20 transition-all duration-200 border border-white/10
-           active:scale-95;
-  }
-
-  .btn-danger {
-    @apply bg-gradient-to-r from-red-600 to-red-700 text-white font-semibold
-           px-4 py-2 rounded-lg hover:from-red-500 hover:to-red-600
-           transition-all duration-200 active:scale-95;
-  }
-
-  .btn-success {
-    @apply bg-gradient-to-r from-emerald-600 to-emerald-700 text-white font-semibold
-           px-4 py-2 rounded-lg hover:from-emerald-500 hover:to-emerald-600
-           transition-all duration-200 active:scale-95;
+    @apply bg-white/5 text-slate-300 font-semibold px-8 py-4 rounded-2xl
+           hover:bg-white/10 transition-all duration-300 border border-white/5
+           active:scale-[0.97] backdrop-blur-md;
   }
 
   .input {
-    @apply w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-gray-100
-           placeholder-gray-500 focus:outline-none focus:border-primary-500 focus:ring-2
-           focus:ring-primary-500/20 transition-all duration-200;
+    @apply w-full bg-black/20 border border-white/5 rounded-2xl px-6 py-4 text-white
+           placeholder-slate-600 focus:outline-none focus:border-primary-500/40 focus:bg-black/40
+           transition-all duration-300 backdrop-blur-sm;
   }
 
   .label {
-    @apply block text-sm font-medium text-gray-400 mb-1.5;
+    @apply block text-[11px] font-black text-slate-500 uppercase tracking-[2px] mb-3 ml-2;
   }
 
   .badge-cash {
-    @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold
-           bg-emerald-500/20 text-emerald-400 border border-emerald-500/30;
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black
+           bg-emerald-500/10 text-emerald-400 border border-emerald-500/10 uppercase tracking-tight;
   }
 
   .badge-upi {
-    @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold
-           bg-violet-500/20 text-violet-400 border border-violet-500/30;
-  }
-
-  .badge-expense { @apply bg-red-500/20 text-red-400 border-red-500/30; }
-  .badge-income  { @apply bg-emerald-500/20 text-emerald-400 border-emerald-500/30; }
-  .badge-lend    { @apply bg-amber-500/20 text-amber-400 border-amber-500/30; }
-  .badge-transfer { @apply bg-blue-500/20 text-blue-400 border-blue-500/30; }
-
-  .stat-card {
-    @apply card relative overflow-hidden cursor-default;
-  }
-  .stat-card::before {
-    content: '';
-    @apply absolute inset-0 opacity-5 rounded-2xl;
-    background: linear-gradient(135deg, white, transparent);
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black
+           bg-blue-500/10 text-blue-400 border border-blue-500/10 uppercase tracking-tight;
   }
 
   .nav-link {
-    @apply flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400
-           hover:text-white hover:bg-white/10 transition-all duration-200
-           font-medium text-sm;
+    @apply flex items-center gap-4 px-6 py-4 rounded-2xl text-slate-500
+           hover:text-white hover:bg-white/5 transition-all duration-300
+           font-bold text-sm tracking-wide;
   }
   .nav-link.active {
-    @apply text-white bg-primary-600/30 border border-primary-500/30;
+    @apply text-white bg-white/10 shadow-lg shadow-black/20 border border-white/10;
   }
 
   .section-title {
-    @apply text-2xl font-bold text-white mb-1;
+    @apply text-5xl font-black text-white tracking-[-0.04em] leading-none;
   }
   .section-sub {
-    @apply text-sm text-gray-400;
+    @apply text-lg text-slate-400 font-medium tracking-tight;
   }
 
-  .glass-panel {
-    @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl;
-  }
-}
-
-@layer utilities {
-  .gradient-text {
-    @apply bg-gradient-to-r from-primary-400 to-violet-400 bg-clip-text text-transparent;
-  }
-  .glow-primary {
-    box-shadow: 0 0 30px rgba(99, 102, 241, 0.3);
+  .balance-card {
+    @apply card bg-gradient-to-br from-primary-600 to-indigo-600 border-white/20;
+    box-shadow: 0 32px 64px -16px rgba(79, 70, 229, 0.4);
   }
 }

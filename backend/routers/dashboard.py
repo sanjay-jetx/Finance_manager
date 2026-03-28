@@ -82,6 +82,11 @@ async def get_dashboard(user_id: str = Depends(get_current_user)):
         doc["_id"] = str(doc["_id"])
         doc["timestamp"] = doc["timestamp"].isoformat() if doc.get("timestamp") else None
         recent.append(doc)
+    
+    # Get budgets for dashboard display
+    from routers.budgets import get_budgets
+    budget_res = await get_budgets(user_id=user_id)
+    budgets = budget_res.get("budgets", [])
 
     return {
         "cash_balance": cash_balance,
@@ -95,4 +100,5 @@ async def get_dashboard(user_id: str = Depends(get_current_user)):
         "weekly_spending": week_data,
         "category_breakdown": categories,
         "recent_transactions": recent,
+        "budgets": budgets,
     }

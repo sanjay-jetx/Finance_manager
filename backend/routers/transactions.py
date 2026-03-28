@@ -114,14 +114,43 @@ async def get_transactions(
     limit: int = 50,
     wallet: str = None,
     type: str = None,
+    category: str = None,
+    search: str = None,
+    start_date: str = None, # ISO format
+    end_date: str = None,   # ISO format
     user_id: str = Depends(get_current_user),
 ):
     db = get_db()
     query = {"user_id": user_id}
+    
     if wallet:
         query["wallet"] = wallet
     if type:
         query["type"] = type
+    if category:
+        query["category"] = category
+        
+    # Date range filters
+    if start_date or end_date:
+        query["timestamp"] = {}
+        if start_date:
+            try:
+                query["timestamp"]["$gte"] = datetime.fromisoformat(start_date)
+            except ValueError:
+                pass
+        if end_date:
+            try:
+                query["timestamp"]["$lte"] = datetime.fromisoformat(end_date)
+            except ValueError:
+                pass
+                
+    # Free text search across notes, category, and source
+    if search:
+        query["$or"] = [
+            {"notes": {"$regex": search, "$options": "i"}},
+            {"category": {"$regex": search, "$options": "i"}},
+            {"source": {"$regex": search, "$options": "i"}},
+        ]
 
     cursor = db.transactions.find(query).sort("timestamp", -1).limit(limit)
     txns = []
@@ -200,30 +229,35 @@ async def export_transactions(user_id: str = Depends(get_current_user)):
 async def delete_transaction(transaction_id: str, user_id: str = Depends(get_current_user)):
     db = get_db()
     try:
-        txn = await db.transactions.find_one({"_id": ObjectId(transaction_id), "user_id": user_id})
+        oid = ObjectId(transaction_id)
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid transaction ID")
-        
-    if not txn:
-        raise HTTPException(status_code=404, detail="Transaction not found")
-        
-    typ = txn.get("type")
-    amt = txn.get("amount", 0)
-    
-    if typ in ["expense", "lend", "goal_transfer"]:
-        bal = await get_balance(user_id, txn.get("wallet", "cash"))
-        await update_balance(user_id, txn.get("wallet", "cash"), round(bal + amt, 2))
-    elif typ in ["income", "debt_return"]:
-        bal = await get_balance(user_id, txn.get("wallet", "cash"))
-        await update_balance(user_id, txn.get("wallet", "cash"), round(bal - amt, 2))
-    elif typ == "transfer":
-        from_w = txn.get("wallet")
-        to_w = txn.get("to_wallet")
-        if from_w and to_w:
-            from_bal = await get_balance(user_id, from_w)
-            to_bal = await get_balance(user_id, to_w)
-            await update_balance(user_id, from_w, round(from_bal + amt, 2))
-            await update_balance(user_id, to_w, round(to_bal - amt, 2))
-            
-    await db.transactions.delete_one({"_id": ObjectId(transaction_id)})
+
+    async def work(session):
+        txn = await db.transactions.find_one({"_id": oid, "user_id": user_id}, session=session)
+        if not txn:
+            raise HTTPException(status_code=404, detail="Transaction not found")
+
+        typ = txn.get("type")
+        amt = txn.get("amount", 0)
+        wallet = txn.get("wallet", "cash")
+
+        # Reverse the balance change
+        if typ in ["expense", "lend", "goal_transfer"]:
+            # Deleting an expense means adding money back
+            await credit_wallet_atomic(user_id, wallet, amt, session=session)
+        elif typ in ["income", "debt_return"]:
+            # Deleting income means subtracting money
+            await debit_wallet_atomic(user_id, wallet, amt, session=session)
+        elif typ == "transfer":
+            from_w = txn.get("wallet")
+            to_w = txn.get("to_wallet")
+            if from_w and to_w:
+                # Reverse the transfer: add back to source, debit from destination
+                await credit_wallet_atomic(user_id, from_w, amt, session=session)
+                await debit_wallet_atomic(user_id, to_w, amt, session=session)
+
+        return await db.transactions.delete_one({"_id": oid}, session=session)
+
+    await run_with_transaction(work)
     return {"message": "Transaction deleted!"}

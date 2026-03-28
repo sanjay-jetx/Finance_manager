@@ -25,6 +25,7 @@ const typeConfig = {
 
 export default function Transactions() {
   const [txns, setTxns] = useState([])
+  const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [formType, setFormType] = useState('expense')
@@ -32,7 +33,17 @@ export default function Transactions() {
   const [submitting, setSubmitting] = useState(false)
   const [filterWallet, setFilterWallet] = useState('')
   const [filterType, setFilterType] = useState('')
+  const [filterCategory, setFilterCategory] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
+
+  const fetchCategories = async () => {
+    try {
+      const res = await api.get('/categories')
+      setCategories(res.data.categories)
+    } catch (err) {
+      console.error("Failed to load categories")
+    }
+  }
 
   const fetchTxns = async () => {
     setLoading(true)
@@ -40,6 +51,9 @@ export default function Transactions() {
       const params = {}
       if (filterWallet) params.wallet = filterWallet
       if (filterType)   params.type   = filterType
+      if (filterCategory) params.category = filterCategory
+      if (searchQuery.length > 2) params.search = searchQuery
+
       const res = await api.get('/transactions', { params })
       setTxns(res.data.transactions)
     } catch (err) {
@@ -48,6 +62,17 @@ export default function Transactions() {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    fetchCategories()
+  }, [])
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchTxns()
+    }, 300) // Debounce search
+    return () => clearTimeout(timer)
+  }, [filterWallet, filterType, filterCategory, searchQuery])
 
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this transaction? Your balance will be reversed automatically.')) return
@@ -60,15 +85,7 @@ export default function Transactions() {
     }
   }
 
-  const displayedTxns = txns.filter(txn => {
-    if (!searchQuery) return true
-    const term = searchQuery.toLowerCase()
-    return (txn.notes || '').toLowerCase().includes(term) ||
-           (txn.category || '').toLowerCase().includes(term) ||
-           (txn.source || '').toLowerCase().includes(term)
-  })
-
-  useEffect(() => { fetchTxns() }, [filterWallet, filterType])
+  const displayedTxns = txns
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -172,7 +189,8 @@ export default function Transactions() {
                 <select id="txn-category" className="input" required value={form.category}
                   onChange={e => setForm({...form, category: e.target.value})}>
                   <option value="">Select category</option>
-                  {EXPENSE_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                  <option value="">Select category</option>
+                  {categories.map(c => <option key={c._id} value={c.name}>{c.icon} {c.name}</option>)}
                 </select>
               </div>
             ) : (
@@ -222,6 +240,11 @@ export default function Transactions() {
           <option value="lend">You lent</option>
           <option value="transfer">Transfer</option>
           <option value="goal_transfer">Goal Save</option>
+        </select>
+        <select id="filter-category" className="input w-auto text-sm py-2"
+          value={filterCategory} onChange={e => setFilterCategory(e.target.value)}>
+          <option value="">All Categories</option>
+          {categories.map(c => <option key={c._id} value={c.name}>{c.icon} {c.name}</option>)}
         </select>
       </div>
 

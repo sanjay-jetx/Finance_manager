@@ -5,26 +5,30 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['Outfit', 'Inter', 'system-ui', 'sans-serif'],
       },
       colors: {
         primary: {
-          50:  '#eef2ff',
-          100: '#e0e7ff',
-          200: '#c7d2fe',
-          300: '#a5b4fc',
-          400: '#818cf8',
-          500: '#6366f1',
-          600: '#4f46e5',
-          700: '#4338ca',
-          800: '#3730a3',
-          900: '#312e81',
+          50:  '#e0f2fe',
+          100: '#bae6fd',
+          200: '#7dd3fc',
+          300: '#38bdf8',
+          400: '#0ea5e9',
+          500: '#0284c7', // Vivid Electric Blue
+          600: '#0369a1',
+          700: '#075985',
+          800: '#0c4a6e',
+          900: '#082f49',
         },
         surface: {
-          DEFAULT: '#1e1e2e',
-          light: '#2a2a3e',
-          dark:  '#13131f',
+          DEFAULT: '#020617', // Deep Midnight
+          light:   'rgba(30, 41, 59, 0.5)', // Glass slate
+          dark:    '#020617',
         },
+        indigo: {
+          500: '#6366f1',
+          600: '#4f46e5',
+        }
       },
       animation: {
         'fade-in': 'fadeIn 0.4s ease-out',

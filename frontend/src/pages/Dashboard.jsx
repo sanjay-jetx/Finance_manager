@@ -304,9 +304,8 @@ export default function Dashboard() {
   const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening'
 
   return (
-    <div className="space-y-8 animate-slide-up">
+    <div className="max-w-5xl mx-auto space-y-8 animate-fade-in">
 
-      {/* Add Money Modal */}
       {showAddMoney && (
         <AddMoneyModal
           onClose={() => setShowAddMoney(false)}
@@ -314,169 +313,191 @@ export default function Dashboard() {
         />
       )}
 
-      {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="section-title">
-            {greeting}, {user?.user_name?.split(' ')[0]} 👋
-          </h1>
-          <p className="section-sub">Here's your financial overview</p>
-        </div>
-        <div className="flex items-center gap-3">
-          {/* Add Money Button */}
-          <button
-            id="dashboard-add-money"
-            onClick={() => setShowAddMoney(true)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm text-white
-              bg-gradient-to-r from-emerald-600 to-teal-600
-              hover:from-emerald-500 hover:to-teal-500
-              shadow-lg shadow-emerald-500/20 transition-all hover:scale-105 active:scale-95"
-          >
-            <Plus size={16} /> Add Money
-          </button>
-          <button
-            onClick={fetchDashboard}
-            className="btn-secondary flex items-center gap-2 text-sm"
-          >
-            <RefreshCw size={15} /> Refresh
-          </button>
-        </div>
-      </div>
-
-      {/* Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        <StatCard icon={Wallet}      label="Total Balance"    value={fmt(data?.total_balance)}
-          gradient="from-primary-600/80 to-violet-700/80"
-          sub="Cash + UPI combined" />
-        <StatCard icon={Banknote}    label="Cash Balance"     value={fmt(data?.cash_balance)}
-          gradient="from-emerald-600/80 to-teal-700/80"
-          sub="Physical cash on hand" />
-        <StatCard icon={Smartphone}  label="UPI Balance"      value={fmt(data?.upi_balance)}
-          gradient="from-blue-600/80 to-cyan-700/80"
-          sub="GPay / PhonePe" />
-        <StatCard icon={ArrowDownLeft} label="You Will Receive" value={fmt(data?.pending_amount)}
-          gradient="from-amber-600/80 to-orange-700/80"
-          sub={`${data?.pending_receivables_count ?? data?.pending_debts_count ?? 0} outstanding`}
-          onClick={() => navigate('/receivables')} />
-      </div>
-
-      {/* Monthly Summary Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="card flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-            <TrendingUp size={24} className="text-emerald-400" />
+      {/* Header — Human Personalization */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-full bg-primary-100 border-2 border-white shadow-sm flex items-center justify-center text-primary-600 font-bold text-lg">
+            {user?.user_name?.charAt(0) || 'U'}
           </div>
           <div>
-            <p className="text-gray-400 text-sm">This Month's Income</p>
-            <p className="text-2xl font-bold text-emerald-400">{fmt(data?.monthly_income)}</p>
+            <p className="text-slate-500 text-sm font-medium">{greeting},</p>
+            <h1 className="text-2xl font-bold text-slate-900">
+               {user?.user_name?.split(' ')[0]} 👋
+            </h1>
           </div>
         </div>
-        <div className="card flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20">
-            <TrendingDown size={24} className="text-red-400" />
-          </div>
-          <div>
-            <p className="text-gray-400 text-sm">This Month's Expenses</p>
-            <p className="text-2xl font-bold text-red-400">{fmt(data?.monthly_expense)}</p>
-          </div>
+        <div className="flex items-center gap-2">
+           <button onClick={fetchDashboard} className="p-2.5 rounded-2xl bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 transition-all shadow-sm">
+             <RefreshCw size={20} />
+           </button>
+           <button onClick={() => setShowAddMoney(true)} className="p-2.5 rounded-2xl bg-primary-600 text-white hover:bg-primary-500 transition-all shadow-lg shadow-primary-500/20">
+             <Plus size={20} />
+           </button>
         </div>
       </div>
 
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        {/* Weekly Bar Chart */}
+      {/* Hero Section: Balance Card & Quick Stats */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Main Balance Card — Dribbble Style */}
+        <div className="lg:col-span-2 balance-card flex flex-col justify-between h-[240px]">
+          <div>
+            <p className="text-white/80 font-medium text-sm">Total Balance</p>
+            <h2 className="text-4xl font-extrabold mt-1 tracking-tight">{fmt(data?.total_balance)}</h2>
+          </div>
+          <div className="flex items-center justify-between">
+            <div className="flex gap-8">
+              <div>
+                <p className="text-white/60 text-xs font-bold uppercase tracking-widest">Cash</p>
+                <p className="text-xl font-bold mt-0.5">{fmt(data?.cash_balance)}</p>
+              </div>
+              <div>
+                <p className="text-white/60 text-xs font-bold uppercase tracking-widest">UPI</p>
+                <p className="text-xl font-bold mt-0.5">{fmt(data?.upi_balance)}</p>
+              </div>
+            </div>
+            <div className="p-3 rounded-2xl bg-white/20 backdrop-blur-md">
+              <Wallet size={24} />
+            </div>
+          </div>
+        </div>
+
+        {/* Secondary Stat: Receivables */}
+        <div className="card flex flex-col justify-between border-primary-100 bg-primary-50/30">
+          <div className="flex items-start justify-between">
+            <div className="p-3 rounded-2xl bg-white shadow-sm text-primary-600">
+              <ArrowDownLeft size={24} />
+            </div>
+            <span className="text-[11px] font-bold text-primary-600 uppercase bg-primary-100 px-2 py-1 rounded-lg">Assets</span>
+          </div>
+          <div>
+            <p className="text-slate-500 text-sm font-semibold mt-4">To Receive</p>
+            <h3 className="text-3xl font-extrabold text-slate-900">{fmt(data?.pending_amount)}</h3>
+            <p className="text-[11px] text-slate-400 font-bold mt-1 uppercase tracking-wider">
+               {data?.pending_receivables_count || 0} Outstanding
+            </p>
+          </div>
+          <button 
+            onClick={() => navigate('/receivables')}
+            className="w-full mt-4 py-2.5 rounded-xl bg-white border border-primary-100 text-primary-600 text-xs font-bold hover:bg-primary-50 transition-all uppercase tracking-wide"
+          >
+            Manage Debts
+          </button>
+        </div>
+      </div>
+
+      {/* Monthly Summary & Charts Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        {/* Weekly Spending Chart */}
         <div className="card xl:col-span-2">
-          <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
-            <TrendingDown size={18} className="text-primary-400" />
-            Weekly Spending
-          </h3>
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-slate-900 font-bold text-lg">Weekly Spending</h3>
+            <div className="flex items-center gap-2">
+               <div className="w-3 h-3 rounded-full bg-primary-200"></div>
+               <span className="text-xs text-slate-400 font-bold uppercase">Expenses</span>
+            </div>
+          </div>
           {data?.weekly_spending?.length > 0 ? (
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={data.weekly_spending} barSize={32}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                <XAxis dataKey="day" tick={{ fill: '#6b7280', fontSize: 12 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: '#6b7280', fontSize: 11 }} axisLine={false} tickLine={false}
-                  tickFormatter={v => `₹${v >= 1000 ? (v/1000).toFixed(0)+'k' : v}`} />
-                <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="amount" fill="url(#barGrad)" radius={[6,6,0,0]} />
-                <defs>
-                  <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#6366f1" />
-                    <stop offset="100%" stopColor="#8b5cf6" />
-                  </linearGradient>
-                </defs>
+            <ResponsiveContainer width="100%" height={240}>
+              <BarChart data={data.weekly_spending} barSize={36}>
+                <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#f1f5f9" />
+                <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 600 }} dy={10} />
+                <YAxis hide />
+                <Tooltip content={<CustomTooltip />} cursor={{ fill: '#f8fafc' }} />
+                <Bar dataKey="amount" fill="#7C3AED" radius={[12,12,12,12]} />
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div className="h-52 flex items-center justify-center text-gray-500">
-              No spending data yet
-            </div>
+            <div className="h-52 flex items-center justify-center text-slate-400 italic">No spending data yet</div>
           )}
         </div>
 
-        {/* Category Pie */}
-        <div className="card">
-          <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
-            <Wallet size={18} className="text-primary-400" />
-            Spending by Category
-          </h3>
+        {/* Category breakdown (Pie) */}
+        <div className="card border-0 bg-slate-50/50">
+          <h3 className="text-slate-900 font-bold text-lg mb-6">Spending Analysis</h3>
           {data?.category_breakdown?.length > 0 ? (
-            <ResponsiveContainer width="100%" height={220}>
+            <ResponsiveContainer width="100%" height={240}>
               <PieChart>
                 <Pie data={data.category_breakdown} dataKey="amount" nameKey="category"
-                  cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={3}>
+                  cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={2}>
                   {data.category_breakdown.map((_, i) => (
-                    <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                    <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} stroke="rgba(255,255,255,0.5)" strokeWidth={2} />
                   ))}
                 </Pie>
                 <Tooltip formatter={(v) => fmt(v)} />
-                <Legend iconType="circle" iconSize={8}
-                  formatter={(v) => <span style={{color:'#9ca3af',fontSize:'11px'}}>{v}</span>} />
+                <Legend iconType="circle" iconSize={8} formatter={(v) => <span className="text-slate-500 font-bold text-[11px] uppercase ml-1">{v}</span>} />
               </PieChart>
             </ResponsiveContainer>
           ) : (
-            <div className="h-52 flex items-center justify-center text-gray-500 text-sm">
-              No category data yet
-            </div>
+             <div className="h-52 flex items-center justify-center text-slate-400 italic">No categories yet</div>
           )}
         </div>
       </div>
 
-      {/* Recent Transactions */}
-      <div className="card">
-        <h3 className="text-white font-semibold mb-4">Recent Transactions</h3>
+      {/* Budgets Progress */}
+      {data?.budgets?.length > 0 && (
+        <div className="card">
+           <div className="flex items-center justify-between mb-8">
+             <h3 className="text-slate-900 font-bold text-lg">Your Budgets</h3>
+             <button onClick={() => navigate('/budgets')} className="text-primary-600 font-bold text-xs uppercase hover:underline">Settings</button>
+           </div>
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+             {data.budgets.map(b => {
+               const pct = Math.min((b.spent / b.limit) * 100, 100)
+               const isOver = b.spent > b.limit
+               return (
+                 <div key={b._id} className="space-y-3">
+                   <div className="flex justify-between items-end">
+                     <div>
+                       <p className="text-slate-900 font-bold text-sm">{b.category}</p>
+                       <p className="text-slate-400 text-xs mt-0.5">{fmt(b.spent)} of {fmt(b.limit)}</p>
+                     </div>
+                     <span className={`text-xs font-bold ${isOver ? 'text-red-500' : 'text-primary-600'}`}>{Math.round(pct)}%</span>
+                   </div>
+                   <div className="h-2.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                     <div className={`h-full transition-all duration-700 ${isOver ? 'bg-red-500' : 'bg-primary-600'}`} style={{ width: `${pct}%` }} />
+                   </div>
+                 </div>
+               )
+             })}
+           </div>
+        </div>
+      )}
+
+      {/* Recent Activity List */}
+      <div className="card border-0 shadow-none bg-transparent p-0">
+        <h3 className="text-slate-900 font-extrabold text-xl mb-6">Recent Activity</h3>
         {data?.recent_transactions?.length > 0 ? (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {data.recent_transactions.map((txn) => {
               const uiType = transactionUiType(txn)
               const cfg = typeConfig[uiType] || typeConfig.expense
               const Icon = cfg.icon
+              const isCredit = isCreditUiType(uiType)
+              
+              // Map legacy colors to new Dribbble circles
+              const circleColor = isCredit ? 'bg-emerald-50 text-emerald-600' : 'bg-primary-50 text-primary-600'
+              if (uiType === 'expense') {
+                 // Use category hash for varied colors if you want, but sticking to clean 2-tone for now
+              }
+
               return (
-                <div key={txn._id}
-                  className="flex items-center gap-4 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
-                  <div className={`p-2 rounded-xl ${cfg.cls.split(' ').slice(0,1).join(' ')}`}>
-                    <Icon size={16} className={cfg.cls.split(' ').slice(1).join(' ')} />
+                <div key={txn._id} className="flex items-center gap-5 p-4 rounded-[24px] bg-white border border-slate-100 hover:border-primary-100 transition-all shadow-sm">
+                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${circleColor}`}>
+                    <Icon size={24} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-white text-sm font-medium truncate">
-                      {txn.notes || txn.category || txn.source || cfg.label}
+                    <p className="text-slate-900 font-bold text-base truncate">
+                       {txn.notes || txn.category || txn.source || cfg.label}
                     </p>
-                    <p className="text-gray-500 text-xs">
-                      {txn.wallet === 'cash' ? '💵 Cash' : '📱 UPI'} ·{' '}
-                      {displayCategoryForUi(txn.category) || txn.source || '—'}
+                    <p className="text-slate-400 text-xs font-bold uppercase mt-1">
+                       {txn.wallet === 'cash' ? 'Cash Wallet' : 'UPI Wallet'}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className={`font-bold text-sm ${
-                      isCreditUiType(uiType)
-                        ? 'text-emerald-400'
-                        : uiType === 'goal_transfer' || uiType === 'transfer'
-                        ? 'text-violet-400'
-                        : 'text-red-400'
-                    }`}>
-                      {isCreditUiType(uiType) ? '+' : '-'}{fmt(txn.amount)}
+                    <p className={`font-black text-lg ${isCredit ? 'text-emerald-500' : 'text-slate-900'}`}>
+                      {isCredit ? '+' : '-'}{fmt(txn.amount)}
                     </p>
-                    <p className="text-gray-500 text-xs">
+                    <p className="text-slate-400 text-[11px] font-bold mt-1">
                       {txn.timestamp ? new Date(txn.timestamp).toLocaleDateString('en-IN',{day:'2-digit',month:'short'}) : ''}
                     </p>
                   </div>
@@ -485,9 +506,10 @@ export default function Dashboard() {
             })}
           </div>
         ) : (
-          <div className="text-center py-12 text-gray-500">
-            <Wallet size={40} className="mx-auto mb-2 opacity-30" />
-            No transactions yet. Start by adding income or an expense!
+          <div className="text-center py-20 bg-slate-50 rounded-[32px] border-2 border-dashed border-slate-200">
+             <Wallet size={48} className="mx-auto mb-4 text-slate-300" />
+             <p className="text-slate-500 font-bold">No transactions yet.</p>
+             <button onClick={() => setShowAddMoney(true)} className="mt-4 text-primary-600 font-bold text-sm hover:underline uppercase tracking-widest">Start Tracking</button>
           </div>
         )}
       </div>
