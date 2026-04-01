@@ -2,7 +2,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from dependencies import get_current_user
-from services.wallet_service import credit_wallet_atomic, debit_wallet_atomic, get_or_create_wallet
+from services.wallet_service import credit_wallet_atomic, debit_wallet_atomic, get_or_create_wallet, get_balance
 from database.connection import get_db, run_with_transaction
 from schemas.debt import LendSchema, ReturnSchema
 from datetime import datetime, timezone
@@ -38,9 +38,13 @@ async def lend_money(data: LendSchema, user_id: str = Depends(get_current_user))
     ts = datetime.now(timezone.utc)
 
     async def work(session):
-        before_bal, after_bal = await debit_wallet_atomic(
-            user_id, wallet_type, data.amount, session=session
-        )
+        if data.no_debit:
+            before_bal = await get_balance(user_id, wallet_type)
+            after_bal = before_bal
+        else:
+            before_bal, after_bal = await debit_wallet_atomic(
+                user_id, wallet_type, data.amount, session=session
+            )
         debt_doc = {
             "user_id": user_id,
             "person_name": data.person_name,
@@ -54,18 +58,19 @@ async def lend_money(data: LendSchema, user_id: str = Depends(get_current_user))
             "after_balance": after_bal,
         }
         dr = await db.debts.insert_one(debt_doc, session=session)
-        txn = {
-            "user_id": user_id,
-            "type": "lend",
-            "amount": data.amount,
-            "category": "You lent (receivable)",
-            "wallet": wallet_type,
-            "notes": f"Lent to {data.person_name}",
-            "before_balance": before_bal,
-            "after_balance": after_bal,
-            "timestamp": ts,
-        }
-        await db.transactions.insert_one(txn, session=session)
+        if not data.no_debit:
+            txn = {
+                "user_id": user_id,
+                "type": "lend",
+                "amount": data.amount,
+                "category": "You lent (receivable)",
+                "wallet": wallet_type,
+                "notes": f"Lent to {data.person_name}",
+                "before_balance": before_bal,
+                "after_balance": after_bal,
+                "timestamp": ts,
+            }
+            await db.transactions.insert_one(txn, session=session)
         return dr.inserted_id, after_bal
 
     inserted_id, after_bal = await run_with_transaction(work)

@@ -134,7 +134,7 @@ export default function Transactions() {
           <h1 className="section-title">Transactions</h1>
           <p className="section-sub">{txns.length} records found</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <button onClick={handleExport} className="btn-secondary flex items-center gap-2 text-sm">
             <Download size={16} /> Export CSV
           </button>

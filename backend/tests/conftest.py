@@ -1,28 +1,49 @@
-import pytest
+"""
+pytest configuration for the Finance App backend test suite.
+
+Uses mongomock-motor to patch the real AsyncIOMotorClient with an in-memory
+MongoDB mock — tests run fully offline without any live database connection.
+
+Each test gets a FRESH database (autouse + function scope) so data from
+one test never leaks into another.
+"""
+
 import asyncio
+import pytest
+import pytest_asyncio
 from mongomock_motor import AsyncMongoMockClient
+
 import database.connection as db_conn
 
-# ── Mocking the DB ─────────────────────────────────────────────────────────
+
+# ── Event Loop ────────────────────────────────────────────────────────────────
 
 @pytest.fixture(scope="session")
 def event_loop():
-    """Create an instance of the default event loop for each test case."""
+    """Single event loop shared across the whole test session."""
     loop = asyncio.get_event_loop_policy().new_event_loop()
     yield loop
     loop.close()
 
-@pytest.fixture(scope="session", autouse=True)
-async def mock_db_connection():
+
+# ── In-Memory DB Fixture ──────────────────────────────────────────────────────
+
+@pytest_asyncio.fixture(autouse=True)
+async def mock_db():
     """
-    Automatically mock the database connection for ALL tests.
-    This prevents tests from accidentally hitting the real MongoDB.
+    Patch the global Motor client/db with a fresh in-memory mock before every
+    test, then drop all collections afterwards for full isolation.
+    `autouse=True` means every test in this folder gets it automatically.
     """
     mock_client = AsyncMongoMockClient()
-    mock_db = mock_client["test_db"]
-    
-    # Monkey-patch the global variables in database.connection
+    mock_database = mock_client["finance_app_test"]
+
+    # Monkey-patch the module-level globals used by get_db() / get_client()
     db_conn.client = mock_client
-    db_conn.db = mock_db
-    
-    return mock_db
+    db_conn.db = mock_database
+
+    yield mock_database
+
+    # Teardown: wipe all collections so tests don't bleed into each other
+    for col_name in await mock_database.list_collection_names():
+        await mock_database.drop_collection(col_name)

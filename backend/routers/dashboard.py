@@ -11,94 +11,106 @@ router = APIRouter(tags=["Dashboard"])
 async def get_dashboard(user_id: str = Depends(get_current_user)):
     db = get_db()
 
-    # Wallet balances — auto-create if missing
+    # Wallet balances
     wallet = await get_or_create_wallet(user_id)
     cash_balance = wallet.get("cash_balance", 0.0)
-    upi_balance = wallet.get("upi_balance", 0.0)
+    upi_balance  = wallet.get("upi_balance", 0.0)
     total_balance = round(cash_balance + upi_balance, 2)
 
-    # Money others still owe you (outstanding receivables — same `debts` collection)
-    pending_receivables_cursor = db.debts.find({"user_id": user_id, "status": "pending"})
+    # Pending receivables
     pending_amount = 0.0
-    pending_count = 0
-    async for row in pending_receivables_cursor:
+    pending_count  = 0
+    async for row in db.debts.find({"user_id": user_id, "status": "pending"}):
         pending_amount += row["amount"]
-        pending_count += 1
+        pending_count  += 1
 
-    # This month's expenses and income
+    net_worth = round(total_balance + pending_amount, 2)
+
+    # This month
     now = datetime.now(timezone.utc)
     month_start = datetime(now.year, now.month, 1, tzinfo=timezone.utc)
 
-    pipeline_expense = [
+    async def _sum(pipeline):
+        result = await db.transactions.aggregate(pipeline).to_list(1)
+        return result[0]["total"] if result else 0.0
+
+    monthly_expense = await _sum([
         {"$match": {"user_id": user_id, "type": "expense", "timestamp": {"$gte": month_start}}},
         {"$group": {"_id": None, "total": {"$sum": "$amount"}}},
-    ]
-    pipeline_income = [
+    ])
+    monthly_income = await _sum([
         {"$match": {"user_id": user_id, "type": "income", "timestamp": {"$gte": month_start}}},
         {"$group": {"_id": None, "total": {"$sum": "$amount"}}},
-    ]
+    ])
 
-    expense_result = await db.transactions.aggregate(pipeline_expense).to_list(1)
-    income_result = await db.transactions.aggregate(pipeline_income).to_list(1)
+    # Savings rate %
+    savings_rate = 0.0
+    if monthly_income > 0:
+        savings_rate = round(((monthly_income - monthly_expense) / monthly_income) * 100, 1)
 
-    monthly_expense = expense_result[0]["total"] if expense_result else 0.0
-    monthly_income = income_result[0]["total"] if income_result else 0.0
+    # Today's spending
+    today_start = datetime(now.year, now.month, now.day, tzinfo=timezone.utc)
+    today_spending = await _sum([
+        {"$match": {"user_id": user_id, "type": "expense", "timestamp": {"$gte": today_start}}},
+        {"$group": {"_id": None, "total": {"$sum": "$amount"}}},
+    ])
 
     # Weekly spending (last 7 days)
     week_data = []
     for i in range(6, -1, -1):
         day = now - timedelta(days=i)
         day_start = datetime(day.year, day.month, day.day, tzinfo=timezone.utc)
-        day_end = day_start + timedelta(days=1)
-        pipe = [
-            {"$match": {
-                "user_id": user_id,
-                "type": "expense",
-                "timestamp": {"$gte": day_start, "$lt": day_end},
-            }},
+        day_end   = day_start + timedelta(days=1)
+        total = await _sum([
+            {"$match": {"user_id": user_id, "type": "expense",
+                        "timestamp": {"$gte": day_start, "$lt": day_end}}},
             {"$group": {"_id": None, "total": {"$sum": "$amount"}}},
-        ]
-        result = await db.transactions.aggregate(pipe).to_list(1)
-        week_data.append({
-            "day": day.strftime("%a"),
-            "date": day.strftime("%d %b"),
-            "amount": result[0]["total"] if result else 0.0,
-        })
+        ])
+        week_data.append({"day": day.strftime("%a"), "date": day.strftime("%d %b"), "amount": total})
 
     # Category breakdown (top 6 this month)
-    cat_pipeline = [
+    cat_result = await db.transactions.aggregate([
         {"$match": {"user_id": user_id, "type": "expense", "timestamp": {"$gte": month_start}}},
         {"$group": {"_id": "$category", "total": {"$sum": "$amount"}}},
         {"$sort": {"total": -1}},
         {"$limit": 6},
-    ]
-    cat_result = await db.transactions.aggregate(cat_pipeline).to_list(6)
-    categories = [{"category": r["_id"], "amount": r["total"]} for r in cat_result]
+    ]).to_list(6)
+    categories  = [{"category": r["_id"], "amount": r["total"]} for r in cat_result]
+    top_category = cat_result[0]["_id"] if cat_result else None
 
-    # Recent transactions (last 5)
-    recent_cursor = db.transactions.find({"user_id": user_id}).sort("timestamp", -1).limit(5)
+    # Recent 5 transactions
     recent = []
-    async for doc in recent_cursor:
-        doc["_id"] = str(doc["_id"])
+    async for doc in db.transactions.find({"user_id": user_id}).sort("timestamp", -1).limit(5):
+        doc["_id"]       = str(doc["_id"])
         doc["timestamp"] = doc["timestamp"].isoformat() if doc.get("timestamp") else None
         recent.append(doc)
-    
-    # Get budgets for dashboard display
+
+    # Budgets
     from routers.budgets import get_budgets
     budget_res = await get_budgets(user_id=user_id)
     budgets = budget_res.get("budgets", [])
 
+    # Budget alerts — any category over 80%
+    budget_alerts = [
+        b["category"] for b in budgets
+        if b.get("limit", 0) > 0 and (b.get("spent", 0) / b["limit"]) >= 0.8
+    ]
+
     return {
-        "cash_balance": cash_balance,
-        "upi_balance": upi_balance,
-        "total_balance": total_balance,
-        "pending_amount": round(pending_amount, 2),
-        "pending_debts_count": pending_count,
+        "cash_balance":              cash_balance,
+        "upi_balance":               upi_balance,
+        "total_balance":             total_balance,
+        "net_worth":                 net_worth,
+        "pending_amount":            round(pending_amount, 2),
         "pending_receivables_count": pending_count,
-        "monthly_expense": round(monthly_expense, 2),
-        "monthly_income": round(monthly_income, 2),
-        "weekly_spending": week_data,
-        "category_breakdown": categories,
-        "recent_transactions": recent,
-        "budgets": budgets,
+        "monthly_expense":           round(monthly_expense, 2),
+        "monthly_income":            round(monthly_income, 2),
+        "savings_rate":              savings_rate,
+        "today_spending":            round(today_spending, 2),
+        "top_category":              top_category,
+        "weekly_spending":           week_data,
+        "category_breakdown":        categories,
+        "recent_transactions":       recent,
+        "budgets":                   budgets,
+        "budget_alerts":             budget_alerts,
     }

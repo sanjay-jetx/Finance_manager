@@ -17,7 +17,7 @@ const CATEGORY_DISPLAY = {
 }
 
 export function displayCategoryForUi(category) {
-  if (category == null || category === '') return ''
+  if (category == null || category === '' || category === 'Income' || category === 'Expense') return null
   return CATEGORY_DISPLAY[category] ?? category
 }
 

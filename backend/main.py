@@ -1,14 +1,14 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
-from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
 
 from database.connection import connect_db, close_db
 from logging_config import setup_logging, get_logger
-from routers import auth, transactions, debts, wallets, dashboard, goals, budgets, categories
+from routers import auth, transactions, debts, wallets, dashboard, goals, budgets, categories, metals, subscriptions
 
 logger = get_logger(__name__)
 
@@ -35,6 +35,17 @@ app = FastAPI(
 # SlowAPI reads limiter instances from the route decorators in routers/auth.py
 # This handler returns a proper 429 JSON response instead of a raw error.
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """Return a clean 422 with first validation error message instead of raw Pydantic output."""
+    errors = exc.errors()
+    first = errors[0] if errors else {}
+    field = " → ".join(str(loc) for loc in first.get("loc", []) if loc != "body")
+    message = first.get("msg", "Invalid request data")
+    detail = f"{field}: {message}" if field else message
+    return JSONResponse(status_code=422, content={"detail": detail})
 
 
 @app.exception_handler(Exception)
@@ -66,6 +77,8 @@ app.include_router(dashboard.router)
 app.include_router(goals.router)
 app.include_router(budgets.router)
 app.include_router(categories.router)
+app.include_router(metals.router)
+app.include_router(subscriptions.router)
 
 
 @app.get("/")

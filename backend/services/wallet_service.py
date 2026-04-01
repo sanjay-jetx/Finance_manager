@@ -7,7 +7,7 @@ from pymongo import ReturnDocument
 from database.connection import get_db
 
 
-async def get_or_create_wallet(user_id: str, email: str = None):
+async def get_or_create_wallet(user_id: str, email: str | None = None):
     db = get_db()
     wallet = await db.wallets.find_one({"user_id": user_id})
     if not wallet:

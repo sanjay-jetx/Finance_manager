@@ -31,8 +31,8 @@ export default {
         }
       },
       animation: {
-        'fade-in': 'fadeIn 0.4s ease-out',
-        'slide-up': 'slideUp 0.4s ease-out',
+        'fade-in': 'fadeIn 0.1s ease-out',
+        'slide-up': 'slideUp 0.1s ease-out',
         'pulse-slow': 'pulse 3s ease-in-out infinite',
       },
       keyframes: {

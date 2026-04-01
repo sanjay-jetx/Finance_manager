@@ -71,16 +71,24 @@ async def signup(data: SignupSchema, request: Request, response: Response):
         db = get_db()
         existing = await db.users.find_one({"email": data.email})
         if existing:
-            raise HTTPException(status_code=400, detail="Email already registered")
-
-        user_doc = {
-            "name": data.name,
-            "email": data.email,
-            "hashed_password": hash_password(data.password),
-            "auth_provider": "email",
-        }
-        result = await db.users.insert_one(user_doc)
-        user_id = str(result.inserted_id)
+            if not existing.get("hashed_password"):
+                # Seamlessly link new password to existing Google-oauth account
+                await db.users.update_one(
+                    {"_id": existing["_id"]},
+                    {"$set": {"hashed_password": hash_password(data.password), "auth_provider": "linked"}}
+                )
+                user_id = str(existing["_id"])
+            else:
+                raise HTTPException(status_code=400, detail="Email already registered")
+        else:
+            user_doc = {
+                "name": data.name,
+                "email": data.email,
+                "hashed_password": hash_password(data.password),
+                "auth_provider": "email",
+            }
+            result = await db.users.insert_one(user_doc)
+            user_id = str(result.inserted_id)
 
         # Auto-create wallet for new user
         await get_or_create_wallet(user_id, data.email)
@@ -90,11 +98,11 @@ async def signup(data: SignupSchema, request: Request, response: Response):
         refresh_token = create_refresh_token(token_data)
 
         _set_refresh_cookie(response, refresh_token)
-        logger.info("New user signed up: %s", data.email)
+        logger.info("New user signed up/linked: %s", data.email)
 
         return TokenSchema(
             access_token=access_token,
-            user_name=data.name,
+            user_name=existing.get("name", data.name) if existing else data.name,
             expires_in=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         )
     except HTTPException:
@@ -115,11 +123,11 @@ async def login(data: LoginSchema, request: Request, response: Response):
         if not user:
             raise HTTPException(status_code=401, detail="Invalid email or password")
 
-        # Block Google-only accounts from password login
+        # Advise Google-only accounts how to set a password
         if not user.get("hashed_password"):
             raise HTTPException(
                 status_code=400,
-                detail="This account uses Google Sign-In. Please use Google Login.",
+                detail="This account uses Google Sign-In. To use a password, create one in 'Create free account'.",
             )
 
         if not verify_password(data.password, user["hashed_password"]):

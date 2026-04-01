@@ -9,6 +9,9 @@ import Receivables from './pages/Receivables'
 import Wallets from './pages/Wallets'
 import Budgets from './pages/Budgets'
 import Goals from './pages/Goals'
+import Metals from './pages/Metals'
+import Subscriptions from './pages/Subscriptions'
+import Profile from './pages/Profile'
 import Layout from './components/Layout'
 
 function PrivateRoute({ children }) {
@@ -50,6 +53,9 @@ export default function App() {
             <Route path="receivables" element={<Receivables />} />
             <Route path="lending" element={<Navigate to="/receivables" replace />} />
             <Route path="wallets"      element={<Wallets />} />
+            <Route path="metals"       element={<Metals />} />
+            <Route path="subscriptions" element={<Subscriptions />} />
+            <Route path="profile"       element={<Profile />} />
           </Route>
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>

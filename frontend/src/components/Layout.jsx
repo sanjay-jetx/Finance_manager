@@ -2,17 +2,16 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import {
   LayoutDashboard, ArrowLeftRight, HandCoins, Wallet,
-  LogOut, TrendingUp, Menu, X, Target, PieChart
+  LogOut, TrendingUp, Menu, X, Target, PieChart, Gem, CreditCard
 } from 'lucide-react'
 import { useState } from 'react'
 
 const navItems = [
   { to: '/dashboard',    icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/transactions', icon: ArrowLeftRight,  label: 'Transactions' },
-  { to: '/budgets',      icon: PieChart,        label: 'Budgets' },
-  { to: '/goals',        icon: Target,          label: 'Goals' },
-  { to: '/receivables', icon: HandCoins,       label: 'You Will Receive' },
+  { to: '/receivables',  icon: HandCoins,       label: 'You Will Receive' },
   { to: '/wallets',      icon: Wallet,          label: 'Wallets' },
+  { to: '/metals',       icon: Gem,             label: 'Gold & Silver' },
 ]
 
 export default function Layout() {
@@ -74,16 +73,17 @@ export default function Layout() {
 
         {/* User + Logout */}
         <div className="p-4 border-t border-white/10">
-          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white/5 mb-2">
+          <NavLink to="/profile" onClick={() => setSidebarOpen(false)}
+            className="group flex items-center gap-3 px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 transition-all mb-2 cursor-pointer border border-transparent hover:border-white/10">
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-violet-600
-                            flex items-center justify-center text-white text-sm font-bold">
+                            flex items-center justify-center text-white text-sm font-bold shadow-md group-hover:shadow-primary-500/20 transition-all">
               {user?.user_name?.charAt(0)?.toUpperCase() || 'U'}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-white text-sm font-medium truncate">{user?.user_name || 'User'}</p>
-              <p className="text-gray-500 text-xs truncate">Logged in</p>
+              <p className="text-gray-500 text-xs truncate group-hover:text-primary-400 transition-colors">View Profile</p>
             </div>
-          </div>
+          </NavLink>
           <button onClick={handleLogout}
             className="w-full nav-link text-red-400 hover:text-red-300 hover:bg-red-500/10">
             <LogOut size={18} />

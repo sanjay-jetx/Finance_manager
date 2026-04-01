@@ -12,6 +12,7 @@ class LendSchema(BaseModel):
     wallet: WalletType
     notes: Optional[str] = Field(default="", max_length=500)
     return_date: Optional[date] = None
+    no_debit: Optional[bool] = False
 
 
 class ReturnSchema(BaseModel):

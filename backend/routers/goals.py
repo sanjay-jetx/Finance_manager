@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from dependencies import get_current_user
-from services.wallet_service import get_balance, update_balance, get_or_create_wallet
-from database.connection import get_db
+from services.wallet_service import get_or_create_wallet, debit_wallet_atomic
+from database.connection import get_db, run_with_transaction
 from schemas.goal import GoalSchema, AddFundsSchema
 from datetime import datetime, timezone
 from bson import ObjectId
@@ -60,32 +60,32 @@ async def add_funds_to_goal(
     await get_or_create_wallet(user_id)
 
     wallet_type = data.wallet.value
-    before_bal = await get_balance(user_id, wallet_type)
-
-    if before_bal < data.amount:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Insufficient {wallet_type} balance (have ₹{before_bal:.2f})"
-        )
-
-    after_bal = round(before_bal - data.amount, 2)
-    await update_balance(user_id, wallet_type, after_bal)
-
     new_goal_amount = round(goal.get("current_amount", 0.0) + data.amount, 2)
-    await db.goals.update_one({"_id": obj_id}, {"$set": {"current_amount": new_goal_amount}})
+    now = datetime.now(timezone.utc)
 
-    txn = {
-        "user_id": user_id,
-        "type": "goal_transfer",
-        "amount": data.amount,
-        "category": "Savings Goal",
-        "wallet": wallet_type,
-        "notes": f"Contribution to goal: {goal['name']}",
-        "before_balance": before_bal,
-        "after_balance": after_bal,
-        "timestamp": datetime.now(timezone.utc),
-    }
-    await db.transactions.insert_one(txn)
+    async def _do_transfer(session):
+        # ✅ Atomic debit — raises 400 if insufficient balance (no race condition)
+        before, after = await debit_wallet_atomic(user_id, wallet_type, data.amount, session=session)
+
+        await db.goals.update_one(
+            {"_id": obj_id},
+            {"$set": {"current_amount": new_goal_amount}},
+            session=session,
+        )
+        await db.transactions.insert_one({
+            "user_id": user_id,
+            "type": "goal_transfer",
+            "amount": data.amount,
+            "category": "Savings Goal",
+            "wallet": wallet_type,
+            "notes": f"Contribution to goal: {goal['name']}",
+            "before_balance": before,
+            "after_balance": after,
+            "timestamp": now,
+        }, session=session)
+        return before, after
+
+    _, after_bal = await run_with_transaction(_do_transfer)
 
     return {
         "message": "Funds added to goal",

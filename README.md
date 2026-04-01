@@ -1,121 +1,235 @@
 # 💰 FinTrack — Personal Finance Manager
 
-A production-ready full-stack personal finance app to track Cash, UPI wallets, expenses, income, and debts.
+> A full-stack personal finance application with **FastAPI** backend, **React** frontend, **MongoDB Atlas** database, and **Google OAuth** login. Tracks wallets, income, expenses, goals, budgets, lending, receivables, and live gold/silver prices.
 
 ---
 
-## 🚀 Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| Frontend | React 18 + Vite + Tailwind CSS |
-| Backend  | FastAPI (Python) |
-| Database | MongoDB (Motor async driver) |
-| Auth     | JWT (python-jose + bcrypt) |
-
----
-
-## ✨ Features
-
-- 🔐 **JWT Auth** — Secure signup/login with token-based sessions
-- 💵 **Dual Wallet** — Separate Cash & UPI balances with real-time tracking
-- 📊 **Dashboard** — Stats, weekly spending chart, category breakdown
-- 💸 **Expense Tracking** — Categorized, per-wallet expenses
-- 💰 **Income Tracking** — Record income with source
-- 🤝 **Debt Tracker** — Lend money, track returns, overdue alerts
-- 🔄 **Wallet Transfer** — Move money between Cash ↔ UPI
-- 🌙 **Dark Mode** — Beautiful dark glassmorphism UI
-- 📱 **Mobile Responsive** — Works on all screen sizes
-
----
-
-## 📦 Project Structure
+## 🗂️ Project Structure
 
 ```
 Finance_app/
-├── backend/
-│   ├── main.py               # FastAPI app entrypoint
-│   ├── requirements.txt
-│   ├── .env                  # Environment variables
-│   ├── database/connection.py
+├── backend/                    ← FastAPI (Python 3.11+)
+│   ├── main.py                 ← App entry point, middleware, router registration
+│   ├── requirements.txt        ← Python dependencies
+│   ├── .env                    ← Secret config (never commit this!)
+│   ├── database/
+│   │   └── connection.py       ← MongoDB Atlas async connection
 │   ├── routers/
-│   │   ├── auth.py           # POST /signup, POST /login
-│   │   ├── transactions.py   # POST /expense, /income, /transfer, GET /transactions
-│   │   ├── debts.py          # POST /lend, PATCH /return/{id}, GET /debts
-│   │   ├── wallets.py        # GET /balances
-│   │   └── dashboard.py      # GET /dashboard
-│   ├── schemas/              # Pydantic request/response models
-│   └── services/             # Business logic (auth, wallet)
-└── frontend/
-    ├── src/
-    │   ├── pages/            # Dashboard, Transactions, Debts, Wallets
-    │   ├── components/       # Layout, Navbar
-    │   ├── context/          # AuthContext (JWT state)
-    │   └── api/axios.js      # API client with JWT interceptor
-    └── package.json
+│   │   ├── auth.py             ← Signup, Login, Google OAuth, Refresh, Logout
+│   │   ├── transactions.py     ← Income, Expense, Delete, Export CSV
+│   │   ├── wallets.py          ← Balance fetch, Cash/UPI transfer
+│   │   ├── dashboard.py        ← All-in-one dashboard data aggregation
+│   │   ├── goals.py            ← Savings goals CRUD + atomic fund transfer
+│   │   ├── budgets.py          ← Monthly budget limits per category
+│   │   ├── debts.py            ← Lending and receivables tracker
+│   │   ├── categories.py       ← Custom expense categories
+│   │   └── metals.py           ← Live gold/silver tracker (no API key needed)
+│   ├── services/
+│   │   ├── auth_service.py     ← bcrypt hashing, Google token verify
+│   │   ├── wallet_service.py   ← Atomic wallet debit/credit operations
+│   │   └── token_service.py    ← JWT issue, verify, blacklist
+│   ├── schemas/                ← Pydantic request/response models
+│   └── tests/                  ← pytest async test suite
+│
+├── frontend/                   ← React 18 + Vite + TailwindCSS
+│   └── src/
+│       ├── pages/
+│       │   ├── Login.jsx        ← Aurora split-screen login
+│       │   ├── Signup.jsx       ← Signup with live password strength meter
+│       │   ├── Dashboard.jsx    ← Main dashboard (charts, stats, quick-add)
+│       │   ├── Transactions.jsx ← Full transaction list + filters + export
+│       │   ├── Wallets.jsx      ← Wallet balances + transfer
+│       │   ├── Goals.jsx        ← Savings goals with circular progress
+│       │   ├── Budgets.jsx      ← Budget management
+│       │   ├── Receivables.jsx  ← Lending/receivables tracker
+│       │   └── Metals.jsx       ← Gold & silver live tracker
+│       ├── components/
+│       │   ├── Layout.jsx       ← Sidebar navigation + mobile header
+│       │   └── WalletPicker.jsx ← Reusable wallet selection
+│       ├── context/
+│       │   └── AuthContext.jsx  ← JWT state + proactive token refresh
+│       ├── api/
+│       │   └── axios.js         ← Axios instance + interceptors (auto-refresh)
+│       └── utils/
+│           ├── format.js        ← INR currency formatter
+│           └── transactionsUi.js
+│
+├── start_backend.bat           ← One-click backend launch (Windows)
+└── start_frontend.bat          ← One-click frontend launch (Windows)
 ```
 
 ---
 
-## 🛠️ Setup & Run
+## ⚙️ Tech Stack
 
-### Prerequisites
-- Python 3.10+
-- Node.js 18+
-- MongoDB running locally on port 27017
+| Layer | Technology |
+|-------|-----------|
+| Backend | FastAPI 0.111, Python 3.11+ |
+| Database | MongoDB Atlas (async via Motor) |
+| Auth | JWT (python-jose) + bcrypt + Google OAuth |
+| HTTP Client | httpx (async external API calls) |
+| Rate Limiting | SlowAPI |
+| Frontend | React 18, Vite, TailwindCSS |
+| Charts | Recharts |
+| Icons | Lucide React |
+| Toasts | react-hot-toast |
+| Frontend HTTP | Axios (with interceptors) |
 
-### 1. Start Backend
+---
+
+## 🔑 Environment Setup
+
+We have an interactive setup script that will generate your JWT secrets and configure your `.env` files automatically.
+
+You just need to gather two things first:
+1. **MongoDB Atlas URL** — get a free cluster from [cloud.mongodb.com](https://cloud.mongodb.com)
+2. **Google Client ID** (*optional*) — from [console.cloud.google.com](https://console.cloud.google.com) 
+
+Once you have those, run:
 ```bash
-# Option A: Use the batch script (Windows)
+python setup_env.py
+```
+This will prompt you for the IDs and automatically create `backend/.env` and `frontend/.env.local`.
+
+> Never commit `.env` or `.env.local` — both are in `.gitignore`.
+
+---
+
+## 🚀 Running Locally
+
+### Windows (Quick Start)
+```bat
+:: Terminal 1
 start_backend.bat
 
-# Option B: Manual
+:: Terminal 2
+start_frontend.bat
+```
+
+### Manual
+```bash
+# Backend
 cd backend
 python -m venv venv
 venv\Scripts\activate
 pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
-```
 
-Backend runs at: **http://localhost:8000**  
-Swagger docs at: **http://localhost:8000/docs**
-
-### 2. Start Frontend
-```bash
-# Option A: Use the batch script (Windows)
-start_frontend.bat
-
-# Option B: Manual
+# Frontend (new terminal)
 cd frontend
 npm install
 npm run dev
 ```
 
-Frontend runs at: **http://localhost:5173**
+| Service | URL |
+|---------|-----|
+| Frontend | http://localhost:5173 |
+| Backend | http://localhost:8000 |
+| API Docs | http://localhost:8000/docs |
 
 ---
 
-## 🔌 API Endpoints
+## 📡 API Endpoints
 
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| POST | `/signup` | ❌ | Register new user |
-| POST | `/login` | ❌ | Login, get JWT |
-| POST | `/expense` | ✅ | Add expense |
-| POST | `/income` | ✅ | Add income |
-| GET  | `/transactions` | ✅ | List transactions |
-| POST | `/transfer` | ✅ | Transfer between wallets |
-| POST | `/lend` | ✅ | Lend money |
-| PATCH | `/return/{id}` | ✅ | Mark debt returned |
-| GET  | `/debts` | ✅ | List debts |
-| GET  | `/balances` | ✅ | Get wallet balances |
-| GET  | `/dashboard` | ✅ | Full dashboard stats |
+### Auth
+| Method | Path | Auth |
+|--------|------|------|
+| POST | `/auth/signup` | Public |
+| POST | `/auth/login` | Public |
+| POST | `/auth/google` | Public |
+| POST | `/auth/refresh` | Cookie |
+| POST | `/auth/logout` | Bearer |
+
+### Core (All require `Authorization: Bearer <token>`)
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/dashboard` | Full dashboard stats |
+| GET | `/balances` | Wallet balances |
+| POST | `/transfer` | Cash / UPI transfer |
+| POST | `/income` | Record income |
+| POST | `/expense` | Record expense |
+| GET | `/transactions` | List + filter transactions |
+| DELETE | `/transactions/{id}` | Delete + reverse balance |
+| GET | `/transactions/export` | Download CSV |
+| GET/POST | `/goals` | List/create goals |
+| POST | `/goals/{id}/add-funds` | Fund a goal |
+| GET/POST/DELETE | `/budgets` | Budget CRUD |
+| GET/POST | `/debts` | Lending records |
+| PATCH | `/debts/{id}/return` | Mark money returned |
+| GET | `/metals/rates` | Live gold & silver rates |
+| GET/POST | `/metals/holdings` | User's metal holdings |
+| GET | `/metals/portfolio` | Holdings × rates = value |
 
 ---
 
 ## 🗄️ MongoDB Collections
 
-- **users** — `{name, email, hashed_password}`
-- **wallets** — `{user_id, cash_balance, upi_balance}`
-- **transactions** — `{user_id, type, amount, category, wallet, before_balance, after_balance, timestamp}`
-- **debts** — `{user_id, person_name, amount, wallet, given_date, return_date, status}`
+| Collection | Purpose |
+|-----------|---------|
+| `users` | Accounts (email, bcrypt password, name) |
+| `wallets` | Cash + UPI balances |
+| `transactions` | All financial records |
+| `debts` | Lending & receivables |
+| `goals` | Savings goals |
+| `budgets` | Category limits |
+| `categories` | Custom expense categories |
+| `metal_holdings` | Gold/silver grams per user |
+| `metal_rates` | Global cached live rates (24h) |
+
+---
+
+## 🔐 Security
+
+- **Passwords** — bcrypt (cost 12)
+- **Access tokens** — JWT, 15-minute expiry
+- **Refresh tokens** — JWT, 7-day, HTTP-only cookie (XSS-proof)
+- **Auto-refresh** — Axios intercepts 401 → calls `/auth/refresh` → retries
+- **Wallet safety** — All debits use MongoDB `$inc` + `$cond` (atomic, no race conditions)
+- **Rate limiting** — Auth endpoints protected via SlowAPI
+
+---
+
+## 🧪 Tests
+
+```bash
+cd backend
+pytest -v
+```
+
+Uses `mongomock-motor` — no real database needed. Tests are isolated (auto-teardown).
+
+---
+
+## ✨ Features
+
+| | Feature |
+|-|---------|
+| ✅ | Email + Google OAuth login |
+| ✅ | JWT dual-token auth system |
+| ✅ | Cash + UPI wallets + atomic transfers |
+| ✅ | Income & expense tracking |
+| ✅ | Transaction filters + CSV export |
+| ✅ | Savings goals with progress rings |
+| ✅ | Monthly budget limits + 80% alerts |
+| ✅ | Lending & receivables tracker |
+| ✅ | Live gold/silver INR rates (no API key) |
+| ✅ | Dashboard: net worth, savings rate, charts |
+| ✅ | Quick-add FAB button |
+| ✅ | Aurora dark theme, glassmorphism UI |
+| ✅ | Mobile responsive |
+
+---
+
+## 👤 New Developer Quickstart
+
+1. Clone the repo
+2. Run `pip install -r requirements.txt` in `/backend`
+3. Run `npm install` in `/frontend`
+4. Run `python setup_env.py` in the root folder to configure your environment variables.
+5. Double-click `start_backend.bat` and `start_frontend.bat` to launch!
+
+MongoDB Atlas is cloud-hosted — no local DB setup needed.
+
+---
+
+*FinTrack v2.0 · FastAPI + React + MongoDB Atlas*

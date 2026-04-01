@@ -10,16 +10,13 @@ class CategorySchema(BaseModel):
     icon: str = Field(default="📦", min_length=1, max_length=10)
 
 DEFAULT_CATEGORIES = [
-    {"name": "Food & Dining", "icon": "🍔"},
-    {"name": "Transport", "icon": "🚗"},
+    {"name": "Food", "icon": "🍔"},
+    {"name": "Gym", "icon": "🏋️"},
+    {"name": "Petrol", "icon": "⛽"},
+    {"name": "Snacks", "icon": "🍿"},
     {"name": "Shopping", "icon": "🛍️"},
     {"name": "Entertainment", "icon": "🎬"},
     {"name": "Health", "icon": "🏥"},
-    {"name": "Bills & Utilities", "icon": "💡"},
-    {"name": "Education", "icon": "🎓"},
-    {"name": "Travel", "icon": "✈️"},
-    {"name": "Groceries", "icon": "🛒"},
-    {"name": "Other", "icon": "📦"},
 ]
 
 async def ensure_default_categories(user_id: str, db):

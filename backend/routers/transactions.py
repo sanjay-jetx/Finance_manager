@@ -225,6 +225,28 @@ async def export_transactions(user_id: str = Depends(get_current_user)):
     )
 
 
+@router.delete("/transactions/clear_all")
+async def clear_all_transactions(user_id: str = Depends(get_current_user)):
+    db = get_db()
+    
+    async def work(session):
+        # Delete transactions
+        await db.transactions.delete_many({"user_id": user_id}, session=session)
+        # Reset wallet balances to 0
+        await db.wallets.update_one(
+            {"user_id": user_id},
+            {"$set": {"cash_balance": 0.0, "upi_balance": 0.0, "total_balance": 0.0}},
+            session=session
+        )
+        # Clear other financial trackers for a true fresh start
+        await db.debts.delete_many({"user_id": user_id}, session=session)
+        await db.goals.delete_many({"user_id": user_id}, session=session)
+        await db.budgets.delete_many({"user_id": user_id}, session=session)
+        
+    await run_with_transaction(work)
+    return {"message": "All financial data has been completely cleared. Fresh start!"}
+
+
 @router.delete("/{transaction_id}")
 async def delete_transaction(transaction_id: str, user_id: str = Depends(get_current_user)):
     db = get_db()
