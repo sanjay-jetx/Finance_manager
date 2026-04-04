@@ -29,3 +29,10 @@ class TransferSchema(BaseModel):
     from_wallet: WalletType
     to_wallet: WalletType
     amount: float = Field(..., gt=0, le=_MAX_INR, allow_inf_nan=False)
+
+class UpdateTransactionSchema(BaseModel):
+    amount: Optional[float] = Field(None, gt=0, le=_MAX_INR, allow_inf_nan=False)
+    category: Optional[str] = Field(None, max_length=120)
+    source: Optional[str] = Field(None, max_length=120)
+    wallet: Optional[WalletType] = None
+    notes: Optional[str] = Field(None, max_length=500)

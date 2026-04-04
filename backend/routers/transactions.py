@@ -9,7 +9,7 @@ from services.wallet_service import (
     update_balance,
 )
 from database.connection import get_db, run_with_transaction
-from schemas.transaction import ExpenseSchema, IncomeSchema, TransferSchema
+from schemas.transaction import ExpenseSchema, IncomeSchema, TransferSchema, UpdateTransactionSchema
 from datetime import datetime, timezone
 from bson import ObjectId
 from fastapi.responses import StreamingResponse
@@ -247,7 +247,66 @@ async def clear_all_transactions(user_id: str = Depends(get_current_user)):
     return {"message": "All financial data has been completely cleared. Fresh start!"}
 
 
-@router.delete("/{transaction_id}")
+@router.put("/transactions/{transaction_id}")
+async def update_transaction(
+    transaction_id: str, data: UpdateTransactionSchema, user_id: str = Depends(get_current_user)
+):
+    db = get_db()
+    try:
+        oid = ObjectId(transaction_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid transaction ID")
+
+    async def work(session):
+        txn = await db.transactions.find_one({"_id": oid, "user_id": user_id}, session=session)
+        if not txn:
+            raise HTTPException(status_code=404, detail="Transaction not found")
+
+        typ = txn.get("type", "")
+        if typ not in ["expense", "income"]:
+            raise HTTPException(status_code=400, detail="Only ordinary expense and income transactions can be edited.")
+
+        old_amt = txn.get("amount", 0)
+        old_wallet = txn.get("wallet", "cash")
+
+        new_amt = data.amount if data.amount is not None else old_amt
+        new_wallet = data.wallet.value if data.wallet is not None else old_wallet
+
+        # Revert old balance
+        if typ == "expense":
+            await credit_wallet_atomic(user_id, old_wallet, old_amt, session=session)
+        elif typ == "income":
+            await debit_wallet_atomic(user_id, old_wallet, old_amt, session=session)
+
+        # Apply new balance
+        if typ == "expense":
+            before_bal, after_bal = await debit_wallet_atomic(user_id, new_wallet, new_amt, session=session)
+        elif typ == "income":
+            before_bal, after_bal = await credit_wallet_atomic(user_id, new_wallet, new_amt, session=session)
+
+        # Update document
+        update_fields = {}
+        if data.amount is not None: update_fields["amount"] = data.amount
+        if data.wallet is not None: update_fields["wallet"] = data.wallet.value
+        if data.category is not None and typ == "expense": update_fields["category"] = data.category
+        if data.source is not None and typ == "income": update_fields["source"] = data.source
+        if data.notes is not None: update_fields["notes"] = data.notes
+
+        update_fields["before_balance"] = before_bal
+        update_fields["after_balance"] = after_bal
+
+        await db.transactions.update_one(
+            {"_id": oid},
+            {"$set": update_fields},
+            session=session
+        )
+        return after_bal
+
+    after_bal = await run_with_transaction(work)
+    return {"message": "Transaction updated successfully", "after_balance": after_bal}
+
+
+@router.delete("/transactions/{transaction_id}")
 async def delete_transaction(transaction_id: str, user_id: str = Depends(get_current_user)):
     db = get_db()
     try:

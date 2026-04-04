@@ -17,3 +17,11 @@ class LendSchema(BaseModel):
 
 class ReturnSchema(BaseModel):
     wallet: WalletType
+
+class UpdateDebtSchema(BaseModel):
+    person_name: Optional[str] = Field(None, min_length=1, max_length=200)
+    amount: Optional[float] = Field(None, gt=0, le=_MAX_INR, allow_inf_nan=False)
+    wallet: Optional[WalletType] = None
+    notes: Optional[str] = Field(None, max_length=500)
+    return_date: Optional[date] = None
+    no_debit: Optional[bool] = None  # when True → record as already paid (no wallet deduction)

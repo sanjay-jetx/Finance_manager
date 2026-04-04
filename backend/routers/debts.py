@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from dependencies import get_current_user
 from services.wallet_service import credit_wallet_atomic, debit_wallet_atomic, get_or_create_wallet, get_balance
 from database.connection import get_db, run_with_transaction
-from schemas.debt import LendSchema, ReturnSchema
+from schemas.debt import LendSchema, ReturnSchema, UpdateDebtSchema
 from datetime import datetime, timezone
 from bson import ObjectId
 from bson.errors import InvalidId
@@ -181,3 +181,59 @@ async def get_debts(status: Optional[str] = None, user_id: str = Depends(get_cur
         "receivables": items,
         "count": count,
     }
+
+
+@router.put("/debts/{debt_id}")
+async def update_debt(debt_id: str, data: UpdateDebtSchema, user_id: str = Depends(get_current_user)):
+    db = get_db()
+    try:
+        obj_id = ObjectId(debt_id)
+    except InvalidId:
+        raise HTTPException(status_code=400, detail="Invalid receivable id")
+
+    update_fields = {}
+    if data.person_name is not None:
+        update_fields["person_name"] = data.person_name
+    if data.amount is not None:
+        update_fields["amount"] = data.amount
+    if data.wallet is not None:
+        update_fields["wallet"] = data.wallet.value
+    if data.notes is not None:
+        update_fields["notes"] = data.notes
+    if data.return_date is not None:
+        return_dt = datetime(
+            data.return_date.year, data.return_date.month, data.return_date.day,
+            tzinfo=timezone.utc
+        )
+        update_fields["return_date"] = return_dt
+    if data.no_debit is not None:
+        update_fields["no_debit"] = data.no_debit
+
+    if not update_fields:
+        return {"message": "Nothing to update"}
+
+    result = await db.debts.update_one(
+        {"_id": obj_id, "user_id": user_id},
+        {"$set": update_fields}
+    )
+
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Record not found")
+
+    return {"message": "Receivable record updated successfully"}
+
+
+@router.delete("/debts/{debt_id}")
+async def delete_debt(debt_id: str, user_id: str = Depends(get_current_user)):
+    db = get_db()
+    try:
+        obj_id = ObjectId(debt_id)
+    except InvalidId:
+        raise HTTPException(status_code=400, detail="Invalid receivable id")
+
+    result = await db.debts.delete_one({"_id": obj_id, "user_id": user_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Record not found")
+
+    return {"message": "Receivable record deleted"}
+

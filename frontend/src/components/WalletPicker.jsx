@@ -6,7 +6,7 @@ const OPTIONS = [
   { value: 'upi', label: '📱 UPI', desc: 'GPay / PhonePe' },
 ]
 
-export default function WalletPicker({ value, onChange, label }) {
+export default function WalletPicker({ value, onChange, label, disabled }) {
   const [open, setOpen] = useState(false)
   const selected = OPTIONS.find((o) => o.value === value)
 
@@ -15,8 +15,9 @@ export default function WalletPicker({ value, onChange, label }) {
       {label && <label className="label">{label}</label>}
       <button
         type="button"
+        disabled={disabled}
         onClick={() => setOpen((o) => !o)}
-        className="input flex items-center justify-between w-full text-left"
+        className={`input flex items-center justify-between w-full text-left ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
         <span className="text-white">{selected?.label}</span>
         <ChevronDown size={15} className={`text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`} />

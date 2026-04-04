@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -6,97 +8,82 @@
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
   body {
-    @apply bg-surface text-slate-200 font-sans antialiased overflow-x-hidden;
-    background: #020617;
-    position: relative;
-    min-height: 100vh;
+    @apply bg-background text-foreground font-sans antialiased overflow-x-hidden selection:bg-accent selection:text-white;
   }
-  
-  /* The "Organic" Mesh Background — pure CSS */
-  body::before {
-    content: '';
-    position: fixed;
-    top: -50%; left: -50%; width: 200%; height: 200%;
-    background: radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
-                radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.15) 0%, transparent 40%),
-                radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.05) 0%, transparent 60%);
-    z-index: -1;
-    filter: blur(80px);
-    animation: meshFlow 20s ease-in-out infinite alternate;
-  }
-
-  ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { @apply bg-transparent; }
-  ::-webkit-scrollbar-thumb { @apply bg-white/10 rounded-full hover:bg-white/20; }
-}
-
-@keyframes meshFlow {
-  from { transform: rotate(0deg) scale(1); }
-  to { transform: rotate(5deg) scale(1.1); }
 }
 
 @layer components {
-  .card {
-    @apply bg-slate-900/40 backdrop-blur-2xl border border-white/10 rounded-[32px] p-8;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255,255,255,0.05);
-    transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  /* Ultra-Premium Linear-style Cards */
+  .panel {
+    @apply bg-surface border border-border rounded-[20px] relative overflow-hidden transition-all duration-300 shadow-soft-drop;
+    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.04), 0 8px 30px rgba(0,0,0,0.3);
   }
-  .card:hover {
-    @apply bg-slate-900/60 border-white/20;
-    transform: translateY(-4px) scale(1.01);
+  
+  .panel:hover {
+    @apply border-borderFocus bg-surfaceHover;
+    transform: translateY(-2px);
+    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.06), 0 12px 40px rgba(0,0,0,0.4);
   }
 
+  /* Stunning primary button */
   .btn-primary {
-    @apply bg-primary-500 text-white font-bold text-[15px]
-           px-8 py-4 rounded-2xl hover:bg-primary-400
-           transition-all duration-300 shadow-xl shadow-primary-500/25
-           active:scale-[0.97] uppercase tracking-wider;
+    @apply text-white font-semibold px-5 py-3 rounded-xl 
+           flex items-center justify-center gap-2 text-sm relative overflow-hidden
+           active:scale-[0.98] transition-all;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.39), inset 0 1px 0 0 rgba(255,255,255,0.2);
+  }
+  .btn-primary:hover {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45), inset 0 1px 0 0 rgba(255,255,255,0.2);
+    transform: translateY(-1px);
   }
 
-  .btn-secondary {
-    @apply bg-white/5 text-slate-300 font-semibold px-8 py-4 rounded-2xl
-           hover:bg-white/10 transition-all duration-300 border border-white/5
-           active:scale-[0.97] backdrop-blur-md;
-  }
-
-  .input {
-    @apply w-full bg-black/20 border border-white/5 rounded-2xl px-6 py-4 text-white
-           placeholder-slate-600 focus:outline-none focus:border-primary-500/40 focus:bg-black/40
-           transition-all duration-300 backdrop-blur-sm;
-  }
-
-  .label {
-    @apply block text-[11px] font-black text-slate-500 uppercase tracking-[2px] mb-3 ml-2;
-  }
-
-  .badge-cash {
-    @apply inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black
-           bg-emerald-500/10 text-emerald-400 border border-emerald-500/10 uppercase tracking-tight;
-  }
-
-  .badge-upi {
-    @apply inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black
-           bg-blue-500/10 text-blue-400 border border-blue-500/10 uppercase tracking-tight;
-  }
-
+  /* Navigation Links */
   .nav-link {
-    @apply flex items-center gap-4 px-6 py-4 rounded-2xl text-slate-500
-           hover:text-white hover:bg-white/5 transition-all duration-300
-           font-bold text-sm tracking-wide;
+    @apply flex items-center gap-3 px-4 py-3 rounded-xl text-muted
+           hover:text-foreground hover:bg-white/[0.04] transition-all duration-300
+           font-medium text-[15px];
   }
   .nav-link.active {
-    @apply text-white bg-white/10 shadow-lg shadow-black/20 border border-white/10;
+    @apply text-foreground bg-accent/10 border border-accent/20;
+    box-shadow: 0 0 15px rgba(99, 102, 241, 0.1);
   }
 
-  .section-title {
-    @apply text-5xl font-black text-white tracking-[-0.04em] leading-none;
-  }
-  .section-sub {
-    @apply text-lg text-slate-400 font-medium tracking-tight;
+  /* Beautiful gradient text component */
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-white to-muted;
   }
 
-  .balance-card {
-    @apply card bg-gradient-to-br from-primary-600 to-indigo-600 border-white/20;
-    box-shadow: 0 32px 64px -16px rgba(79, 70, 229, 0.4);
-  }
+  /* Scrollbars */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { @apply bg-white/10 rounded-full hover:bg-white/20; }
+}
+
+/* Stagger Animations — fast so page feels instant */
+.animate-stagger-1 { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.02s both; }
+.animate-stagger-2 { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both; }
+.animate-stagger-3 { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.08s both; }
+.animate-stagger-4 { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.11s both; }
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Skeleton shimmer for fast-perceived loading */
+.skeleton {
+  @apply bg-white/5 rounded-xl overflow-hidden relative;
+}
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.06) 50%, transparent 100%);
+  animation: shimmer 1.4s infinite;
+}
+@keyframes shimmer {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(100%); }
 }
