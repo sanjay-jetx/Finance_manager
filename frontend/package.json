@@ -12,6 +12,9 @@
     "format": "prettier --write \"src/**/*.{js,jsx,css,md}\""
   },
   "dependencies": {
+    "@capacitor/android": "^8.3.0",
+    "@capacitor/cli": "^8.3.0",
+    "@capacitor/core": "^8.3.0",
     "@react-oauth/google": "^0.13.4",
     "axios": "^1.6.8",
     "lucide-react": "^0.395.0",

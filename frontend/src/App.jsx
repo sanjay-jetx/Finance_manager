@@ -7,10 +7,8 @@ import Dashboard from './pages/Dashboard'
 import Transactions from './pages/Transactions'
 import Receivables from './pages/Receivables'
 import Wallets from './pages/Wallets'
-import Budgets from './pages/Budgets'
-import Goals from './pages/Goals'
 import Metals from './pages/Metals'
-import Subscriptions from './pages/Subscriptions'
+import Stocks from './pages/Stocks'
 import Profile from './pages/Profile'
 import Layout from './components/Layout'
 
@@ -48,13 +46,11 @@ export default function App() {
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard"    element={<Dashboard />} />
             <Route path="transactions" element={<Transactions />} />
-            <Route path="budgets"      element={<Budgets />} />
-            <Route path="goals"        element={<Goals />} />
             <Route path="receivables" element={<Receivables />} />
             <Route path="lending" element={<Navigate to="/receivables" replace />} />
             <Route path="wallets"      element={<Wallets />} />
+            <Route path="stocks"       element={<Stocks />} />
             <Route path="metals"       element={<Metals />} />
-            <Route path="subscriptions" element={<Subscriptions />} />
             <Route path="profile"       element={<Profile />} />
           </Route>
           <Route path="*" element={<Navigate to="/dashboard" replace />} />

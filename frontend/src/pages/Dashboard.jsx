@@ -1,19 +1,19 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import api from '../api/axios'
-import { getCached, setCached } from '../api/cache'
 import { useAuth } from '../context/AuthContext'
 import { fmt } from '../utils/format'
+import { useDashboard } from '../hooks/useDashboard'
 import {
   Wallet, TrendingUp, Users, ArrowUpRight, ArrowDownRight,
   Banknote, Smartphone, RefreshCw, Target, Plus, X, Check,
-  Zap, PieChart as PieChartIcon, Bell, Sparkles, ArrowRight
+  Zap, PieChart as PieChartIcon, Bell, Sparkles, ArrowRight, ArrowLeftRight
 } from 'lucide-react'
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
+  BarChart, Bar, AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart as RePie, Pie, Cell, Legend, CartesianGrid
 } from 'recharts'
 import toast from 'react-hot-toast'
+import api from '../api/axios'
 import { transactionUiType, isCreditUiType } from '../utils/transactionsUi'
 
 const PIE_COLORS = ['#6366f1','#10b981','#f59e0b','#ec4899','#8b5cf6','#0ea5e9']
@@ -41,35 +41,17 @@ function StatCard({ icon: Icon, label, value, sub, accentClass, iconBg, delayIdx
   )
 }
 
-/* ── Budget Alert Banner ───────────────────────────────────────────────────── */
-function AlertBanner({ alerts }) {
-  const [visible, setVisible] = useState(true)
-  if (!alerts?.length || !visible) return null
-  return (
-    <div className="flex items-center gap-3 px-5 py-4 rounded-2xl bg-warning/10 border border-warning/20 mb-8 animate-stagger-1 text-sm text-warning relative overflow-hidden shadow-[0_0_20px_rgba(245,158,11,0.15)]">
-      <div className="absolute top-0 left-0 w-1 h-full bg-warning" />
-      <Bell size={18} className="flex-shrink-0" />
-      <p className="font-medium flex-1">
-        Budget alert: <span className="font-bold text-orange-300">{alerts.join(', ')}</span> 
-        {alerts.length === 1 ? ' is' : ' are'} over 80% spent this month.
-      </p>
-      <button onClick={() => setVisible(false)} className="text-warning/60 hover:text-warning transition-colors bg-warning/10 p-1.5 rounded-lg">
-        <X size={16} />
-      </button>
-    </div>
-  )
-}
-
 /* ── Quick Add Modal ───────────────────────────────────────────────────────── */
 const EXPENSE_CATS = ['Food', 'Gym', 'Petrol', 'Snacks', 'Shopping', 'Entertainment', 'Health', 'Person']
 const INCOME_SRCS  = ['Pocket Money','Salary','Freelance','Business','Gift','Refund','Other']
 
 function QuickAddModal({ onClose, onSuccess }) {
-  const [type, setType]     = useState('expense')
+  const [type, setType]     = useState('income')
   const [amount, setAmount] = useState('')
   const [cat, setCat]       = useState('Food')
   const [src, setSrc]       = useState('Pocket Money')
   const [wallet, setWallet] = useState('cash')
+  const [toWallet, setToWallet] = useState('upi')
   const [notes, setNotes]   = useState('')
   const [personName, setPersonName] = useState('')
   const [noDebit, setNoDebit]       = useState(false)
@@ -77,14 +59,19 @@ function QuickAddModal({ onClose, onSuccess }) {
   const [done, setDone]     = useState(false)
 
   const isIncome = type === 'income'
+  const isTransfer = type === 'transfer'
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     const amt = parseFloat(amount)
     if (!amt || amt <= 0) { toast.error('Enter a valid amount'); return }
+    if (isTransfer && wallet === toWallet) { toast.error('Cannot transfer to the same wallet'); return }
+    
     setLoading(true)
     try {
-      if (!isIncome) {
+      if (isTransfer) {
+        await api.post('/transfer', { amount: amt, from_wallet: wallet, to_wallet: toWallet })
+      } else if (!isIncome) {
         if (cat === 'Person') {
           if (!personName.trim()) { toast.error('Please enter the person\'s name'); setLoading(false); return; }
           await api.post('/lend', { person_name: personName, amount: amt, wallet, notes: notes || 'Lent money', no_debit: noDebit })
@@ -95,7 +82,7 @@ function QuickAddModal({ onClose, onSuccess }) {
       } else {
         await api.post('/income', { amount: amt, source: src, wallet, notes: notes || 'Added via dashboard' })
       }
-      toast.success(`₹${amt.toLocaleString('en-IN')} ${isIncome ? 'income' : 'expense'} recorded!`)
+      toast.success(`₹${amt.toLocaleString('en-IN')} ${type} recorded!`)
       setDone(true)
       setTimeout(() => { onSuccess(); onClose() }, 700)
     } catch (err) {
@@ -107,7 +94,7 @@ function QuickAddModal({ onClose, onSuccess }) {
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-background/80 backdrop-blur-md transition-all"
          onMouseDown={e => e.target === e.currentTarget && onClose()}>
       <div className="w-full max-w-md rounded-[24px] bg-surface relative overflow-hidden shadow-soft-drop border border-white/10 animate-stagger-1">
-        <div className={`absolute top-0 left-0 right-0 h-1 ${isIncome ? 'bg-gradient-success' : 'bg-gradient-to-r from-rose-500 to-pink-600'}`} />
+        <div className={`absolute top-0 left-0 right-0 h-1 ${isIncome ? 'bg-gradient-success' : isTransfer ? 'bg-gradient-to-r from-purple-500 to-indigo-500' : 'bg-gradient-to-r from-rose-500 to-pink-600'}`} />
         
         {/* Header */}
         <div className="flex items-center justify-between px-6 pt-7 pb-5">
@@ -118,9 +105,10 @@ function QuickAddModal({ onClose, onSuccess }) {
         {/* Type toggle */}
         <div className="px-6 mb-6">
           <div className="flex p-1.5 bg-black/40 rounded-[14px] border border-white/5 relative">
-            <div className={`absolute top-1.5 bottom-1.5 w-[calc(50%-6px)] bg-surface rounded-xl border border-white/10 shadow-sm transition-all duration-300 ${isIncome ? 'translate-x-full' : 'translate-x-0'}`} />
-            <button type="button" onClick={() => setType('expense')} className={`flex-1 py-2.5 rounded-xl text-sm font-bold z-10 transition-colors ${!isIncome ? 'text-danger' : 'text-muted'}`}>Expense</button>
-            <button type="button" onClick={() => setType('income')} className={`flex-1 py-2.5 rounded-xl text-sm font-bold z-10 transition-colors ${isIncome ? 'text-success' : 'text-muted'}`}>Income</button>
+            <div className={`absolute top-1.5 bottom-1.5 w-[calc(33.33%-4px)] bg-surface rounded-xl border border-white/10 shadow-sm transition-all duration-300 ${type === 'income' ? 'translate-x-0' : type === 'expense' ? 'translate-x-full' : 'translate-x-[200%]'}`} />
+            <button type="button" onClick={() => setType('income')} className={`flex-1 py-2 rounded-xl text-sm font-bold z-10 transition-colors ${type === 'income' ? 'text-success' : 'text-muted'}`}>Income</button>
+            <button type="button" onClick={() => setType('expense')} className={`flex-1 py-2 rounded-xl text-sm font-bold z-10 transition-colors ${type === 'expense' ? 'text-danger' : 'text-muted'}`}>Expense</button>
+            <button type="button" onClick={() => setType('transfer')} className={`flex-1 py-2 rounded-xl text-sm font-bold z-10 transition-colors ${type === 'transfer' ? 'text-purple-400' : 'text-muted'}`}>Transfer</button>
           </div>
         </div>
 
@@ -134,31 +122,52 @@ function QuickAddModal({ onClose, onSuccess }) {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-2 ml-1">
-                {!isIncome ? 'Category' : 'Source'}
-              </label>
-              <select value={!isIncome ? cat : src} onChange={e => !isIncome ? setCat(e.target.value) : setSrc(e.target.value)}
-                className="w-full bg-black/50 border border-white/10 rounded-2xl px-4 py-3.5 text-white text-sm font-medium focus:outline-none focus:border-accent">
-                {(!isIncome ? EXPENSE_CATS : INCOME_SRCS).map(opt => <option key={opt} value={opt} className="bg-surface">{opt}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-2 ml-1">Wallet</label>
-              <div className="flex gap-2">
-                <button type="button" onClick={() => setWallet('cash')}
-                  className={`flex-1 py-3.5 rounded-2xl text-sm font-bold border transition-all ${wallet === 'cash' ? 'bg-accent/15 border-accent text-accent shadow-[0_0_15px_rgba(99,102,241,0.2)]' : 'bg-black/50 border-white/10 text-muted'}`}>
-                  CASH
-                </button>
-                <button type="button" onClick={() => setWallet('upi')}
-                  className={`flex-1 py-3.5 rounded-2xl text-sm font-bold border transition-all ${wallet === 'upi' ? 'bg-accent/15 border-accent text-accent shadow-[0_0_15px_rgba(99,102,241,0.2)]' : 'bg-black/50 border-white/10 text-muted'}`}>
-                  UPI
-                </button>
-              </div>
-            </div>
+            {isTransfer ? (
+              <>
+                <div>
+                  <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-2 ml-1">From</label>
+                  <div className="flex gap-2">
+                    <button type="button" onClick={() => { setWallet('cash'); setToWallet('upi'); }} className={`flex-1 py-3.5 rounded-2xl text-sm font-bold border transition-all ${wallet === 'cash' ? 'bg-purple-500/15 border-purple-500/50 text-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.15)]' : 'bg-black/50 border-white/10 text-muted'}`}>CASH</button>
+                    <button type="button" onClick={() => { setWallet('upi'); setToWallet('cash'); }} className={`flex-1 py-3.5 rounded-2xl text-sm font-bold border transition-all ${wallet === 'upi' ? 'bg-purple-500/15 border-purple-500/50 text-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.15)]' : 'bg-black/50 border-white/10 text-muted'}`}>UPI</button>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-2 ml-1">To</label>
+                  <div className="flex gap-2">
+                    <button type="button" onClick={() => { setToWallet('cash'); setWallet('upi'); }} className={`flex-1 py-3.5 rounded-2xl text-sm font-bold border transition-all ${toWallet === 'cash' ? 'bg-indigo-500/15 border-indigo-500/50 text-indigo-400 shadow-[0_0_15px_rgba(99,102,241,0.15)]' : 'bg-black/50 border-white/10 text-muted'}`}>CASH</button>
+                    <button type="button" onClick={() => { setToWallet('upi'); setWallet('cash'); }} className={`flex-1 py-3.5 rounded-2xl text-sm font-bold border transition-all ${toWallet === 'upi' ? 'bg-indigo-500/15 border-indigo-500/50 text-indigo-400 shadow-[0_0_15px_rgba(99,102,241,0.15)]' : 'bg-black/50 border-white/10 text-muted'}`}>UPI</button>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div>
+                  <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-2 ml-1">
+                    {!isIncome ? 'Category' : 'Source'}
+                  </label>
+                  <select value={!isIncome ? cat : src} onChange={e => !isIncome ? setCat(e.target.value) : setSrc(e.target.value)}
+                    className="w-full bg-black/50 border border-white/10 rounded-2xl px-4 py-3.5 text-white text-sm font-medium focus:outline-none focus:border-accent">
+                    {(!isIncome ? EXPENSE_CATS : INCOME_SRCS).map(opt => <option key={opt} value={opt} className="bg-surface">{opt}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-2 ml-1">Wallet</label>
+                  <div className="flex gap-2">
+                    <button type="button" onClick={() => setWallet('cash')}
+                      className={`flex-1 py-3.5 rounded-2xl text-sm font-bold border transition-all ${wallet === 'cash' ? 'bg-accent/15 border-accent text-accent shadow-[0_0_15px_rgba(99,102,241,0.2)]' : 'bg-black/50 border-white/10 text-muted'}`}>
+                      CASH
+                    </button>
+                    <button type="button" onClick={() => setWallet('upi')}
+                      className={`flex-1 py-3.5 rounded-2xl text-sm font-bold border transition-all ${wallet === 'upi' ? 'bg-accent/15 border-accent text-accent shadow-[0_0_15px_rgba(99,102,241,0.2)]' : 'bg-black/50 border-white/10 text-muted'}`}>
+                      UPI
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
-          {!isIncome && cat === 'Person' && (
+          {!isIncome && !isTransfer && cat === 'Person' && (
             <div className="p-4 rounded-2xl bg-danger/5 border border-danger/20">
               <input type="text" placeholder="Person's Name" required value={personName} onChange={e => setPersonName(e.target.value)}
                 className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-danger" />
@@ -169,17 +178,21 @@ function QuickAddModal({ onClose, onSuccess }) {
             </div>
           )}
 
-          <div>
-            <input type="text" placeholder="Add a note (optional)..." maxLength={80} value={notes} onChange={e => setNotes(e.target.value)}
-              className="w-full bg-black/50 border border-white/10 rounded-2xl px-5 py-3.5 text-white text-sm focus:outline-none focus:border-accent" />
-          </div>
+          {!isTransfer && (
+            <div>
+              <input type="text" placeholder="Add a note (optional)..." maxLength={80} value={notes} onChange={e => setNotes(e.target.value)}
+                className="w-full bg-black/50 border border-white/10 rounded-2xl px-5 py-3.5 text-white text-sm focus:outline-none focus:border-accent" />
+            </div>
+          )}
 
           <button type="submit" disabled={loading || done}
             className={`w-full py-4 rounded-2xl font-bold flex flex-col items-center justify-center gap-1 mt-4 transition-all overflow-hidden relative shadow-lg ${
               done ? 'bg-success text-white' : 
+              isTransfer ? 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white' :
               isIncome ? 'bg-gradient-success text-white' : 'bg-white text-black hover:bg-gray-200'
             } disabled:opacity-70 disabled:cursor-not-allowed`}>
-            {done ? 'Saved!' : loading ? 'Processing...' : `Save ${isIncome ? 'Income' : 'Expense'}`}
+            {done ? 'Saved!' : loading ? 'Processing...' : `Save ${type.charAt(0).toUpperCase() + type.slice(1)}`}
+
           </button>
         </form>
       </div>
@@ -240,25 +253,8 @@ function DashboardSkeleton() {
 export default function Dashboard() {
   const { user } = useAuth()
   const navigate = useNavigate()
-  // Seed state from cache for instant render
-  const [data, setData] = useState(() => getCached('dashboard'))
-  const [loading, setLoading] = useState(!getCached('dashboard'))
+  const { data, loading, refreshing, refresh, refetch } = useDashboard()
   const [showQuickAdd, setShowQuickAdd] = useState(false)
-  const [refreshing, setRefreshing] = useState(false)
-
-  const fetchDashboard = useCallback(async (silent = false) => {
-    // Only show full spinner if no cached data at all
-    if (!silent && !getCached('dashboard')) setLoading(true)
-    else setRefreshing(true)
-    try {
-      const res = await api.get('/dashboard')
-      setCached('dashboard', res.data)
-      setData(res.data)
-    } catch (err) { console.error(err) }
-    finally { setLoading(false); setRefreshing(false) }
-  }, [])
-
-  useEffect(() => { fetchDashboard() }, [fetchDashboard])
 
   if (loading) return <DashboardSkeleton />
 
@@ -266,7 +262,7 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6 lg:space-y-8 pb-20">
-      {showQuickAdd && <QuickAddModal onClose={() => setShowQuickAdd(false)} onSuccess={() => fetchDashboard(true)} />}
+      {showQuickAdd && <QuickAddModal onClose={() => setShowQuickAdd(false)} onSuccess={() => refetch(true)} />}
 
       {/* Header */}
       <div className="flex items-center justify-between animate-stagger-1">
@@ -275,7 +271,7 @@ export default function Dashboard() {
           <p className="text-muted mt-1 font-medium">Here's your financial overview for the month.</p>
         </div>
         <div className="flex items-center gap-3">
-          <button onClick={() => fetchDashboard(true)}
+          <button onClick={refresh}
             className="p-3 rounded-xl bg-surface border border-border text-muted hover:text-white transition-all shadow-sm">
             <RefreshCw size={18} className={refreshing ? 'animate-spin' : ''} />
           </button>
@@ -285,15 +281,15 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <AlertBanner alerts={data?.budget_alerts} />
+
 
       {/* Main Balances */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Total Balance Panel */}
-        <div className="panel lg:col-span-2 p-8 lg:p-10 flex flex-col justify-between animate-stagger-1 relative overflow-hidden group">
+        <div className="panel lg:col-span-2 p-8 lg:p-10 flex flex-col justify-between animate-stagger-1 relative overflow-hidden group border-accent/20">
           {/* Stunning Background Glow */}
-          <div className="absolute top-[-50%] right-[-10%] w-[80%] h-[150%] bg-accent/20 blur-[120px] rounded-full pointer-events-none group-hover:bg-accent/30 transition-all duration-700" />
-          <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-primary" />
+          <div className="absolute top-[-50%] right-[-10%] w-[80%] h-[150%] bg-accent/30 blur-[120px] rounded-full pointer-events-none group-hover:bg-accent/40 mix-blend-screen transition-all duration-700" />
+          <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-primary shadow-[0_0_20px_rgba(99,102,241,0.8)]" />
           
           <div className="relative z-10 flex justify-between items-start">
             <div>
@@ -333,9 +329,12 @@ export default function Dashboard() {
         </div>
 
         {/* Net Worth */}
-        <div className="panel p-8 flex flex-col justify-between animate-stagger-2 cursor-pointer hover:border-success/30 group relative bg-gradient-to-b from-surface to-success/5"
+        <div className="panel p-8 flex flex-col justify-between animate-stagger-2 cursor-pointer hover:border-success/40 group relative overflow-hidden"
           onClick={() => navigate('/receivables')}>
-          <div>
+          
+          <div className="absolute bottom-[-30%] right-[-20%] w-[80%] h-[120%] bg-success/20 blur-[100px] rounded-full pointer-events-none group-hover:bg-success/30 mix-blend-screen transition-all duration-700" />
+          
+          <div className="relative z-10">
             <div className="flex items-center justify-between mb-5">
               <div className="p-3 rounded-xl bg-success/10 border border-success/20 shadow-glow-success">
                 <TrendingUp size={20} className="text-success" />
@@ -419,34 +418,7 @@ export default function Dashboard() {
             )}
           </div>
           
-          {data?.budgets?.length > 0 && (
-            <div className="panel p-8 relative overflow-hidden">
-               <div className="absolute top-0 right-0 w-32 h-32 bg-danger/10 blur-[50px] rounded-full pointer-events-none" />
-              <div className="flex items-center justify-between mb-6 relative z-10">
-                <h3 className="text-lg font-display font-bold text-foreground">Budgets</h3>
-                <button onClick={() => navigate('/budgets')} className="text-xs font-bold uppercase tracking-widest text-accent hover:text-accent-light transition-colors">Manage</button>
-              </div>
-              <div className="space-y-5 relative z-10">
-                {data.budgets.slice(0, 3).map(b => {
-                  const pct = Math.min((b.spent / b.limit) * 100, 100)
-                  const isOver = b.spent > b.limit
-                  const barColorClass = isOver ? 'bg-danger' : pct >= 80 ? 'bg-warning' : 'bg-success'
-                  return (
-                    <div key={b._id}>
-                      <div className="flex justify-between items-end mb-2">
-                        <span className="text-sm font-semibold text-foreground">{b.category}</span>
-                        <span className={`text-xs font-bold ${isOver ? 'text-danger' : 'text-muted'}`}>{Math.round(pct)}%</span>
-                      </div>
-                      <div className="h-2 bg-black/50 rounded-full overflow-hidden border border-white/5">
-                        <div className={`h-full ${barColorClass} transition-all duration-1000 ease-out`} style={{ width: `${pct}%` }} />
-                      </div>
-                      <p className="text-[10px] text-muted mt-1.5 font-medium">{fmt(b.spent)} of {fmt(b.limit)}</p>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          )}
+
         </div>
         
       </div>
@@ -462,7 +434,7 @@ export default function Dashboard() {
         </div>
 
         {data?.recent_transactions?.length > 0 ? (
-          <div className="panel divide-y divide-border/50">
+          <div className="panel p-2 flex flex-col gap-1 bg-white/[0.02]">
             {data.recent_transactions.map((txn) => {
               const uiType = transactionUiType(txn)
               const cfg    = txnCfg[uiType] || txnCfg.expense
@@ -470,8 +442,8 @@ export default function Dashboard() {
               const isCredit = isCreditUiType(uiType)
               
               return (
-                <div key={txn._id} className="flex items-center gap-5 px-6 py-5 hover:bg-surfaceHover transition-colors cursor-pointer group">
-                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 border ${cfg.bg} shadow-inner`}>
+                <div key={txn._id} className="flex items-center gap-5 px-6 py-4 rounded-xl hover:bg-white/[0.06] hover:scale-[1.01] transition-all cursor-pointer group border border-transparent hover:border-white/10 hover:shadow-lg">
+                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 border ${cfg.bg} shadow-inner group-hover:scale-110 transition-transform`}>
                     <Icon size={20} className={cfg.class} />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -485,7 +457,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <p className={`font-display font-bold text-[17px] ${isCredit ? 'text-success' : 'text-foreground'}`}>
+                    <p className={`font-display font-bold text-[17px] ${isCredit ? 'text-success drop-shadow-[0_0_8px_rgba(34,197,94,0.5)]' : 'text-foreground'}`}>
                       {isCredit ? '+' : '-'}{fmt(txn.amount)}
                     </p>
                     <p className="text-muted text-[11px] font-semibold mt-1 uppercase tracking-widest">

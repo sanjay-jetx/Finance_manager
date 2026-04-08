@@ -7,7 +7,9 @@ import {
   Plus, X, ArrowDownRight, ArrowUpRight, RefreshCw,
   Filter, Banknote, Smartphone, Users, Download, ArrowLeftRight, Target, Trash2, Search, Edit2
 } from 'lucide-react'
+
 import { transactionUiType, isCreditUiType, displayCategoryForUi } from '../utils/transactionsUi'
+import { useTransactions } from '../hooks/useTransactions'
 
 const EXPENSE_CATEGORIES = [
   'Food & Dining','Transport','Shopping','Entertainment','Health',
@@ -25,68 +27,24 @@ const typeConfig = {
 }
 
 export default function Transactions() {
-  // Seed from cache for instant display
-  const [txns, setTxns] = useState(() => getCached('transactions') || [])
-  const [categories, setCategories] = useState(() => getCached('categories') || [])
-  const [loading, setLoading] = useState(!getCached('transactions'))
+  const {
+    txns, categories, loading, loadingMore, hasMore, totalCount,
+    filterWallet, setFilterWallet, filterType, setFilterType, filterCategory, setFilterCategory, searchQuery, setSearchQuery,
+    loadMore, refresh
+  } = useTransactions()
+
   const [showForm, setShowForm] = useState(false)
   const [formType, setFormType] = useState('expense')
   const [form, setForm] = useState({ amount: '', category: '', wallet: 'cash', notes: '', source: '' })
   const [submitting, setSubmitting] = useState(false)
   const [editingId, setEditingId] = useState(null)
-  
-  // Filters
-  const [filterWallet, setFilterWallet] = useState('')
-  const [filterType, setFilterType] = useState('')
-  const [filterCategory, setFilterCategory] = useState('')
-  const [searchQuery, setSearchQuery] = useState('')
-
-  const fetchCategories = async () => {
-    try {
-      const res = await api.get('/categories')
-      setCached('categories', res.data.categories)
-      setCategories(res.data.categories)
-    } catch (err) {
-      console.error("Failed to load categories")
-    }
-  }
-
-  const fetchTxns = async (isFilter = false) => {
-    // Only block UI with spinner if no cached data and no filter active
-    const hasCache = getCached('transactions')
-    if (!hasCache || isFilter) setLoading(true)
-    try {
-      const params = {}
-      if (filterWallet) params.wallet = filterWallet
-      if (filterType)   params.type   = filterType
-      if (filterCategory) params.category = filterCategory
-      if (searchQuery.length > 2) params.search = searchQuery
-
-      const res = await api.get('/transactions', { params })
-      // Only cache unfiltered results
-      const isUnfiltered = !filterWallet && !filterType && !filterCategory && searchQuery.length <= 2
-      if (isUnfiltered) setCached('transactions', res.data.transactions)
-      setTxns(res.data.transactions)
-    } catch (err) {
-      toast.error('Failed to load transactions')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => { fetchCategories() }, [])
-  useEffect(() => {
-    const isFilter = !!(filterWallet || filterType || filterCategory || searchQuery.length > 2)
-    const timer = setTimeout(() => { fetchTxns(isFilter) }, 300)
-    return () => clearTimeout(timer)
-  }, [filterWallet, filterType, filterCategory, searchQuery])
 
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this transaction? Your balance will be reversed automatically.')) return
     try {
       await api.delete(`/transactions/${id}`)
       toast.success('Transaction deleted')
-      fetchTxns()
+      refresh()   // reset to page 1 after mutation
     } catch (err) {
       toast.error(err.response?.data?.detail || 'Failed to delete transaction')
     }
@@ -130,7 +88,7 @@ export default function Transactions() {
       }
       setForm({ amount: '', category: '', wallet: 'cash', notes: '', source: '' })
       setShowForm(false)
-      fetchTxns()
+      refresh()   // reset to page 1 after mutation
     } catch (err) {
       toast.error(err.response?.data?.detail || 'Failed to save transaction')
     } finally {
@@ -162,9 +120,27 @@ export default function Transactions() {
       <div className="flex flex-wrap items-center justify-between gap-4 animate-stagger-1">
         <div>
           <h1 className="text-3xl font-display font-bold tracking-tight text-foreground">Transactions</h1>
-          <p className="text-muted mt-1 font-medium">{txns.length} records found</p>
+          <p className="text-muted mt-1 font-medium">
+            {totalCount > 0 ? `${txns.length} of ${totalCount} records` : `${txns.length} records`}
+          </p>
         </div>
         <div className="flex items-center gap-3">
+          <button onClick={async () => {
+            if (window.confirm("WARNING: This will completely wipe all your transactions and reset wallets, debts, goals, and budgets. This is irreversible. Are you sure?")) {
+              if (window.confirm("FINAL CONFIRMATION: Click OK to annihilate all data.")) {
+                try {
+                  await api.delete('/transactions/clear_all?confirm=true')
+                  toast.success('All data has been cleared.')
+                  refresh()
+                } catch (e) {
+                  toast.error(e.response?.data?.detail || 'Failed to clear data.')
+                }
+              }
+            }
+          }} className="panel px-4 py-2 bg-danger/10 hover:bg-danger/20 border border-danger/20 text-danger transition-colors flex items-center gap-2 font-semibold text-sm">
+            <Trash2 size={16} /> <span className="hidden sm:inline">Clear All</span>
+          </button>
+          
           <button onClick={handleExport} className="panel px-4 py-2 bg-surface hover:bg-white/5 border border-border text-muted hover:text-foreground transition-colors flex items-center gap-2 font-semibold text-sm">
             <Download size={16} /> <span className="hidden sm:inline">Export CSV</span>
           </button>
@@ -254,37 +230,37 @@ export default function Transactions() {
         <div className="relative flex-1 min-w-[200px] lg:max-w-md">
           <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
           <input type="text" placeholder="Search notes, categories..." 
-            className="w-full bg-surface border border-border rounded-xl pl-11 pr-4 py-2.5 text-sm font-medium text-foreground focus:outline-none focus:border-accent transition-colors"
+            className="w-full bg-white/[0.04] border border-white/10 rounded-2xl pl-11 pr-4 py-3 text-sm font-medium text-foreground focus:outline-none focus:border-accent/50 focus:bg-white/[0.06] transition-all shadow-inner"
             value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
         </div>
         <div className="flex items-center gap-3 overflow-x-auto pb-1 max-w-full no-scrollbar">
-          <select className="bg-surface border border-border text-muted rounded-xl px-3 py-2.5 text-sm font-medium focus:outline-none focus:text-foreground"
+          <select className="bg-white/[0.04] border border-white/10 text-muted rounded-2xl px-4 py-3 text-sm font-medium focus:outline-none focus:text-foreground focus:border-accent/50 transition-all shadow-inner"
             value={filterWallet} onChange={e => setFilterWallet(e.target.value)}>
-            <option value="">All Wallets</option>
-            <option value="cash">CASH</option>
-            <option value="upi">UPI</option>
+            <option value="" className="bg-[#121214]">All Wallets</option>
+            <option value="cash" className="bg-[#121214]">CASH</option>
+            <option value="upi" className="bg-[#121214]">UPI</option>
           </select>
-          <select className="bg-surface border border-border text-muted rounded-xl px-3 py-2.5 text-sm font-medium focus:outline-none focus:text-foreground"
+          <select className="bg-white/[0.04] border border-white/10 text-muted rounded-2xl px-4 py-3 text-sm font-medium focus:outline-none focus:text-foreground focus:border-accent/50 transition-all shadow-inner"
             value={filterType} onChange={e => setFilterType(e.target.value)}>
-            <option value="">All Types</option>
-            <option value="expense">Expense</option>
-            <option value="income">Income</option>
-            <option value="lend">Lent</option>
-            <option value="transfer">Transfer</option>
+            <option value="" className="bg-[#121214]">All Types</option>
+            <option value="expense" className="bg-[#121214]">Expense</option>
+            <option value="income" className="bg-[#121214]">Income</option>
+            <option value="lend" className="bg-[#121214]">Lent</option>
+            <option value="transfer" className="bg-[#121214]">Transfer</option>
           </select>
-          <select className="bg-surface border border-border text-muted rounded-xl px-3 py-2.5 text-sm font-medium focus:outline-none focus:text-foreground"
+          <select className="bg-white/[0.04] border border-white/10 text-muted rounded-2xl px-4 py-3 text-sm font-medium focus:outline-none focus:text-foreground focus:border-accent/50 transition-all shadow-inner"
             value={filterCategory} onChange={e => setFilterCategory(e.target.value)}>
-            <option value="">All Categories</option>
-            {categories.map(c => <option key={c._id} value={c.name}>{c.name}</option>)}
+            <option value="" className="bg-[#121214]">All Categories</option>
+            {categories.map(c => <option key={c._id} value={c.name} className="bg-[#121214]">{c.name}</option>)}
           </select>
         </div>
       </div>
 
       {/* List */}
       {loading ? (
-        <div className="panel divide-y divide-border/50 animate-stagger-3">
+        <div className="panel p-3 flex flex-col gap-2 bg-white/[0.02] animate-stagger-3 border-transparent">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="flex items-center gap-4 px-6 py-5">
+            <div key={i} className="flex items-center gap-4 px-6 py-5 rounded-2xl border border-white/5 bg-white/[0.01]">
               <div className="skeleton w-12 h-12 rounded-2xl flex-shrink-0" />
               <div className="flex-1 space-y-2">
                 <div className="skeleton h-4 w-48" />
@@ -306,15 +282,15 @@ export default function Transactions() {
           <p className="text-muted text-sm max-w-xs">{searchQuery ? "Try adjusting your search or filters." : "You haven't added any transactions yet."}</p>
         </div>
       ) : (
-        <div className="panel divide-y divide-border/50 animate-stagger-3">
+        <div className="panel p-2 flex flex-col gap-1 bg-white/[0.02] animate-stagger-3 border-transparent shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
           {txns.map((txn) => {
             const uiType = transactionUiType(txn)
             const cfg = typeConfig[uiType] || typeConfig.expense
             const Icon = cfg.icon
             const isCredit = isCreditUiType(uiType)
             return (
-              <div key={txn._id} className="group flex flex-wrap sm:flex-nowrap items-center gap-4 px-6 py-5 hover:bg-surfaceHover transition-colors cursor-pointer">
-                <div className={`p-3 rounded-2xl flex-shrink-0 border ${cfg.bg}`}>
+              <div key={txn._id} className="group flex flex-wrap sm:flex-nowrap items-center gap-4 px-6 py-4 rounded-xl hover:bg-white/[0.06] hover:scale-[1.01] transition-all cursor-pointer border border-transparent hover:border-white/10 hover:shadow-lg">
+                <div className={`p-3 rounded-2xl flex-shrink-0 border ${cfg.bg} shadow-inner group-hover:scale-110 transition-transform`}>
                   <Icon size={18} className={cfg.color} />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -333,14 +309,14 @@ export default function Transactions() {
                   </div>
                 </div>
                 <div className="text-right flex-shrink-0">
-                  <p className={`font-display font-bold text-lg ${isCredit ? 'text-success' : 'text-foreground'}`}>
+                  <p className={`font-display font-bold text-lg ${isCredit ? 'text-success drop-shadow-[0_0_8px_rgba(34,197,94,0.5)]' : 'text-foreground'}`}>
                     {isCredit ? '+' : '-'}{fmt(txn.amount)}
                   </p>
                   <p className="text-muted text-[11px] font-semibold mt-1 uppercase tracking-widest">
                     {txn.timestamp ? new Date(txn.timestamp).toLocaleDateString('en-IN',{day:'2-digit',month:'short'}) : ''}
                   </p>
                 </div>
-                <div className="flex gap-2 w-full sm:w-auto opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all mt-3 sm:mt-0 pt-3 sm:pt-0 border-t border-border sm:border-0 justify-end">
+                <div className="flex gap-2 w-full sm:w-auto opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all mt-3 sm:mt-0 pt-3 sm:pt-0 justify-end">
                   {['expense', 'income'].includes(txn.type) && (
                     <button onClick={(e) => { e.stopPropagation(); handleEdit(txn); }} title="Edit transaction"
                       className="p-2.5 bg-surface sm:bg-transparent text-muted hover:text-accent hover:bg-accent/10 rounded-xl transition-colors border border-border sm:border-transparent">
@@ -355,6 +331,22 @@ export default function Transactions() {
               </div>
             )
           })}
+
+          {/* Load More button */}
+          {hasMore && (
+            <div className="flex justify-center py-6 border-t border-border/50">
+              <button
+                onClick={loadMore}
+                disabled={loadingMore}
+                className="px-8 py-3 bg-surface border border-border rounded-xl text-sm font-semibold text-muted hover:text-foreground hover:border-accent/50 transition-all flex items-center gap-2 disabled:opacity-60"
+              >
+                {loadingMore ? (
+                  <span className="w-4 h-4 border-2 border-muted/30 border-t-muted rounded-full animate-spin" />
+                ) : null}
+                {loadingMore ? 'Loading…' : 'Load more'}
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

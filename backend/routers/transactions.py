@@ -111,25 +111,32 @@ async def add_income(data: IncomeSchema, user_id: str = Depends(get_current_user
 
 @router.get("/transactions")
 async def get_transactions(
+    page: int = 1,
     limit: int = 50,
     wallet: str = None,
     type: str = None,
     category: str = None,
     search: str = None,
-    start_date: str = None, # ISO format
-    end_date: str = None,   # ISO format
+    start_date: str = None,  # ISO format
+    end_date: str = None,    # ISO format
     user_id: str = Depends(get_current_user),
 ):
     db = get_db()
+
+    # Clamp to sane bounds to prevent abuse
+    limit = max(1, min(limit, 200))
+    page  = max(1, page)
+    skip  = (page - 1) * limit
+
     query = {"user_id": user_id}
-    
+
     if wallet:
         query["wallet"] = wallet
     if type:
         query["type"] = type
     if category:
         query["category"] = category
-        
+
     # Date range filters
     if start_date or end_date:
         query["timestamp"] = {}
@@ -143,22 +150,32 @@ async def get_transactions(
                 query["timestamp"]["$lte"] = datetime.fromisoformat(end_date)
             except ValueError:
                 pass
-                
-    # Free text search across notes, category, and source
+
+    # Free-text search across notes, category, and source
     if search:
         query["$or"] = [
-            {"notes": {"$regex": search, "$options": "i"}},
+            {"notes":    {"$regex": search, "$options": "i"}},
             {"category": {"$regex": search, "$options": "i"}},
-            {"source": {"$regex": search, "$options": "i"}},
+            {"source":   {"$regex": search, "$options": "i"}},
         ]
 
-    cursor = db.transactions.find(query).sort("timestamp", -1).limit(limit)
+    # Run count + fetch in parallel via gather would be ideal; keep sequential for simplicity
+    total_count = await db.transactions.count_documents(query)
+    cursor = db.transactions.find(query).sort("timestamp", -1).skip(skip).limit(limit)
     txns = []
     async for doc in cursor:
         doc["_id"] = str(doc["_id"])
         doc["timestamp"] = doc["timestamp"].isoformat() if doc.get("timestamp") else None
         txns.append(doc)
-    return {"transactions": txns, "count": len(txns)}
+
+    return {
+        "transactions": txns,
+        "count":        len(txns),
+        "total_count":  total_count,
+        "page":         page,
+        "limit":        limit,
+        "has_more":     (skip + len(txns)) < total_count,
+    }
 
 
 @router.post("/transfer")
@@ -199,7 +216,7 @@ async def transfer_wallet(data: TransferSchema, user_id: str = Depends(get_curre
 @router.get("/transactions/export")
 async def export_transactions(user_id: str = Depends(get_current_user)):
     db = get_db()
-    cursor = db.transactions.find({"user_id": user_id}).sort("timestamp", -1)
+    cursor = db.transactions.find({"user_id": user_id}).sort("timestamp", -1).limit(10000)
 
     output = io.StringIO()
     writer = csv.writer(output)
@@ -226,7 +243,9 @@ async def export_transactions(user_id: str = Depends(get_current_user)):
 
 
 @router.delete("/transactions/clear_all")
-async def clear_all_transactions(user_id: str = Depends(get_current_user)):
+async def clear_all_transactions(confirm: str = "false", user_id: str = Depends(get_current_user)):
+    if confirm.lower() != "true":
+        raise HTTPException(status_code=400, detail="Must explicitly confirm with confirm=true to wipe data.")
     db = get_db()
     
     async def work(session):

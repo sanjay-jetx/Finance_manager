@@ -3,6 +3,7 @@ from dependencies import get_current_user
 from services.wallet_service import get_or_create_wallet
 from database.connection import get_db
 from datetime import datetime, timedelta, timezone
+from routers.metals import get_portfolio
 
 router = APIRouter(tags=["Dashboard"])
 
@@ -24,7 +25,13 @@ async def get_dashboard(user_id: str = Depends(get_current_user)):
         pending_amount += row["amount"]
         pending_count  += 1
 
-    net_worth = round(total_balance + pending_amount, 2)
+    try:
+        metals_data = await get_portfolio(user_id=user_id)
+        metals_value = metals_data.get("total_value", 0.0)
+    except Exception:
+        metals_value = 0.0
+
+    net_worth = round(total_balance + pending_amount + metals_value, 2)
 
     # This month
     now = datetime.now(timezone.utc)

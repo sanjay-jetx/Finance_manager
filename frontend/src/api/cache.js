@@ -14,16 +14,19 @@ const TTL = {
   wallets: 120_000,
   goals: 120_000,
   receivables: 60_000,
+  stocks: 300_000,
 }
 
 function lsKey(key) { return `fintrack_cache_${key}` }
 
 /** Get value from memory → localStorage → null */
 export function getCached(key) {
+  const getTTL = (k) => k.startsWith('stocks') ? TTL.stocks : (TTL[k] ?? 60_000)
+  
   // 1. Memory hit
   if (memCache[key]) {
     const { data, ts } = memCache[key]
-    if (Date.now() - ts < (TTL[key] ?? 60_000)) return data
+    if (Date.now() - ts < getTTL(key)) return data
   }
   // 2. localStorage hit
   try {
@@ -31,7 +34,7 @@ export function getCached(key) {
     if (raw) {
       const { data, ts } = JSON.parse(raw)
       memCache[key] = { data, ts }   // prime memory cache
-      if (Date.now() - ts < (TTL[key] ?? 60_000)) return data
+      if (Date.now() - ts < getTTL(key)) return data
     }
   } catch {}
   return null

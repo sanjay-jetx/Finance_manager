@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import api from '../api/axios'
 import { fmt } from '../utils/format'
 import toast from 'react-hot-toast'
 import { ArrowDownRight, ArrowLeftRight, Banknote, RefreshCw, Smartphone, TrendingUp, TrendingDown, ArrowUpRight, Search, Plus, X, Users, Target } from 'lucide-react'
 import { transactionUiType, isCreditUiType, displayCategoryForUi } from '../utils/transactionsUi'
+import { useWallets } from '../hooks/useWallets'
 
 const typeConfig = {
   expense:            { label: 'Expense',     color: 'text-danger',     bg: 'bg-danger/10 border-danger/20',     icon: ArrowDownRight },
@@ -16,50 +17,20 @@ const typeConfig = {
 }
 
 export default function Wallets() {
-  const [balances, setBalances] = useState({ cash_balance: 0, upi_balance: 0, total_balance: 0 })
-  const [loading, setLoading]   = useState(true)
-  const [form, setForm] = useState({ from_wallet: 'cash', to_wallet: 'upi', amount: '' })
+  // ── Data from hook ──────────────────────────────────────────────────────
+  const {
+    balances, loading, recentTxns, loadingTxns,
+    categories, activeWallet, setActiveWallet, refresh,
+  } = useWallets()
+
+  // ── UI-only state (forms / modals) ──────────────────────────────────────
+  const [form, setForm]           = useState({ from_wallet: 'cash', to_wallet: 'upi', amount: '' })
   const [submitting, setSubmitting] = useState(false)
-  
   const [manageAction, setManageAction] = useState('deposit')
-  const [manageForm, setManageForm] = useState({ wallet: 'cash', amount: '', sourceOrCategory: '', notes: '' })
+  const [manageForm, setManageForm]     = useState({ wallet: 'cash', amount: '', sourceOrCategory: '', notes: '' })
   const [managingFunds, setManagingFunds] = useState(false)
-  const [showManage, setShowManage] = useState(false)
+  const [showManage, setShowManage]     = useState(false)
   const [showTransfer, setShowTransfer] = useState(false)
-  const [categories, setCategories] = useState([])
-
-  const [recentTxns, setRecentTxns] = useState([])
-  const [activeWallet, setActiveWallet] = useState('all')
-  const [loadingTxns, setLoadingTxns] = useState(true)
-
-  const fetchBalances = async () => {
-    setLoading(true)
-    try {
-      const res = await api.get('/balances')
-      setBalances(res.data)
-    } catch (err) { toast.error('Failed to load balances') } 
-    finally { setLoading(false) }
-  }
-
-  const fetchCategories = async () => {
-    try {
-      const res = await api.get('/categories')
-      setCategories(res.data.categories)
-    } catch (err) {}
-  }
-
-  const fetchRecentTxns = async () => {
-    setLoadingTxns(true)
-    try {
-      const params = activeWallet !== 'all' ? { wallet: activeWallet } : {}
-      const res = await api.get('/transactions', { params })
-      setRecentTxns(res.data.transactions.slice(0, 10))
-    } catch (err) { toast.error('Failed to load recent txns') } 
-    finally { setLoadingTxns(false) }
-  }
-
-  useEffect(() => { fetchBalances(); fetchCategories() }, [])
-  useEffect(() => { fetchRecentTxns() }, [activeWallet])
 
   const handleTransfer = async (e) => {
     e.preventDefault()
@@ -69,10 +40,9 @@ export default function Wallets() {
       await api.post('/transfer', { from_wallet: form.from_wallet, to_wallet: form.to_wallet, amount: +form.amount })
       toast.success(`₹${form.amount} transferred!`)
       setForm({ ...form, amount: '' })
-      fetchBalances()
-      fetchRecentTxns()
+      refresh()
       setShowTransfer(false)
-    } catch (err) { toast.error(err.response?.data?.detail || 'Transfer failed') } 
+    } catch (err) { toast.error(err.response?.data?.detail || 'Transfer failed') }
     finally { setSubmitting(false) }
   }
 
@@ -90,14 +60,13 @@ export default function Wallets() {
       }
       setManageForm({ wallet: manageForm.wallet, amount: '', sourceOrCategory: '', notes: '' })
       setShowManage(false)
-      fetchBalances()
-      fetchRecentTxns()
-    } catch (err) { toast.error(err.response?.data?.detail || 'Failed') } 
+      refresh()
+    } catch (err) { toast.error(err.response?.data?.detail || 'Failed') }
     finally { setManagingFunds(false) }
   }
 
   const cashPct = balances.total_balance > 0 ? (balances.cash_balance / balances.total_balance) * 100 : 50
-  const upiPct  = balances.total_balance > 0 ? (balances.upi_balance / balances.total_balance) * 100 : 50
+  const upiPct  = balances.total_balance > 0 ? (balances.upi_balance  / balances.total_balance) * 100 : 50
 
   return (
     <div className="space-y-6 lg:space-y-8 pb-20">

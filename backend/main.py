@@ -8,7 +8,7 @@ from slowapi.errors import RateLimitExceeded
 
 from database.connection import connect_db, close_db
 from logging_config import setup_logging, get_logger
-from routers import auth, transactions, debts, wallets, dashboard, goals, budgets, categories, metals, subscriptions
+from routers import auth, transactions, debts, wallets, dashboard, goals, budgets, categories, metals, subscriptions, stocks
 
 logger = get_logger(__name__)
 
@@ -79,6 +79,7 @@ app.include_router(budgets.router)
 app.include_router(categories.router)
 app.include_router(metals.router)
 app.include_router(subscriptions.router)
+app.include_router(stocks.router)
 
 
 @app.get("/")

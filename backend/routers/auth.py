@@ -11,6 +11,7 @@ Rate limits:
 from fastapi import APIRouter, HTTPException, Request, Response
 from slowapi import Limiter
 from slowapi.util import get_remote_address
+import os
 
 from schemas.auth import SignupSchema, LoginSchema, GoogleAuthSchema, TokenSchema
 from services.auth_service import (
@@ -36,6 +37,8 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 
 REFRESH_COOKIE_NAME = "refresh_token"
 REFRESH_COOKIE_MAX_AGE = 7 * 24 * 60 * 60  # 7 days in seconds
+# Read from env: set SECURE_COOKIES=true in production (requires HTTPS)
+_SECURE_COOKIE = os.getenv("SECURE_COOKIES", "false").lower() in ("1", "true", "yes")
 
 
 def _set_refresh_cookie(response: Response, refresh_token: str) -> None:
@@ -43,11 +46,11 @@ def _set_refresh_cookie(response: Response, refresh_token: str) -> None:
     response.set_cookie(
         key=REFRESH_COOKIE_NAME,
         value=refresh_token,
-        httponly=True,       # JavaScript cannot read this cookie
-        secure=False,        # Set to True in production (HTTPS only)
-        samesite="lax",      # CSRF protection
+        httponly=True,           # JavaScript cannot read this cookie
+        secure=_SECURE_COOKIE,   # True in production (HTTPS), False in dev
+        samesite="lax",          # CSRF protection
         max_age=REFRESH_COOKIE_MAX_AGE,
-        path="/auth",        # Cookie only sent to /auth/* endpoints
+        path="/auth",            # Cookie only sent to /auth/* endpoints
     )
 
 
@@ -56,7 +59,7 @@ def _clear_refresh_cookie(response: Response) -> None:
     response.delete_cookie(
         key=REFRESH_COOKIE_NAME,
         httponly=True,
-        secure=False,        # Must match set_cookie settings
+        secure=_SECURE_COOKIE,   # Must match set_cookie settings exactly
         samesite="lax",
         path="/auth",
     )

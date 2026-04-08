@@ -8,21 +8,23 @@
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
   body {
-    @apply bg-background text-foreground font-sans antialiased overflow-x-hidden selection:bg-accent selection:text-white;
+    @apply text-foreground font-sans antialiased overflow-x-hidden selection:bg-accent selection:text-white;
+    background: linear-gradient(135deg, #0B0F1A 0%, #1E1B4B 50%, #000000 100%);
+    background-attachment: fixed;
   }
 }
 
 @layer components {
-  /* Ultra-Premium Linear-style Cards */
+  /* Premium Glassmorphism Cards */
   .panel {
-    @apply bg-surface border border-border rounded-[20px] relative overflow-hidden transition-all duration-300 shadow-soft-drop;
-    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.04), 0 8px 30px rgba(0,0,0,0.3);
+    @apply bg-white/[0.08] backdrop-blur-xl border border-white/20 rounded-[24px] relative overflow-hidden transition-all duration-300;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4), inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
   }
   
   .panel:hover {
-    @apply border-borderFocus bg-surfaceHover;
-    transform: translateY(-2px);
-    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.06), 0 12px 40px rgba(0,0,0,0.4);
+    @apply border-white/30 bg-white/[0.12];
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: 0 12px 40px -10px rgba(99,102,241,0.2), 0 8px 32px 0 rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
   }
 
   /* Stunning primary button */

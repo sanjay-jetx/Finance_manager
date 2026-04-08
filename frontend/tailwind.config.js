@@ -9,25 +9,25 @@ export default {
     },
     extend: {
       colors: {
-        background: '#09090b', // Zinc 950 - elegant deep charcoal
-        surface: '#121214',    // Elevated card color
-        surfaceHover: '#18181b', // Hover state for cards
-        border: '#27272a',     // Subtle border
-        borderFocus: '#3f3f46',// Focus border
-        foreground: '#fafafa', // Pure text
-        muted: '#a1a1aa',      // Muted text
+        background: '#0B0F1A', // Base extreme dark blue
+        surface: 'rgba(255, 255, 255, 0.08)',    // Glass surface base
+        surfaceHover: 'rgba(255, 255, 255, 0.12)', // Glass hover state
+        border: 'rgba(255, 255, 255, 0.2)',     // Glass border
+        borderFocus: 'rgba(255, 255, 255, 0.3)',// Glass Focus border
+        foreground: '#ffffff', // Pure text
+        muted: '#9ca3af',      // Muted text
         accent: {
-          DEFAULT: '#6366f1',  // Electric Indigo
+          DEFAULT: '#6366F1',  // Indigo
           light: '#818cf8',
-          glow: 'rgba(99, 102, 241, 0.15)',
+          glow: 'rgba(99, 102, 241, 0.2)',
         },
         success: {
-          DEFAULT: '#10b981', // Emerald
-          glow: 'rgba(16, 185, 129, 0.15)',
+          DEFAULT: '#22C55E', // Green neon
+          glow: 'rgba(34, 197, 94, 0.2)',
         },
         danger: {
-          DEFAULT: '#f43f5e', // Rose
-          glow: 'rgba(244, 63, 94, 0.15)',
+          DEFAULT: '#EF4444', // Red glow
+          glow: 'rgba(239, 68, 68, 0.2)',
         },
         warning: '#f59e0b',
         info: '#0ea5e9'

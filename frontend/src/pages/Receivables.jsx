@@ -6,7 +6,7 @@ import WalletPicker from '../components/WalletPicker'
 import toast from 'react-hot-toast'
 import {
   Plus, X, HandCoins, CheckCircle, Clock,
-  AlertTriangle, ArrowDownLeft, Trash2, Edit2
+  AlertTriangle, ArrowDownLeft, Trash2, Edit2, Check
 } from 'lucide-react'
 
 function ReceiveMoneyModal({ record, onClose, onSuccess }) {
@@ -35,7 +35,7 @@ function ReceiveMoneyModal({ record, onClose, onSuccess }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-md transition-all"
          onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="w-full max-w-sm rounded-[24px] bg-surface relative overflow-hidden shadow-soft-drop border border-white/10 animate-stagger-1 text-center p-8">
+      <div className="w-full max-w-sm rounded-[32px] bg-white/[0.08] backdrop-blur-3xl relative overflow-hidden shadow-[0_8px_40px_rgba(0,0,0,0.6)] border border-white/20 animate-stagger-1 text-center p-8">
         <div className="w-16 h-16 rounded-2xl bg-success/10 border border-success/20 mx-auto flex items-center justify-center mb-6 shadow-glow-success">
           <CheckCircle size={28} className="text-success" />
         </div>
@@ -260,7 +260,7 @@ export default function Receivables() {
       )}
 
       {/* Filter Pills */}
-      <div className="flex gap-2 p-1 bg-surface border border-border rounded-xl w-fit animate-stagger-2">
+      <div className="flex gap-2 p-1.5 bg-white/[0.04] backdrop-blur-md border border-white/10 rounded-2xl w-fit animate-stagger-2 shadow-inner">
         {[ { value: '', label: 'All' }, { value: 'pending', label: 'Outstanding' }, { value: 'returned', label: 'Received' } ].map((f) => (
           <button key={f.value} onClick={() => setFilterStatus(f.value)}
             className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${filterStatus === f.value ? 'bg-white/10 text-foreground shadow-sm' : 'text-muted hover:text-foreground'}`}>
@@ -297,7 +297,7 @@ export default function Receivables() {
                   )}
 
                   <div className="flex items-center gap-4 mb-5">
-                    <div className="w-12 h-12 rounded-full bg-surface border border-white/10 flex items-center justify-center text-foreground font-display font-bold text-lg shadow-sm">
+                    <div className="w-12 h-12 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-foreground font-display font-bold text-lg shadow-inner">
                       {row.person_name?.charAt(0)?.toUpperCase()}
                     </div>
                     <div>
@@ -325,7 +325,7 @@ export default function Receivables() {
                   </div>
                 </div>
 
-                <div className="p-4 bg-surface border-t border-white/5 flex gap-2 rounded-b-[20px]">
+                <div className="p-4 bg-white/5 backdrop-blur-md border-t border-white/10 flex gap-2 rounded-b-[24px]">
                   <div className="flex-1">
                     {row.status === 'pending' ? (
                       <button onClick={() => setReceiving(row)} className="w-full py-2.5 rounded-xl font-bold text-sm text-success bg-success/10 hover:bg-success/20 transition-colors flex items-center justify-center gap-2">
