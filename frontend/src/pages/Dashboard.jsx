@@ -263,154 +263,171 @@ export default function Dashboard() {
     <div className="space-y-6 lg:space-y-8 pb-20">
       {showQuickAdd && <QuickAddModal onClose={() => setShowQuickAdd(false)} onSuccess={() => refetch(true)} />}
 
-      {/* ── TOP STATS ROW (Old Structure) ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 animate-stagger-1 text-white">
+      {/* ── ROW 1: BALANCE OVERVIEW (Based on Screenshot) ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-stagger-1 text-white">
+        
+        {/* Left Panel: Total Amount + Cash/UPI (Takes 2 columns) */}
+        <div className="panel col-span-1 lg:col-span-2 p-8 lg:p-10 flex flex-col justify-between relative overflow-hidden bg-gradient-to-br from-[#12162A]/80 to-[#0A0D18]/90">
+           <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 blur-[100px] pointer-events-none rounded-full" />
+           <div className="z-10">
+              <h2 className="text-6xl lg:text-[80px] font-display font-bold tracking-tighter drop-shadow-md text-white mb-10 mt-2">
+                 {fmt(data?.total_balance)}
+              </h2>
+              
+              <div className="flex items-center gap-8 lg:gap-14 border-t border-white/10 pt-6 mt-auto">
+                 <div className="flex-1">
+                    <p className="obsidian-label text-[10px] text-muted uppercase tracking-widest font-bold mb-2">CASH WALLET</p>
+                    <div className="flex items-center gap-3">
+                       <div className="w-6 h-6 rounded bg-success/20 flex items-center justify-center border border-success/30"><Banknote size={12} className="text-success" /></div>
+                       <p className="obsidian-value text-2xl font-bold">{fmt(data?.cash_balance)}</p>
+                    </div>
+                 </div>
+                 
+                 <div className="w-px h-12 bg-white/10"></div>
+                 
+                 <div className="flex-1">
+                    <p className="obsidian-label text-[10px] text-muted uppercase tracking-widest font-bold mb-2">UPI WALLET</p>
+                    <div className="flex items-center gap-3">
+                       <div className="w-6 h-6 rounded bg-[#38BDF8]/20 flex items-center justify-center border border-[#38BDF8]/30"><Smartphone size={12} className="text-[#38BDF8]" /></div>
+                       <p className="obsidian-value text-2xl font-bold">{fmt(data?.upi_balance)}</p>
+                    </div>
+                 </div>
+              </div>
+           </div>
+        </div>
+
+        {/* Right Panel: Net Worth + Receivables (Takes 1 column) */}
+        <div className="panel col-span-1 p-8 lg:p-10 flex flex-col relative overflow-hidden bg-gradient-to-br from-[#10141A]/90 to-[#090C10]/90">
+           <div className="absolute -top-10 -right-10 w-64 h-64 bg-accent/5 blur-[80px] pointer-events-none rounded-full" />
+           <div className="z-10 flex-col flex h-full">
+             <div className="mb-10">
+               <p className="text-white/60 text-[10px] uppercase tracking-widest font-bold font-display mb-3">CONSOLIDATED NET WORTH</p>
+               <h2 className="text-4xl lg:text-5xl font-display font-bold tracking-tight text-white">
+                 {fmt((data?.total_balance || 0) + (data?.pending_amount || 0))}
+               </h2>
+             </div>
+             
+             <div className="mt-auto border-t border-white/10 pt-6 flex flex-col items-start gap-1">
+                <p className="text-white/60 text-[10px] uppercase tracking-widest font-bold font-display mb-2">TO RECEIVE</p>
+                <div className="flex items-end gap-3 h-full">
+                   <p className="obsidian-value text-3xl font-bold text-[#00FFA3]">{fmt(data?.pending_amount)}</p>
+                   <span className="text-[10px] px-2 py-1 bg-white/5 rounded text-muted mb-1">{data?.pending_receivables_count || 0} active</span>
+                </div>
+             </div>
+           </div>
+        </div>
+      </div>
+
+      {/* ── ROW 2: STAT CARDS (4 Columns) ── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 animate-stagger-2">
         <StatCard 
-          icon={Wallet} 
-          label="Total Balance" 
-          value={fmt(data?.total_balance)} 
-          sub={`Cash: ${fmt(data?.cash_balance)} | GPay: ${fmt(data?.upi_balance)}`}
-          accentClass="text-white" 
-          iconBg="bg-white/5 border border-white/10" 
+          icon={ArrowDownRight} 
+          label="Spent This Month" 
+          value={fmt(data?.monthly_expense)} 
+          accentClass="text-[#FF3366]" 
+          iconBg="bg-[#FF3366]/10" 
           delayIdx={1} 
         />
         <StatCard 
-          icon={HandCoins} 
-          label="Receivables" 
-          value={fmt(data?.pending_amount)} 
-          sub="Pending Incoming"
-          accentClass="text-info" 
-          iconBg="bg-info/10" 
+          icon={ArrowUpRight} 
+          label="Earned This Month" 
+          value={fmt(data?.monthly_income)} 
+          accentClass="text-[#00FFA3]" 
+          iconBg="bg-[#00FFA3]/10" 
           delayIdx={2} 
         />
         <StatCard 
-          icon={ArrowUpRight} 
-          label="Monthly Income" 
-          value={fmt(data?.monthly_income)} 
-          sub={`${data?.savings_rate ?? 0}% Savings Rate`}
-          accentClass="text-success" 
-          iconBg="bg-success/10" 
+          icon={Zap} 
+          label="Savings Rate" 
+          value={`${data?.savings_rate ?? 0}%`} 
+          sub={savingsGood ? "On track!" : "Needs attention"}
+          accentClass={savingsGood ? "text-[#00FFA3]" : "text-warning"}
+          iconBg={savingsGood ? "bg-[#00FFA3]/10" : "bg-warning/10"}
           delayIdx={3} 
         />
         <StatCard 
-          icon={ArrowDownRight} 
-          label="Monthly Expense" 
-          value={fmt(data?.monthly_expense)} 
-          sub={`Today: ${fmt(data?.today_spending)}`}
-          accentClass="text-danger" 
-          iconBg="bg-danger/10" 
+          icon={Target} 
+          label="Spent Today" 
+          value={fmt(data?.today_spending)} 
+          sub="Last 24h"
+          accentClass="text-[#38BDF8]" 
+          iconBg="bg-[#38BDF8]/10" 
           delayIdx={4} 
         />
       </div>
 
-      {/* ── MIDDLE ROW: CHARTS ── */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8 pt-4">
+      {/* ── ROW 3: CHARTS ── */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 animate-stagger-3">
         
-        {/* Left Column: Weekly Spending Graph + Market Pulse */}
-        <div className="space-y-6 animate-stagger-2 flex flex-col">
-          
-          <div className="panel p-6 h-[280px] flex flex-col">
-            <p className="obsidian-label mb-2">Weekly Spending</p>
-            <div className="flex-1 w-full min-h-0">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data?.weekly_spending?.length ? data.weekly_spending : [{amount: 0, day: '-'}]} barSize={24} margin={{ top: 10, right: 10, left: 10, bottom: 25 }}>
-                  <Tooltip content={<ChartTip />} cursor={{ fill:'rgba(255,255,255,0.02)' }} />
-                  <XAxis 
-                    dataKey="day" 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={({ x, y, payload }) => {
-                      const dayData = data?.weekly_spending?.find(d => d.day === payload.value);
-                      const val = dayData ? dayData.amount : 0;
-                      return (
-                        <g transform={`translate(${x},${y})`}>
-                          <text x={0} dy={14} textAnchor="middle" fill="#888" fontSize={9} className="font-display font-bold uppercase tracking-widest">{payload.value}</text>
-                          {val > 0 && <text x={0} dy={28} textAnchor="middle" fill="#00FFA3" fontSize={9} className="font-display font-bold opacity-80">{fmt(val)}</text>}
-                        </g>
-                      );
-                    }} 
-                  />
-                  <Bar dataKey="amount" fill="#00FFA3" radius={[4,4,4,4]}>
-                    {(data?.weekly_spending || [{amount: 0}]).map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill="url(#neonGreen)" />
-                    ))}
-                  </Bar>
-                  <defs>
-                    <linearGradient id="neonGreen" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#00FFA3" stopOpacity={1}/>
-                      <stop offset="100%" stopColor="#00cc82" stopOpacity={0.1}/>
-                    </linearGradient>
-                  </defs>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+        {/* Left Column (2 spans): Weekly Spending */}
+        <div className="panel col-span-1 xl:col-span-2 p-6 md:p-8 h-[360px] flex flex-col">
+          <div className="flex justify-between items-center mb-6">
+             <h3 className="text-white font-display font-bold tracking-wide">Weekly Spending</h3>
+             <span className="text-[10px] px-3 py-1.5 rounded-full border border-indigo-500/30 text-indigo-400 font-display font-bold uppercase tracking-widest bg-indigo-500/5">Last 7 Days</span>
           </div>
-
-          <div>
-            <p className="obsidian-label mb-4">Market Pulse</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="panel p-6 hover:border-accent/30 cursor-pointer">
-                <div className="flex justify-between items-center mb-6">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded bg-[#F7931A]/10 flex items-center justify-center text-[#F7931A] font-bold pb-0.5">₿</div>
-                    <span className="font-display font-bold uppercase tracking-widest text-[11px]">Bitcoin (INR)</span>
-                  </div>
-                  <span className="text-accent font-display font-bold text-[11px]">+2.1%</span>
-                </div>
-                <p className="obsidian-value text-3xl tracking-tight text-white mb-2">₹54,12,840</p>
-              </div>
-
-              <div className="panel p-6 hover:border-accent/30 cursor-pointer">
-                <div className="flex justify-between items-center mb-6">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded bg-purple-500/10 flex items-center justify-center text-purple-500"><TrendingUp size={14}/></div>
-                    <span className="font-display font-bold uppercase tracking-widest text-[11px]">NIFTY 50</span>
-                  </div>
-                  <span className="text-accent font-display font-bold text-[11px]">+0.84%</span>
-                </div>
-                <p className="obsidian-value text-3xl tracking-tight text-white mb-2">22,514.65</p>
-              </div>
-            </div>
+          <div className="flex-1 w-full min-h-0">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={data?.weekly_spending?.length ? data.weekly_spending : [{amount: 0, day: '-'}]} barSize={24} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+                <Tooltip content={<ChartTip />} cursor={{ fill:'rgba(255,255,255,0.03)' }} />
+                <XAxis 
+                  dataKey="day" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fill: '#666', fontSize: 10, fontFamily: 'Outfit' }}
+                  dy={10}
+                />
+                <Bar dataKey="amount" fill="#8B5CF6" radius={[4,4,4,4]}>
+                  {(data?.weekly_spending || [{amount: 0}]).map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill="url(#neonPurple)" />
+                  ))}
+                </Bar>
+                <defs>
+                  <linearGradient id="neonPurple" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#8B5CF6" stopOpacity={1}/>
+                    <stop offset="100%" stopColor="#6366F1" stopOpacity={0.2}/>
+                  </linearGradient>
+                </defs>
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Right Column: Asset Allocation */}
-        <div className="space-y-4 animate-stagger-3">
-          <p className="obsidian-label mb-4 text-transparent">.</p>
-          <div className="panel p-8 h-[280px] flex flex-col md:flex-row items-center justify-between gap-8 relative">
-            <div className="w-full md:w-1/2 h-full flex items-center justify-center relative pt-4">
-               <ResponsiveContainer width="100%" height={260}>
-                 <RePie>
-                   <Pie 
-                      data={data?.category_breakdown?.length ? data.category_breakdown : [{category:'Empty',amount:1}]} 
-                      dataKey="amount" nameKey="category" cx="50%" cy="50%" 
-                      innerRadius={80} outerRadius={110} paddingAngle={4} stroke="none"
-                    >
-                     {(data?.category_breakdown?.length ? data.category_breakdown : [{category:'Empty',amount:1}]).map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
-                   </Pie>
-                   {data?.category_breakdown?.length > 0 && <Tooltip content={<ChartTip />} cursor={{ fill:'rgba(255,255,255,0.03)' }} />}
-                 </RePie>
-               </ResponsiveContainer>
-               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-4">
-                 <span className="text-4xl font-display font-bold text-white">{data?.category_breakdown?.length || 0}</span>
-                 <span className="obsidian-label mt-2">Assets</span>
-               </div>
-            </div>
-
-            <div className="w-full md:w-1/2 flex flex-col gap-5 overflow-y-auto max-h-full no-scrollbar pr-2 mt-4 md:mt-0">
-               {data?.category_breakdown?.slice(0, 4).map((c, i) => (
-                 <div key={i} className="flex justify-between items-center pl-4 border-l-4" style={{borderColor: PIE_COLORS[i % PIE_COLORS.length]}}>
-                   <div>
-                     <p className="font-display font-bold text-white text-[13px]">{c.category}</p>
-                     <p className="obsidian-label mt-1 lowercase opacity-70">{c.category === 'Food' ? 'Consumer' : 'General'}</p>
+        {/* Right Column (1 span): Category Pie Chart */}
+        <div className="panel col-span-1 p-6 md:p-8 h-[360px] flex flex-col">
+          <h3 className="text-white font-display font-bold tracking-wide mb-2">By Category</h3>
+          <div className="flex-1 flex flex-col items-center justify-center relative">
+             <ResponsiveContainer width="100%" height="100%">
+               <RePie>
+                 <Pie 
+                    data={data?.category_breakdown?.length ? data.category_breakdown : [{category:'Empty',amount:1}]} 
+                    dataKey="amount" nameKey="category" cx="50%" cy="50%" 
+                    innerRadius={70} outerRadius={95} paddingAngle={4} stroke="none"
+                  >
+                   {(data?.category_breakdown?.length ? data.category_breakdown : [{category:'Empty',amount:1}]).map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
+                 </Pie>
+                 {data?.category_breakdown?.length > 0 && <Tooltip content={<ChartTip />} cursor={{ fill:'rgba(255,255,255,0.03)' }} />}
+               </RePie>
+             </ResponsiveContainer>
+             
+             {/* Dynamic inner text for the largest category */}
+             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pb-2">
+               {data?.category_breakdown?.length > 0 && (
+                  <>
+                     <span className="text-[11px] text-muted font-display uppercase tracking-widest font-bold">{data.category_breakdown[0].category}</span>
+                     <span className="text-lg font-bold text-white mt-1">₹{fmt(data.category_breakdown[0].amount)}</span>
+                  </>
+               )}
+             </div>
+             
+             {/* Minimal Legend below Pie */}
+             <div className="flex flex-wrap gap-4 items-center justify-center mt-auto pb-4 pt-4">
+                {data?.category_breakdown?.slice(0, 3).map((c, i) => (
+                   <div key={i} className="flex items-center gap-1.5">
+                      <div className="w-2 h-2 rounded-full" style={{backgroundColor: PIE_COLORS[i % PIE_COLORS.length]}}></div>
+                      <span className="text-[10px] text-white/70 font-display font-bold">{c.category}</span>
                    </div>
-                   <div className="text-right">
-                     <p className="obsidian-value text-[14px]">{fmt(c.amount)}</p>
-                   </div>
-                 </div>
-               ))}
-               {!data?.category_breakdown?.length && <p className="text-muted text-sm italic">No asset data</p>}
-            </div>
+                ))}
+             </div>
           </div>
         </div>
       </div>
