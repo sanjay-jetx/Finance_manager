@@ -93,7 +93,7 @@ function QuickAddModal({ onClose, onSuccess }) {
   return (
     <div className="fixed inset-0 z-50 flex flex-col p-0 sm:p-4 bg-black/60 sm:bg-background/80 backdrop-blur-md transition-all justify-end sm:justify-center"
          onMouseDown={e => e.target === e.currentTarget && onClose()}>
-      <div className="w-full max-w-md mx-auto rounded-t-[32px] sm:rounded-[24px] bg-surface relative overflow-hidden shadow-[0_-20px_50px_rgba(0,0,0,0.5)] sm:shadow-soft-drop border border-white/10 animate-stagger-1 border-b-0 sm:border-b">
+      <div className="w-full max-w-md mx-auto rounded-t-[32px] sm:rounded-[24px] bg-surface/60 backdrop-blur-3xl relative overflow-hidden shadow-[0_-20px_50px_rgba(0,0,0,0.5)] sm:shadow-[0_12px_40px_rgba(0,0,0,0.6)] border border-white/[0.08] animate-stagger-1 border-b-0 sm:border-b">
         <div className={`absolute top-0 left-0 right-0 h-1.5 sm:h-1 ${isIncome ? 'bg-gradient-success' : isTransfer ? 'bg-gradient-to-r from-purple-500 to-indigo-500' : 'bg-gradient-to-r from-rose-500 to-pink-600'}`} />
         
         {/* Header */}
@@ -403,7 +403,7 @@ export default function Dashboard() {
           </button>
         </div>
 
-        <div className="panel bg-[#0C0D10]">
+        <div className="panel">
           {/* Header Row */}
           <div className="grid grid-cols-12 gap-4 px-8 py-5 border-b border-white/5 text-[10px] font-bold uppercase tracking-[0.2em] text-muted font-display">
             <div className="col-span-6 sm:col-span-5 lg:col-span-5">Transaction Path</div>

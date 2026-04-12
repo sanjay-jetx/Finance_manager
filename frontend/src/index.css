@@ -18,15 +18,16 @@
 }
 
 @layer components {
-  /* Obsidian Panels - Flat, Matte, Sharp */
+  /* Obsidian Glass Panels - Frosted, Matte, Elegant */
   .panel {
-    @apply bg-surface border border-white/5 rounded-xl relative transition-all duration-300;
+    @apply bg-surface/60 backdrop-blur-2xl border border-white/[0.08] rounded-2xl relative transition-all duration-300;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
   }
   
   .panel-hover:hover {
-    @apply border-borderFocus;
+    @apply border-white/20 bg-surface/80;
     transform: translateY(-2px);
-    box-shadow: 0 10px 40px -10px rgba(0,0,0,0.8);
+    box-shadow: 0 16px 50px -10px rgba(0,128,81,0.1), inset 0 1px 0 0 rgba(255,255,255,0.1);
   }
 
   /* Solid Neon Button */

@@ -157,7 +157,7 @@ export default function Transactions() {
 
       {/* Add Form */}
       {showForm && (
-        <div className="panel p-6 sm:p-8 animate-stagger-2 relative overflow-hidden bg-[#0C0D10]">
+        <div className="panel p-6 sm:p-8 animate-stagger-2 relative overflow-hidden bg-surface/60 backdrop-blur-3xl border border-white/[0.08] shadow-[0_12px_40px_rgba(0,0,0,0.6)]">
           <div className={`absolute top-0 left-0 w-1 h-full ${isIncome ? 'bg-accent' : 'bg-danger'}`} />
           <h3 className="obsidian-label text-foreground mb-6">{editingId ? 'EDIT INTELLIGENCE RECORD' : 'LOG ACTIVITY'}</h3>
           
@@ -288,7 +288,7 @@ export default function Transactions() {
           <p className="text-muted text-sm max-w-xs">{searchQuery ? "Try adjusting your search or filters." : "You haven't added any transactions yet."}</p>
         </div>
       ) : (
-        <div className="panel bg-[#0C0D10] animate-stagger-3 mt-4">
+        <div className="panel animate-stagger-3 mt-4">
             {/* Header Row */}
             <div className="grid grid-cols-12 gap-4 px-8 py-5 border-b border-white/5 text-[10px] font-bold uppercase tracking-[0.2em] text-muted font-display">
                 <div className="col-span-12 sm:col-span-5 lg:col-span-5">Record Identifier</div>
@@ -339,15 +339,15 @@ export default function Transactions() {
                     </div>
 
                     {/* Actions Menu overlay */}
-                    <div className="absolute right-6 top-1/2 -translate-y-1/2 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-l from-[#0C0D10] via-[#0C0D10] to-transparent pl-8 py-2">
+                    <div className="absolute right-6 top-1/2 -translate-y-1/2 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-l from-[#0A0B0E] via-[#0A0B0E]/90 to-transparent pl-8 py-2">
                         {['expense', 'income'].includes(txn.type) && (
                           <button onClick={(e) => { e.stopPropagation(); handleEdit(txn); }} title="Edit transaction"
-                            className="p-2 text-muted hover:text-accent transition-colors">
+                            className="p-2 text-muted hover:text-accent transition-colors drop-shadow-md">
                             <Edit2 size={14} />
                           </button>
                         )}
                         <button onClick={(e) => { e.stopPropagation(); handleDelete(txn._id); }} title="Delete transaction"
-                          className="p-2 text-muted hover:text-danger transition-colors">
+                          className="p-2 text-muted hover:text-danger transition-colors drop-shadow-md">
                           <Trash2 size={14} />
                         </button>
                     </div>
