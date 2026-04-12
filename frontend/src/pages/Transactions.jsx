@@ -23,7 +23,6 @@ const typeConfig = {
   debt_return:        { label: 'Receivable return',    color: 'text-accent',     bg: 'bg-accent/10 border-accent/20',     icon: ArrowUpRight },
   receivable_return:  { label: 'Receivable return',    color: 'text-accent',     bg: 'bg-accent/10 border-accent/20',     icon: ArrowUpRight },
   transfer:           { label: 'Transfer',             color: 'text-purple-400', bg: 'bg-purple-500/10 border-purple-500/20', icon: ArrowLeftRight },
-  goal_transfer:      { label: 'Goal Save',            color: 'text-info',       bg: 'bg-info/10 border-info/20',         icon: Target },
 }
 
 export default function Transactions() {

@@ -219,7 +219,6 @@ const txnCfg = {
   debt_return:       { label:'Received', class:'text-accent',   bg:'bg-accent/10 border-accent/20', icon: ArrowUpRight },
   receivable_return: { label:'Received', class:'text-accent',   bg:'bg-accent/10 border-accent/20', icon: ArrowUpRight },
   transfer:          { label:'Transfer', class:'text-purple-400', bg:'bg-purple-500/10 border-purple-500/20', icon: RefreshCw },
-  goal_transfer:     { label:'Goal Save',class:'text-info',     bg:'bg-info/10 border-info/20', icon: Target },
 }
 
 /* ══════════════════════════════════════════════════════════════════════════════
@@ -283,8 +282,8 @@ export default function Dashboard() {
             <button className="btn-primary w-full" onClick={() => setShowQuickAdd(true)}>
               Execute Rebalance
             </button>
-            <button className="btn-secondary w-full" onClick={() => navigate('/budgets')}>
-              Detailed Analysis
+            <button className="btn-secondary w-full" onClick={() => navigate('/transactions')}>
+              Activity Ledger
             </button>
           </div>
         </div>
@@ -339,7 +338,6 @@ export default function Dashboard() {
                 <span className="text-accent font-display font-bold text-[11px]">+2.1%</span>
               </div>
               <p className="obsidian-value text-3xl tracking-tight text-white mb-2">₹54,12,840</p>
-              <div className="w-full h-1 bg-white/5 rounded overflow-hidden mt-6"><div className="w-[80%] h-full bg-accent rounded"></div></div>
             </div>
 
             <div className="panel p-6 hover:border-accent/30 cursor-pointer">
@@ -351,7 +349,6 @@ export default function Dashboard() {
                 <span className="text-accent font-display font-bold text-[11px]">+0.84%</span>
               </div>
               <p className="obsidian-value text-3xl tracking-tight text-white mb-2">22,514.65</p>
-              <div className="w-full h-1 bg-white/5 rounded overflow-hidden mt-6"><div className="w-[65%] h-full bg-accent rounded"></div></div>
             </div>
             
             {/* Real Stats abstracted */}
