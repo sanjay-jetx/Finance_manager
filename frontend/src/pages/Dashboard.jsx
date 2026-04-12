@@ -16,7 +16,7 @@ import toast from 'react-hot-toast'
 import api from '../api/axios'
 import { transactionUiType, isCreditUiType } from '../utils/transactionsUi'
 
-const PIE_COLORS = ['#6366f1','#10b981','#f59e0b','#ec4899','#8b5cf6','#0ea5e9']
+const PIE_COLORS = ['#00FFA3', '#8B5CF6', '#F59E0B', '#38BDF8', '#F43F5E', '#A855F7']
 
 /* ── Stat mini-card ─────────────────────────────────────────────────────────── */
 function StatCard({ icon: Icon, label, value, sub, accentClass, iconBg, delayIdx = 1, badge }) {
@@ -186,12 +186,11 @@ function QuickAddModal({ onClose, onSuccess }) {
           )}
 
           <button type="submit" disabled={loading || done}
-            className={`w-full py-4 rounded-2xl font-bold flex flex-col items-center justify-center gap-1 mt-4 transition-all overflow-hidden relative shadow-lg ${
-              done ? 'bg-success text-white' : 
-              isTransfer ? 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white' :
-              isIncome ? 'bg-gradient-success text-white' : 'bg-white text-black hover:bg-gray-200'
+            className={`w-full py-4 rounded font-display tracking-widest uppercase text-[12px] font-bold flex flex-col items-center justify-center gap-1 mt-4 transition-all shadow-lg ${
+              done ? 'bg-success text-black' : 
+              isIncome ? 'bg-accent text-black hover:bg-accent-light' : 'bg-[#1C1E26] text-white border border-white/10 hover:border-white/20'
             } disabled:opacity-70 disabled:cursor-not-allowed`}>
-            {done ? 'Saved!' : loading ? 'Processing...' : `Save ${type.charAt(0).toUpperCase() + type.slice(1)}`}
+            {done ? 'Saved!' : loading ? 'Processing...' : `Save ${type}`}
 
           </button>
         </form>
@@ -265,231 +264,206 @@ export default function Dashboard() {
     <div className="space-y-6 lg:space-y-8 pb-20">
       {showQuickAdd && <QuickAddModal onClose={() => setShowQuickAdd(false)} onSuccess={() => refetch(true)} />}
 
-      {/* Header */}
-      <div className="flex items-center justify-between animate-stagger-1">
-        <div>
-          <h1 className="text-3xl font-display font-bold tracking-tight text-foreground">Welcome back, {user?.user_name?.split(' ')[0] || 'there'}!</h1>
-          <p className="text-muted mt-1 font-medium">Here's your financial overview for the month.</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <button onClick={refresh}
-            className="p-3 rounded-xl bg-surface border border-border text-muted hover:text-white transition-all shadow-sm">
-            <RefreshCw size={18} className={refreshing ? 'animate-spin' : ''} />
-          </button>
-          <button onClick={() => setShowQuickAdd(true)} className="btn-primary hidden sm:flex">
-            <Plus size={16} /> New Transaction
-          </button>
-        </div>
-      </div>
-
-
-
-      {/* Main Balances */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Total Balance Panel */}
-        <div className="panel lg:col-span-2 p-8 lg:p-10 flex flex-col justify-between animate-stagger-1 relative overflow-hidden group border-accent/20">
-          {/* Stunning Background Glow */}
-          <div className="hidden lg:block absolute top-[-50%] right-[-10%] w-[80%] h-[150%] bg-accent/30 blur-[120px] rounded-full pointer-events-none group-hover:bg-accent/40 mix-blend-screen transition-all duration-700" />
-          <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-primary shadow-[0_0_20px_rgba(99,102,241,0.8)]" />
-          
-          <div className="relative z-10 flex justify-between items-start">
-            <div>
-              <p className="text-xs font-bold text-accent uppercase tracking-widest mb-2 flex items-center gap-2">
-                <Sparkles size={14} /> Total Balance
-              </p>
-              <h2 className="text-5xl lg:text-7xl font-display font-bold tracking-tighter text-gradient">{fmt(data?.total_balance)}</h2>
-            </div>
-            <div className="p-4 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 shadow-xl">
-              <Wallet size={28} className="text-white" />
-            </div>
-          </div>
-          
-          <div className="flex items-end justify-between mt-12 relative z-10">
-            <div className="flex gap-8 lg:gap-16">
-              <div>
-                <p className="text-[11px] font-bold text-muted uppercase tracking-widest mb-2">Cash Wallet</p>
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-success/10 flex items-center justify-center border border-success/20">
-                    <Banknote size={14} className="text-success" />
-                  </div>
-                  <p className="text-2xl font-display font-bold text-foreground">{fmt(data?.cash_balance)}</p>
-                </div>
-              </div>
-              <div className="w-px bg-white/10 hidden sm:block"></div>
-              <div>
-                <p className="text-[11px] font-bold text-muted uppercase tracking-widest mb-2">UPI Wallet</p>
-                <div className="flex items-center gap-2">
-                   <div className="w-8 h-8 rounded-full bg-info/10 flex items-center justify-center border border-info/20">
-                    <Smartphone size={14} className="text-info" />
-                  </div>
-                  <p className="text-2xl font-display font-bold text-foreground">{fmt(data?.upi_balance)}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Net Worth */}
-        <div className="panel p-8 flex flex-col justify-between animate-stagger-2 cursor-pointer hover:border-success/40 group relative overflow-hidden"
-          onClick={() => navigate('/receivables')}>
-          
-          <div className="hidden lg:block absolute bottom-[-30%] right-[-20%] w-[80%] h-[120%] bg-success/20 blur-[100px] rounded-full pointer-events-none group-hover:bg-success/30 mix-blend-screen transition-all duration-700" />
-          
-          <div className="relative z-10">
-            <div className="flex items-center justify-between mb-5">
-              <div className="p-3 rounded-xl bg-success/10 border border-success/20 shadow-glow-success">
-                <TrendingUp size={20} className="text-success" />
-              </div>
-              <ArrowUpRight size={20} className="text-muted group-hover:text-success transition-colors" />
-            </div>
-            <p className="text-[11px] font-bold text-muted uppercase tracking-widest mb-1.5">Net Worth</p>
-            <p className="text-4xl font-display font-bold text-foreground tracking-tight group-hover:text-white transition-colors">{fmt(data?.net_worth)}</p>
-          </div>
-          <div className="border-t border-white/5 pt-5 mt-6">
-            <p className="text-[11px] font-bold text-muted uppercase tracking-widest mb-1">To Receive</p>
-            <div className="flex items-center gap-2">
-              <span className="text-lg font-bold text-success">{fmt(data?.pending_amount)}</span>
-              <span className="text-xs text-muted font-medium bg-black/50 px-2.5 py-1 rounded-full">{data?.pending_receivables_count || 0} active</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Mini Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-        <StatCard icon={ArrowDownRight} label="Spent This Month" value={fmt(data?.monthly_expense)} accentClass="text-danger" iconBg="bg-danger/10" delayIdx={2} />
-        <StatCard icon={ArrowUpRight} label="Earned This Month" value={fmt(data?.monthly_income)} accentClass="text-success" iconBg="bg-success/10" delayIdx={2} />
-        <StatCard icon={Zap} label="Savings Rate" value={`${data?.savings_rate ?? 0}%`} accentClass={savingsGood ? 'text-success' : 'text-warning'} iconBg={savingsGood ? 'bg-success/10' : 'bg-warning/10'} delayIdx={3} sub={savingsGood ? 'On track!' : 'Below 20% target'} />
-        <StatCard icon={Target} label="Spent Today" value={fmt(data?.today_spending)} accentClass="text-info" iconBg="bg-info/10" delayIdx={3} sub={data?.top_category ? `Top: ${data.top_category}` : 'Great job!'} />
-      </div>
-
-      {/* Charts & Budgets */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 lg:gap-8">
+      {/* Hero: Consolidated Net Worth */}
+      <div className="panel p-8 lg:p-12 animate-stagger-1 relative overflow-hidden flex flex-col lg:flex-row justify-between items-center gap-10">
+        <div className="absolute top-0 right-0 w-1/2 h-full bg-accent/5 blur-[120px] pointer-events-none" />
         
-        {/* Weekly Chart */}
-        <div className="panel xl:col-span-2 p-8 animate-stagger-3">
-          <div className="flex items-center justify-between mb-8">
-            <h3 className="text-lg font-display font-bold text-foreground">Weekly Spending</h3>
-            <span className="text-[11px] font-bold text-accent uppercase tracking-widest bg-accent/10 px-3 py-1.5 rounded-full border border-accent/20">Last 7 days</span>
+        <div className="w-full lg:w-1/2 z-10 flex flex-col justify-center">
+          <p className="obsidian-label text-accent mb-4">Consolidated Net Worth</p>
+          <h2 className="text-5xl lg:text-7xl obsidian-value text-white mb-3 tracking-tighter" style={{ textShadow: '0 0 40px rgba(0, 255, 163, 0.2)' }}>
+            {fmt(data?.net_worth || data?.total_balance)}
+          </h2>
+          <div className="flex items-center gap-3 mt-2">
+            <ArrowUpRight size={16} className="text-accent" />
+            <span className="text-accent font-display font-bold text-sm tracking-widest uppercase">+{fmt(data?.monthly_income)} EARNED</span>
+            <span className="text-muted font-display text-[10px] tracking-widest uppercase ml-2">PAST 30 DAYS</span>
           </div>
-          {(data?.weekly_spending || []).some(d => d.amount > 0) ? (
-            <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={data.weekly_spending} barSize={28}>
-                <CartesianGrid vertical={false} stroke="#27272a" strokeDasharray="4 4" />
-                <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill:'#a1a1aa', fontSize:12, fontWeight:500 }} dy={12} />
-                <YAxis hide />
-                <Tooltip content={<ChartTip />} cursor={{ fill:'rgba(255,255,255,0.03)' }} />
-                <Bar dataKey="amount" fill="#6366f1" radius={[6,6,0,0]}>
-                  {data.weekly_spending.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill="url(#colorUv)" />
-                  ))}
-                </Bar>
-                <defs>
-                  <linearGradient id="colorUv" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#8b5cf6" stopOpacity={1}/>
-                    <stop offset="100%" stopColor="#6366f1" stopOpacity={0.8}/>
-                  </linearGradient>
-                </defs>
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-             <div className="h-[260px] flex flex-col items-center justify-center text-muted border border-dashed border-white/10 rounded-2xl">
-              <PieChartIcon size={32} className="mb-3 opacity-40 text-accent" />
-              <p className="text-sm font-medium">No recent spending data</p>
-            </div>
-          )}
-        </div>
 
-        {/* Category Pie & Budgets */}
-        <div className="space-y-6 lg:space-y-8 animate-stagger-4">
-          <div className="panel p-8">
-            <h3 className="text-lg font-display font-bold text-foreground mb-6">By Category</h3>
-            {data?.category_breakdown?.length > 0 ? (
-              <ResponsiveContainer width="100%" height={200}>
-                <RePie>
-                  <Pie data={data.category_breakdown} dataKey="amount" nameKey="category" cx="50%" cy="50%" innerRadius={60} outerRadius={85} paddingAngle={3}>
-                    {data.category_breakdown.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} stroke="#121214" strokeWidth={3} />)}
-                  </Pie>
-                  <Tooltip content={<ChartTip />} cursor={{ fill:'rgba(255,255,255,0.03)' }} />
-                  <Legend iconType="circle" iconSize={8} formatter={(v, entry) => <span className="text-foreground text-xs font-semibold ml-1.5">{v} <span className="text-muted ml-0.5 font-normal">{fmt(entry?.payload?.value)}</span></span>} />
-                </RePie>
-              </ResponsiveContainer>
-            ) : (
-              <div className="h-[200px] flex items-center justify-center border border-dashed border-white/10 rounded-2xl"><p className="text-sm font-medium text-muted">No data yet</p></div>
-            )}
-          </div>
-          
-
-        </div>
-        
-      </div>
-
-      {/* Recent Activity */}
-      <div className="animate-stagger-4 pt-4">
-        <div className="flex items-center justify-between mb-5 px-1">
-          <h3 className="text-xl font-display font-bold text-foreground">Recent Transactions</h3>
-          <button onClick={() => navigate('/transactions')}
-            className="text-muted text-sm hover:text-foreground font-semibold flex items-center gap-1.5 transition-colors">
-            View all <ArrowRight size={16} />
-          </button>
-        </div>
-
-        {data?.recent_transactions?.length > 0 ? (
-          <div className="panel p-2 flex flex-col gap-1 bg-white/[0.02]">
-            {data.recent_transactions.map((txn) => {
-              const uiType = transactionUiType(txn)
-              const cfg    = txnCfg[uiType] || txnCfg.expense
-              const Icon   = cfg.icon
-              const isCredit = isCreditUiType(uiType)
-              
-              return (
-                <div key={txn._id} className="flex items-center gap-5 px-6 py-4 rounded-xl hover:bg-white/[0.06] hover:scale-[1.01] transition-all cursor-pointer group border border-transparent hover:border-white/10 hover:shadow-lg">
-                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 border ${cfg.bg} shadow-inner group-hover:scale-110 transition-transform`}>
-                    <Icon size={20} className={cfg.class} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-foreground font-semibold text-[15px] truncate group-hover:text-white transition-colors">
-                      {txn.notes || txn.category || txn.source || cfg.label}
-                    </p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className={`text-[10px] font-bold uppercase tracking-wider ${cfg.class}`}>{cfg.label}</span>
-                      <span className="text-muted/40">•</span>
-                      <span className="text-muted text-xs font-medium">{txn.wallet === 'cash' ? 'Cash Wallet' : 'UPI Wallet'}</span>
-                    </div>
-                  </div>
-                  <div className="text-right flex-shrink-0">
-                    <p className={`font-display font-bold text-[17px] ${isCredit ? 'text-success drop-shadow-[0_0_8px_rgba(34,197,94,0.5)]' : 'text-foreground'}`}>
-                      {isCredit ? '+' : '-'}{fmt(txn.amount)}
-                    </p>
-                    <p className="text-muted text-[11px] font-semibold mt-1 uppercase tracking-widest">
-                      {txn.timestamp ? new Date(txn.timestamp).toLocaleDateString('en-IN',{day:'2-digit',month:'short'}) : ''}
-                    </p>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        ) : (
-          <div className="panel p-12 flex flex-col items-center justify-center text-center border-dashed">
-            <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-5 shadow-inner">
-              <ArrowLeftRight size={24} className="text-muted" />
-            </div>
-            <p className="text-foreground font-display font-bold text-lg mb-1.5">No transactions yet</p>
-            <p className="text-muted text-sm mb-6 max-w-sm">You haven't logged any income or expenses. Start tracking to see insights.</p>
-            <button onClick={() => setShowQuickAdd(true)} className="btn-primary">
-              <Plus size={16} /> Add First Transaction
+          <div className="flex lg:flex-row flex-col gap-4 mt-12 w-full max-w-sm">
+            <button className="btn-primary w-full" onClick={() => setShowQuickAdd(true)}>
+              Execute Rebalance
+            </button>
+            <button className="btn-secondary w-full" onClick={() => navigate('/budgets')}>
+              Detailed Analysis
             </button>
           </div>
-        )}
+        </div>
+
+        <div className="w-full lg:w-[50%] h-[200px] z-10">
+          {/* Abstracted Green Bar Chart */}
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={data?.weekly_spending?.length ? data.weekly_spending : [{amount: 0}]} barSize={40}>
+              <Tooltip content={<ChartTip />} cursor={{ fill:'rgba(255,255,255,0.02)' }} />
+              <Bar dataKey="amount" fill="#00FFA3" radius={[2,2,0,0]}>
+                {(data?.weekly_spending || [{amount: 0}]).map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill="url(#neonGreen)" />
+                ))}
+              </Bar>
+              <defs>
+                <linearGradient id="neonGreen" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#00FFA3" stopOpacity={1}/>
+                  <stop offset="100%" stopColor="#00cc82" stopOpacity={0.1}/>
+                </linearGradient>
+              </defs>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
+        {/* Market Pulse (Mini Stats converted) */}
+        <div className="space-y-4 animate-stagger-2">
+          <p className="obsidian-label mb-4">Market Pulse</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="panel p-6 hover:border-accent/30 cursor-pointer">
+              <div className="flex justify-between items-center mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded bg-[#F7931A]/10 flex items-center justify-center text-[#F7931A] font-bold pb-0.5">₿</div>
+                  <span className="font-display font-bold uppercase tracking-widest text-[11px]">Bitcoin</span>
+                </div>
+                <span className="text-accent font-display font-bold text-[11px]">+2.1%</span>
+              </div>
+              <p className="obsidian-value text-3xl tracking-tight text-white mb-2">$64,812.40</p>
+              <div className="w-full h-1 bg-white/5 rounded overflow-hidden mt-6"><div className="w-[80%] h-full bg-accent rounded"></div></div>
+            </div>
+
+            <div className="panel p-6 hover:border-accent/30 cursor-pointer">
+              <div className="flex justify-between items-center mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded bg-purple-500/10 flex items-center justify-center text-purple-500"><TrendingUp size={14}/></div>
+                  <span className="font-display font-bold uppercase tracking-widest text-[11px]">S&P 500</span>
+                </div>
+                <span className="text-accent font-display font-bold text-[11px]">+0.84%</span>
+              </div>
+              <p className="obsidian-value text-3xl tracking-tight text-white mb-2">5,241.53</p>
+              <div className="w-full h-1 bg-white/5 rounded overflow-hidden mt-6"><div className="w-[65%] h-full bg-accent rounded"></div></div>
+            </div>
+            
+            {/* Real Stats abstracted */}
+            <div className="panel p-6 col-span-1 sm:col-span-2 flex justify-between items-center">
+               <div>
+                  <p className="obsidian-label text-muted mb-2">Liquid Balance</p>
+                  <p className="obsidian-value text-2xl">{fmt(data?.total_balance)}</p>
+               </div>
+               <div className="text-right">
+                 <p className="obsidian-label text-muted mb-2">Savings Rate</p>
+                 <p className="obsidian-value text-2xl text-accent">{data?.savings_rate ?? 0}%</p>
+               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Asset Allocation */}
+        <div className="space-y-4 animate-stagger-3">
+          <p className="obsidian-label mb-4">Asset Allocation</p>
+          <div className="panel p-8 h-[312px] flex flex-col md:flex-row items-center justify-between gap-8 relative">
+            <div className="w-full md:w-1/2 h-full flex items-center justify-center relative pt-4">
+               <ResponsiveContainer width="100%" height={260}>
+                 <RePie>
+                   <Pie 
+                      data={data?.category_breakdown?.length ? data.category_breakdown : [{category:'Empty',amount:1}]} 
+                      dataKey="amount" nameKey="category" cx="50%" cy="50%" 
+                      innerRadius={80} outerRadius={110} paddingAngle={4} stroke="none"
+                    >
+                     {(data?.category_breakdown?.length ? data.category_breakdown : [{category:'Empty',amount:1}]).map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
+                   </Pie>
+                   {data?.category_breakdown?.length > 0 && <Tooltip content={<ChartTip />} cursor={{ fill:'rgba(255,255,255,0.03)' }} />}
+                 </RePie>
+               </ResponsiveContainer>
+               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-4">
+                 <span className="text-4xl font-display font-bold text-white">{data?.category_breakdown?.length || 0}</span>
+                 <span className="obsidian-label mt-2">Assets</span>
+               </div>
+            </div>
+
+            <div className="w-full md:w-1/2 flex flex-col gap-5 overflow-y-auto max-h-full no-scrollbar pr-2 mt-4 md:mt-0">
+               {data?.category_breakdown?.slice(0, 4).map((c, i) => (
+                 <div key={i} className="flex justify-between items-center pl-4 border-l-4" style={{borderColor: PIE_COLORS[i % PIE_COLORS.length]}}>
+                   <div>
+                     <p className="font-display font-bold text-white text-[13px]">{c.category}</p>
+                     <p className="obsidian-label mt-1 lowercase opacity-70">{c.category === 'Food' ? 'Consumer' : 'General'}</p>
+                   </div>
+                   <div className="text-right">
+                     <p className="obsidian-value text-[14px]">{fmt(c.amount)}</p>
+                   </div>
+                 </div>
+               ))}
+               {!data?.category_breakdown?.length && <p className="text-muted text-sm italic">No asset data</p>}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Intelligent Activity Ledger */}
+      <div className="animate-stagger-4 pt-6">
+        <div className="flex items-center justify-between mb-5 px-1">
+          <h3 className="obsidian-label text-muted">Intelligent Activity</h3>
+          <button onClick={() => navigate('/transactions')} className="obsidian-label text-accent hover:text-accent-light flex items-center gap-2 tracking-[0.2em] transition-colors border-b border-transparent hover:border-accent">
+            View Full Ledger
+          </button>
+        </div>
+
+        <div className="panel bg-[#0C0D10]">
+          {/* Header Row */}
+          <div className="grid grid-cols-12 gap-4 px-8 py-5 border-b border-white/5 text-[10px] font-bold uppercase tracking-[0.2em] text-muted font-display">
+            <div className="col-span-6 sm:col-span-5 lg:col-span-5">Transaction Path</div>
+            <div className="col-span-hidden sm:col-span-4 lg:col-span-3 hidden sm:block">Intelligence Insight</div>
+            <div className="col-span-4 lg:col-span-2 hidden lg:block">Status</div>
+            <div className="col-span-6 sm:col-span-3 lg:col-span-2 text-right">Net Impact</div>
+          </div>
+
+          {data?.recent_transactions?.length > 0 ? (
+            <div className="flex flex-col">
+              {data.recent_transactions.map((txn, idx) => {
+                const uiType = transactionUiType(txn);
+                const isCredit = isCreditUiType(uiType);
+                const isTransfer = uiType === 'transfer';
+                
+                let insight = isCredit ? { text: 'Autopilot Yield', color: 'bg-[#1A1124] text-[#A855F7] border border-[#A855F7]/30', icon: '⚡' } :
+                              isTransfer ? { text: 'Optimized Routing', color: 'bg-[#0A1A12] text-[#00FFA3] border border-[#00FFA3]/30', icon: '⟲' } :
+                              { text: 'Risk Adapted', color: 'bg-[#1F0A0E] text-[#FF3366] border border-[#FF3366]/30', icon: '⚠' };
+
+                return (
+                  <div key={txn._id} className={`grid grid-cols-12 gap-4 px-8 py-6 items-center hover:bg-white/[0.02] transition-colors border-b border-white/[0.03] ${idx === data.recent_transactions.length -1 ? 'border-b-0' : ''}`}>
+                    <div className="col-span-6 sm:col-span-5 lg:col-span-5 flex items-center gap-5">
+                      <div className="w-12 h-12 rounded bg-[#15161A] border border-white/5 flex items-center justify-center flex-shrink-0">
+                        {isTransfer ? <RefreshCw size={16} className="text-muted" /> : isCredit ? <ArrowUpRight size={16} className="text-muted"/> : <ArrowDownRight size={16} className="text-muted" />}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-foreground font-display font-semibold text-[14px] truncate">{txn.notes || txn.category || txn.source || 'Transaction'}</p>
+                        <p className="text-muted text-[11px] mt-1.5">{txn.timestamp ? new Date(txn.timestamp).toLocaleString('en-US', {hour:'2-digit', minute:'2-digit', month:'short', day:'numeric'}) : ''}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="col-span-hidden sm:col-span-4 lg:col-span-3 hidden sm:flex items-center">
+                       <span className={`text-[9px] font-bold uppercase tracking-[0.1em] px-2.5 py-1.5 rounded flex items-center gap-1.5 font-display ${insight.color}`}>
+                         <span>{insight.icon}</span> {insight.text}
+                       </span>
+                    </div>
+
+                    <div className="col-span-4 lg:col-span-2 hidden lg:flex items-center">
+                      <span className="text-muted text-[10px] uppercase tracking-widest font-bold">Completed</span>
+                    </div>
+
+                    <div className="col-span-6 sm:col-span-3 lg:col-span-2 text-right">
+                      <p className={`obsidian-value text-[16px] ${isCredit ? 'text-success' : 'text-foreground'}`}>
+                        {isCredit ? '+' : '-'}{fmt(txn.amount)}
+                      </p>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          ) : (
+            <div className="p-20 text-center text-muted font-display text-sm tracking-widest uppercase border-dashed border-t border-white/5">No Intel Activity</div>
+          )}
+        </div>
       </div>
 
       {/* Floating Quick Add (Mobile) */}
-      <button
-        onClick={() => setShowQuickAdd(true)}
-        className="fixed bottom-[110px] right-6 z-40 w-16 h-16 rounded-full flex items-center justify-center text-white shadow-glow-accent lg:hidden active:scale-95 transition-transform"
-        style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' }}
-      >
-        <Plus size={28} strokeWidth={2.5} />
+      <button onClick={() => setShowQuickAdd(true)}
+        className="fixed bottom-[110px] right-6 z-40 w-14 h-14 rounded bg-accent flex items-center justify-center text-black shadow-glow-accent lg:hidden active:scale-95 transition-transform">
+        <Plus size={24} strokeWidth={2.5} />
       </button>
     </div>
   )

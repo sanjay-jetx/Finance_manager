@@ -119,9 +119,9 @@ export default function Transactions() {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4 animate-stagger-1">
         <div>
-          <h1 className="text-3xl font-display font-bold tracking-tight text-foreground">Transactions</h1>
-          <p className="text-muted mt-1 font-medium">
-            {totalCount > 0 ? `${txns.length} of ${totalCount} records` : `${txns.length} records`}
+          <h1 className="text-3xl font-display font-bold tracking-widest uppercase text-foreground">Activity Ledger</h1>
+          <p className="obsidian-label mt-2">
+            {totalCount > 0 ? `${txns.length} OF ${totalCount} INTELLIGENCE RECORDS` : `${txns.length} RECORDS`}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -137,51 +137,51 @@ export default function Transactions() {
                 }
               }
             }
-          }} className="panel px-4 py-2 bg-danger/10 hover:bg-danger/20 border border-danger/20 text-danger transition-colors flex items-center gap-2 font-semibold text-sm">
-            <Trash2 size={16} /> <span className="hidden sm:inline">Clear All</span>
+          }} className="panel px-4 py-3 bg-[#1F0A0E] hover:bg-[#2A0510] border border-[#FF3366]/20 text-danger transition-colors flex items-center gap-3 font-display uppercase tracking-widest font-bold text-[10px]">
+            <Trash2 size={14} /> <span className="hidden sm:inline">Purge Data</span>
           </button>
           
-          <button onClick={handleExport} className="panel px-4 py-2 bg-surface hover:bg-white/5 border border-border text-muted hover:text-foreground transition-colors flex items-center gap-2 font-semibold text-sm">
-            <Download size={16} /> <span className="hidden sm:inline">Export CSV</span>
+          <button onClick={handleExport} className="panel px-4 py-3 hover:bg-surfaceHover border border-white/5 text-muted hover:text-foreground transition-colors flex items-center gap-3 font-display uppercase tracking-widest font-bold text-[10px]">
+            <Download size={14} /> <span className="hidden sm:inline">Export Log</span>
           </button>
           <button onClick={() => {
               if (showForm) { setShowForm(false); setEditingId(null); setForm({ amount:'', category:'', wallet:'cash', notes:'', source:'' }) }
               else { setShowForm(true) }
             }}
-            className="btn-primary">
+            className="btn-primary flex items-center gap-2">
             {showForm ? <X size={16} /> : <Plus size={16} />}
-            {showForm ? 'Cancel' : 'New '}
+            {showForm ? 'Cancel' : 'Log Activity'}
           </button>
         </div>
       </div>
 
       {/* Add Form */}
       {showForm && (
-        <div className="panel p-6 sm:p-8 animate-stagger-2 relative overflow-hidden">
-          <div className={`absolute top-0 left-0 w-1 h-full ${isIncome ? 'bg-success' : 'bg-danger'}`} />
-          <h3 className="text-foreground font-display font-bold text-xl mb-6">{editingId ? 'Edit Transaction' : 'Log Transaction'}</h3>
+        <div className="panel p-6 sm:p-8 animate-stagger-2 relative overflow-hidden bg-[#0C0D10]">
+          <div className={`absolute top-0 left-0 w-1 h-full ${isIncome ? 'bg-accent' : 'bg-danger'}`} />
+          <h3 className="obsidian-label text-foreground mb-6">{editingId ? 'EDIT INTELLIGENCE RECORD' : 'LOG ACTIVITY'}</h3>
           
-          <div className="flex p-1.5 bg-black/40 rounded-[14px] border border-white/5 mb-6 max-w-sm relative">
-            <div className={`absolute top-1.5 bottom-1.5 w-[calc(50%-6px)] bg-surface rounded-xl border border-white/10 shadow-sm transition-all duration-300 ${isIncome ? 'translate-x-full' : 'translate-x-0'}`} />
-            <button type="button" disabled={!!editingId} onClick={() => setFormType('expense')} className={`flex-1 py-2.5 rounded-xl text-sm font-bold z-10 transition-colors ${!isIncome ? 'text-danger' : 'text-muted'}`}>Expense</button>
-            <button type="button" disabled={!!editingId} onClick={() => setFormType('income')} className={`flex-1 py-2.5 rounded-xl text-sm font-bold z-10 transition-colors ${isIncome ? 'text-success' : 'text-muted'}`}>Income</button>
+          <div className="flex p-1.5 bg-[#15161A] rounded-[4px] border border-white/5 mb-6 max-w-sm relative">
+            <div className={`absolute top-1.5 bottom-1.5 w-[calc(50%-6px)] bg-[#1A1C21] rounded shadow-[0_0_10px_rgba(0,0,0,0.5)] transition-all duration-300 ${isIncome ? 'translate-x-full' : 'translate-x-0'}`} />
+            <button type="button" disabled={!!editingId} onClick={() => setFormType('expense')} className={`flex-1 py-3 text-[11px] uppercase tracking-widest font-bold z-10 transition-colors ${!isIncome ? 'text-danger' : 'text-muted'}`}>Expense</button>
+            <button type="button" disabled={!!editingId} onClick={() => setFormType('income')} className={`flex-1 py-3 text-[11px] uppercase tracking-widest font-bold z-10 transition-colors ${isIncome ? 'text-accent' : 'text-muted'}`}>Income</button>
           </div>
 
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-2 ml-1">Amount (₹)</label>
+              <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-3 ml-1">Net Impact (₹)</label>
               <div className="relative group">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted font-display font-bold text-lg group-focus-within:text-accent">₹</span>
+                <span className="absolute left-5 top-1/2 -translate-y-1/2 text-muted font-display font-bold text-xl group-focus-within:text-white">₹</span>
                 <input type="number" min="1" step="0.01" required placeholder="0.00"
                   value={form.amount} onChange={e => setForm({...form, amount: e.target.value})}
-                  className="w-full bg-black/50 border border-white/10 rounded-[16px] py-3.5 pl-9 pr-4 text-white font-display text-lg font-bold focus:outline-none focus:border-accent focus:bg-accent/5 transition-all shadow-inner" />
+                  className="w-full bg-[#15161A] border border-white/5 rounded-lg py-4 pl-10 pr-5 text-white font-display text-2xl font-bold focus:outline-none focus:border-accent transition-all shadow-inner" />
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-2 ml-1">Wallet</label>
-                <select className="w-full bg-black/50 border border-white/10 rounded-2xl px-4 py-3.5 text-white text-sm font-medium focus:outline-none focus:border-accent"
+                <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-3 ml-1">Wallet/Vault</label>
+                <select className="w-full bg-[#15161A] border border-white/5 rounded-lg px-5 py-4 text-white text-sm font-display focus:outline-none focus:border-accent"
                   value={form.wallet} onChange={e => setForm({...form, wallet: e.target.value})}>
                   <option value="upi" className="bg-surface">UPI</option>
                   <option value="cash" className="bg-surface">CASH</option>
@@ -189,8 +189,8 @@ export default function Transactions() {
               </div>
               {formType === 'expense' ? (
                 <div>
-                  <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-2 ml-1">Category</label>
-                  <select required className="w-full bg-black/50 border border-white/10 rounded-2xl px-4 py-3.5 text-white text-sm font-medium focus:outline-none focus:border-accent"
+                  <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-3 ml-1">Category</label>
+                  <select required className="w-full bg-[#15161A] border border-white/5 rounded-lg px-5 py-4 text-white text-sm font-display focus:outline-none focus:border-accent"
                     value={form.category} onChange={e => setForm({...form, category: e.target.value})}>
                     <option value="" className="bg-surface">Select category</option>
                     {categories.map(c => <option key={c._id} value={c.name} className="bg-surface">{c.name}</option>)}
@@ -198,27 +198,27 @@ export default function Transactions() {
                 </div>
               ) : (
                 <div>
-                  <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-2 ml-1">Source</label>
-                  <input type="text" required placeholder="Salary, Side gig..." className="w-full bg-black/50 border border-white/10 rounded-2xl px-4 py-3.5 text-white text-sm font-medium focus:outline-none focus:border-accent"
+                  <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-3 ml-1">Source</label>
+                  <input type="text" required placeholder="Salary, Yield..." className="w-full bg-[#15161A] border border-white/5 rounded-lg px-5 py-4 text-white text-sm font-display focus:outline-none focus:border-accent"
                     value={form.source} onChange={e => setForm({...form, source: e.target.value})} />
                 </div>
               )}
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-2 ml-1">Notes (Optional)</label>
-              <input type="text" placeholder="Add a note..." className="w-full bg-black/50 border border-white/10 rounded-2xl px-5 py-3.5 text-white text-sm focus:outline-none focus:border-accent"
+              <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-3 ml-1">Intelligence Notes (Optional)</label>
+              <input type="text" placeholder="Add a note..." className="w-full bg-[#15161A] border border-white/5 rounded-lg px-5 py-4 text-white text-[13px] font-display focus:outline-none focus:border-accent"
                 value={form.notes} onChange={e => setForm({...form, notes: e.target.value})} />
             </div>
 
-            <div className="md:col-span-2 flex justify-end gap-3 pt-2">
+            <div className="md:col-span-2 flex justify-end gap-4 mt-2">
               <button type="button" onClick={() => { setShowForm(false); setEditingId(null); setForm({ amount:'', category:'', wallet:'cash', notes:'', source:'' }) }}
-                className="px-6 py-3 rounded-xl border border-border text-muted font-semibold hover:bg-white/5 transition-colors">
+                className="px-8 py-3 rounded text-muted font-display uppercase font-bold text-[11px] tracking-widest hover:bg-white/5 transition-colors border border-white/5">
                 Cancel
               </button>
-              <button type="submit" disabled={submitting} className={`px-8 py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all ${isIncome ? 'bg-gradient-success' : 'bg-white text-black hover:bg-gray-200'} disabled:opacity-70`}>
+              <button type="submit" disabled={submitting} className={`btn-primary flex items-center justify-center gap-2 ${isIncome ? 'bg-accent text-black' : 'bg-surface text-foreground border border-white/5'} disabled:opacity-70`}>
                 {submitting ? <span className="w-4 h-4 border-2 border-[currentColor]/30 border-t-[currentColor] rounded-full animate-spin" /> : null}
-                {editingId ? 'Update' : 'Save Record'}
+                {editingId ? 'Update Ledger' : 'Commit Record'}
               </button>
             </div>
           </form>
@@ -226,38 +226,37 @@ export default function Transactions() {
       )}
 
       {/* Filters Area */}
-      {/* Filters Area */}
-      <div className="flex flex-col gap-4 animate-stagger-2 select-none">
+      <div className="flex flex-col gap-5 animate-stagger-2 select-none pt-4">
         <div className="flex flex-wrap gap-4 items-center">
             <div className="relative flex-1 min-w-[200px] lg:max-w-md">
-              <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
-              <input type="text" placeholder="Search notes, categories..." 
-                className="w-full bg-white/[0.04] border border-white/10 rounded-2xl pl-11 pr-4 py-3 text-sm font-medium text-foreground focus:outline-none focus:border-accent/50 focus:bg-white/[0.06] transition-all shadow-inner"
+              <Search size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-muted" />
+              <input type="text" placeholder="Search ledger..." 
+                className="w-full bg-[#0C0D10] border border-white/5 rounded-lg pl-12 pr-5 py-4 text-sm font-display text-foreground focus:outline-none focus:border-accent transition-all shadow-inner"
                 value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
             </div>
             
             <div className="flex items-center gap-3 overflow-x-auto pb-1 max-w-full no-scrollbar">
-                <div className="flex p-1 bg-white/[0.04] border border-white/10 rounded-2xl shrink-0">
-                    <button onClick={() => setFilterWallet('')} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${filterWallet === '' ? 'bg-white/10 text-white shadow-sm' : 'text-muted hover:text-white'}`}>All Wallets</button>
-                    <button onClick={() => setFilterWallet('cash')} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${filterWallet === 'cash' ? 'bg-white/10 text-white shadow-sm' : 'text-muted hover:text-white'}`}>CASH</button>
-                    <button onClick={() => setFilterWallet('upi')} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${filterWallet === 'upi' ? 'bg-white/10 text-white shadow-sm' : 'text-muted hover:text-white'}`}>UPI</button>
+                <div className="flex p-1.5 bg-[#0C0D10] border border-white/5 rounded-lg shrink-0">
+                    <button onClick={() => setFilterWallet('')} className={`px-5 py-2.5 rounded text-[10px] tracking-widest font-bold uppercase transition-all ${filterWallet === '' ? 'bg-[#15161A] text-white' : 'text-muted hover:text-white'}`}>All Vaults</button>
+                    <button onClick={() => setFilterWallet('cash')} className={`px-5 py-2.5 rounded text-[10px] tracking-widest font-bold uppercase transition-all ${filterWallet === 'cash' ? 'bg-[#15161A] text-white' : 'text-muted hover:text-white'}`}>CASH</button>
+                    <button onClick={() => setFilterWallet('upi')} className={`px-5 py-2.5 rounded text-[10px] tracking-widest font-bold uppercase transition-all ${filterWallet === 'upi' ? 'bg-[#15161A] text-white' : 'text-muted hover:text-white'}`}>UPI</button>
                 </div>
 
-                <div className="flex p-1 bg-white/[0.04] border border-white/10 rounded-2xl shrink-0">
-                    <button onClick={() => setFilterType('')} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${filterType === '' ? 'bg-white/10 text-white shadow-sm' : 'text-muted hover:text-white'}`}>All</button>
-                    <button onClick={() => setFilterType('income')} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${filterType === 'income' ? 'bg-white/10 text-success shadow-sm' : 'text-muted hover:text-success'}`}>In</button>
-                    <button onClick={() => setFilterType('expense')} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${filterType === 'expense' ? 'bg-white/10 text-danger shadow-sm' : 'text-muted hover:text-danger'}`}>Out</button>
-                    <button onClick={() => setFilterType('lend')} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${filterType === 'lend' ? 'bg-white/10 text-warning shadow-sm' : 'text-muted hover:text-warning'}`}>Lent</button>
-                    <button onClick={() => setFilterType('transfer')} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${filterType === 'transfer' ? 'bg-white/10 text-purple-400 shadow-sm' : 'text-muted hover:text-purple-400'}`}>Transfer</button>
+                <div className="flex p-1.5 bg-[#0C0D10] border border-white/5 rounded-lg shrink-0">
+                    <button onClick={() => setFilterType('')} className={`px-5 py-2.5 rounded text-[10px] tracking-widest font-bold uppercase transition-all ${filterType === '' ? 'bg-[#15161A] text-white' : 'text-muted hover:text-white'}`}>All</button>
+                    <button onClick={() => setFilterType('income')} className={`px-5 py-2.5 rounded text-[10px] tracking-widest font-bold uppercase transition-all ${filterType === 'income' ? 'bg-[#1A1C30]/50 text-accent' : 'text-muted hover:text-accent'}`}>Credited</button>
+                    <button onClick={() => setFilterType('expense')} className={`px-5 py-2.5 rounded text-[10px] tracking-widest font-bold uppercase transition-all ${filterType === 'expense' ? 'bg-[#2A1015]/50 text-danger' : 'text-muted hover:text-danger'}`}>Debited</button>
+                    <button onClick={() => setFilterType('lend')} className={`px-5 py-2.5 rounded text-[10px] tracking-widest font-bold uppercase transition-all ${filterType === 'lend' ? 'bg-warning/10 text-warning' : 'text-muted hover:text-warning'}`}>Lent</button>
+                    <button onClick={() => setFilterType('transfer')} className={`px-5 py-2.5 rounded text-[10px] tracking-widest font-bold uppercase transition-all ${filterType === 'transfer' ? 'bg-purple-500/10 text-purple-400' : 'text-muted hover:text-purple-400'}`}>Transfer</button>
                 </div>
             </div>
         </div>
         
         {(!filterType || filterType === 'expense') && categories.length > 0 && (
           <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar shrink-0">
-              <button onClick={() => setFilterCategory('')} className={`px-3 py-1.5 rounded-lg text-[11px] font-bold border transition-all whitespace-nowrap ${filterCategory === '' ? 'bg-white/10 border-white/20 text-white' : 'bg-transparent border-white/5 text-muted hover:border-white/10'}`}>All Categories</button>
+              <button onClick={() => setFilterCategory('')} className={`px-4 py-2 rounded text-[10px] tracking-widest font-bold uppercase border transition-all whitespace-nowrap ${filterCategory === '' ? 'bg-[#15161A] border-white/10 text-white' : 'bg-transparent border-white/5 text-muted hover:border-white/10'}`}>All Categories</button>
               {categories.map(c => (
-                  <button key={c._id} onClick={() => setFilterCategory(c.name)} className={`px-3 py-1.5 rounded-lg text-[11px] font-bold border transition-all whitespace-nowrap ${filterCategory === c.name ? 'bg-accent/20 border-accent/30 text-accent-light' : 'bg-transparent border-white/5 text-muted hover:border-white/10'}`}>{c.name}</button>
+                  <button key={c._id} onClick={() => setFilterCategory(c.name)} className={`px-4 py-2 rounded text-[10px] tracking-widest font-bold uppercase border transition-all whitespace-nowrap ${filterCategory === c.name ? 'bg-accent/10 border-accent/20 text-accent' : 'bg-transparent border-white/5 text-muted hover:border-white/10'}`}>{c.name}</button>
               ))}
           </div>
         )}
@@ -289,55 +288,73 @@ export default function Transactions() {
           <p className="text-muted text-sm max-w-xs">{searchQuery ? "Try adjusting your search or filters." : "You haven't added any transactions yet."}</p>
         </div>
       ) : (
-        <div className="panel p-2 flex flex-col gap-1 bg-white/[0.02] animate-stagger-3 border-transparent shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
-          {txns.map((txn) => {
-            const uiType = transactionUiType(txn)
-            const cfg = typeConfig[uiType] || typeConfig.expense
-            const Icon = cfg.icon
-            const isCredit = isCreditUiType(uiType)
-            return (
-              <div key={txn._id} className="group flex flex-wrap sm:flex-nowrap items-center gap-4 px-6 py-4 rounded-xl hover:bg-white/[0.06] hover:scale-[1.01] transition-all cursor-pointer border border-transparent hover:border-white/10 hover:shadow-lg">
-                <div className={`p-3 rounded-2xl flex-shrink-0 border ${cfg.bg} shadow-inner group-hover:scale-110 transition-transform`}>
-                  <Icon size={18} className={cfg.color} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-foreground font-semibold text-[15px] truncate group-hover:text-white transition-colors">
-                    {txn.notes || txn.source || txn.category || cfg.label}
-                  </p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded border uppercase tracking-wider ${cfg.bg} ${cfg.color}`}>
-                      {cfg.label}
-                    </span>
-                    <span className="text-muted text-xs font-medium">
-                      {txn.wallet === 'cash' ? 'Cash' : 'UPI'}{' '}
-                      {displayCategoryForUi(txn.category) ? `• ${txn.category}` : ''}
-                      {txn.source ? `• ${txn.source}` : ''}
-                    </span>
+        <div className="panel bg-[#0C0D10] animate-stagger-3 mt-4">
+            {/* Header Row */}
+            <div className="grid grid-cols-12 gap-4 px-8 py-5 border-b border-white/5 text-[10px] font-bold uppercase tracking-[0.2em] text-muted font-display">
+                <div className="col-span-12 sm:col-span-5 lg:col-span-5">Record Identifier</div>
+                <div className="col-span-hidden sm:col-span-4 lg:col-span-3 hidden sm:block">Classification</div>
+                <div className="col-span-4 lg:col-span-2 hidden lg:block">Execution Date</div>
+                <div className="col-span-hidden sm:col-span-3 lg:col-span-2 hidden sm:block text-right">Impact</div>
+            </div>
+
+            <div className="flex flex-col">
+              {txns.map((txn, idx) => {
+                const uiType = transactionUiType(txn);
+                const cfg = typeConfig[uiType] || typeConfig.expense;
+                const Icon = cfg.icon;
+                const isCredit = isCreditUiType(uiType);
+                const isTransfer = uiType === 'transfer';
+                
+                return (
+                  <div key={txn._id} className={`grid grid-cols-12 gap-4 px-8 py-5 items-center hover:bg-white/[0.02] transition-colors border-b border-white/[0.03] relative group ${idx === txns.length -1 ? 'border-b-0' : ''}`}>
+                    <div className="col-span-12 sm:col-span-5 lg:col-span-5 flex items-center gap-5">
+                      <div className="w-10 h-10 rounded bg-[#15161A] border border-white/5 flex items-center justify-center flex-shrink-0">
+                        {isTransfer ? <RefreshCw size={14} className="text-muted" /> : isCredit ? <ArrowUpRight size={14} className="text-muted"/> : <ArrowDownRight size={14} className="text-muted" />}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-foreground font-display font-semibold text-[13px] truncate">{txn.notes || txn.source || txn.category || cfg.label}</p>
+                        <p className="text-muted text-[10px] mt-1 hidden sm:block">{txn.wallet === 'cash' ? 'Cash Vault' : 'UPI Platform'}</p>
+                        <div className="sm:hidden flex items-center gap-2 mt-1">
+                          <p className={`obsidian-value text-[14px] ${isCredit ? 'text-success' : 'text-foreground'}`}>
+                            {isCredit ? '+' : '-'}{fmt(txn.amount)}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="col-span-hidden sm:col-span-4 lg:col-span-3 hidden sm:flex items-center">
+                       <span className={`text-[9px] font-bold uppercase tracking-[0.1em] px-2.5 py-1 rounded font-display bg-[#15161A] border border-white/5`}>
+                         {cfg.label}
+                       </span>
+                    </div>
+
+                    <div className="col-span-4 lg:col-span-2 hidden lg:flex items-center">
+                      <span className="text-muted text-[11px] font-semibold tracking-widest">{txn.timestamp ? new Date(txn.timestamp).toLocaleDateString('en-US',{month:'short', day:'2-digit', year:'numeric'}) : ''}</span>
+                    </div>
+
+                    <div className="col-span-hidden sm:col-span-3 lg:col-span-2 text-right hidden sm:block">
+                      <p className={`obsidian-value text-[15px] ${isCredit ? 'text-success' : 'text-foreground'}`}>
+                        {isCredit ? '+' : '-'}{fmt(txn.amount)}
+                      </p>
+                    </div>
+
+                    {/* Actions Menu overlay */}
+                    <div className="absolute right-6 top-1/2 -translate-y-1/2 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-l from-[#0C0D10] via-[#0C0D10] to-transparent pl-8 py-2">
+                        {['expense', 'income'].includes(txn.type) && (
+                          <button onClick={(e) => { e.stopPropagation(); handleEdit(txn); }} title="Edit transaction"
+                            className="p-2 text-muted hover:text-accent transition-colors">
+                            <Edit2 size={14} />
+                          </button>
+                        )}
+                        <button onClick={(e) => { e.stopPropagation(); handleDelete(txn._id); }} title="Delete transaction"
+                          className="p-2 text-muted hover:text-danger transition-colors">
+                          <Trash2 size={14} />
+                        </button>
+                    </div>
                   </div>
-                </div>
-                <div className="text-right flex-shrink-0">
-                  <p className={`font-display font-bold text-lg ${isCredit ? 'text-success drop-shadow-[0_0_8px_rgba(34,197,94,0.5)]' : 'text-foreground'}`}>
-                    {isCredit ? '+' : '-'}{fmt(txn.amount)}
-                  </p>
-                  <p className="text-muted text-[11px] font-semibold mt-1 uppercase tracking-widest">
-                    {txn.timestamp ? new Date(txn.timestamp).toLocaleDateString('en-IN',{day:'2-digit',month:'short'}) : ''}
-                  </p>
-                </div>
-                <div className="flex gap-2 w-full sm:w-auto opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all mt-3 sm:mt-0 pt-3 sm:pt-0 justify-end">
-                  {['expense', 'income'].includes(txn.type) && (
-                    <button onClick={(e) => { e.stopPropagation(); handleEdit(txn); }} title="Edit transaction"
-                      className="p-2.5 bg-surface sm:bg-transparent text-muted hover:text-accent hover:bg-accent/10 rounded-xl transition-colors border border-border sm:border-transparent">
-                      <Edit2 size={16} />
-                    </button>
-                  )}
-                  <button onClick={(e) => { e.stopPropagation(); handleDelete(txn._id); }} title="Delete transaction"
-                    className="p-2.5 bg-surface sm:bg-transparent text-muted hover:text-danger hover:bg-danger/10 rounded-xl transition-colors border border-border sm:border-transparent">
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              </div>
-            )
-          })}
+                )
+              })}
+            </div>
 
           {/* Load More button */}
           {hasMore && (
