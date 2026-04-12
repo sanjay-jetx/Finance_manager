@@ -263,115 +263,115 @@ export default function Dashboard() {
     <div className="space-y-6 lg:space-y-8 pb-20">
       {showQuickAdd && <QuickAddModal onClose={() => setShowQuickAdd(false)} onSuccess={() => refetch(true)} />}
 
-      {/* Hero: Consolidated Net Worth */}
-      <div className="panel p-8 lg:p-12 animate-stagger-1 relative overflow-hidden flex flex-col lg:flex-row justify-between items-center gap-10">
-        <div className="absolute top-0 right-0 w-1/2 h-full bg-accent/5 blur-[120px] pointer-events-none" />
+      {/* ── TOP HERO ROW ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 animate-stagger-1 text-white">
         
-        <div className="w-full lg:w-1/2 z-10 flex flex-col justify-center">
-          <p className="obsidian-label text-accent mb-4">Consolidated Net Worth</p>
-          <h2 className="text-5xl lg:text-7xl obsidian-value text-white mb-3 tracking-tighter" style={{ textShadow: '0 0 40px rgba(0, 255, 163, 0.2)' }}>
-            {fmt((data?.total_balance || 0) + (data?.pending_amount || 0))}
-          </h2>
-          
-          <div className="flex flex-wrap items-center gap-3 lg:gap-5 mt-3 bg-white/[0.02] inline-flex p-3 lg:pr-6 rounded-[20px] border border-white/5 shadow-inner">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 flex-shrink-0 rounded-[12px] bg-white/5 flex items-center justify-center border border-white/5">
-                 <Wallet size={16} className="text-white opacity-80" />
+        {/* Main Balances */}
+        <div className="panel p-8 flex flex-col justify-between col-span-1 lg:col-span-2 relative overflow-hidden">
+           <div className="absolute top-0 left-0 w-1/2 h-full bg-accent/5 blur-[120px] pointer-events-none" />
+           <div className="absolute bottom-0 right-0 w-1/2 h-full bg-info/5 blur-[120px] pointer-events-none" />
+           
+           <div className="z-10 flex flex-col sm:flex-row justify-between gap-10 h-full">
+              
+              {/* Total + Cash/GPay below */}
+              <div className="flex-1 flex flex-col">
+                 <p className="obsidian-label text-accent mb-2">Total Amount (Liquid)</p>
+                 <h2 className="text-5xl obsidian-value mb-8 tracking-tighter" style={{ textShadow: '0 0 40px rgba(0, 255, 163, 0.2)' }}>
+                   {fmt(data?.total_balance)}
+                 </h2>
+                 <div className="flex gap-10 mt-auto">
+                    <div>
+                      <p className="obsidian-label text-muted mb-1 text-[10px] opacity-70">CASH VAULT</p>
+                      <p className="obsidian-value text-2xl text-white/90">{fmt(data?.cash_balance)}</p>
+                    </div>
+                    <div>
+                      <p className="obsidian-label text-muted mb-1 text-[10px] opacity-70">GPAY (UPI)</p>
+                      <p className="obsidian-value text-2xl text-white/90">{fmt(data?.upi_balance)}</p>
+                    </div>
+                 </div>
               </div>
-              <div className="flex flex-col">
-                <span className="text-muted font-display text-[9px] tracking-[0.15em] uppercase font-bold text-opacity-80">Liquid Amount</span>
-                <span className="text-white font-display font-bold text-sm tracking-widest">{fmt(data?.total_balance)}</span>
-              </div>
-            </div>
 
-            <div className="text-muted font-bold text-xs opacity-50">+</div>
-
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 flex-shrink-0 rounded-[12px] bg-accent/10 flex items-center justify-center border border-accent/20 shadow-[0_0_15px_rgba(0,255,163,0.1)]">
-                 <HandCoins size={16} className="text-accent" />
+              {/* Receivables beside */}
+              <div className="flex-1 flex flex-col justify-start sm:border-l border-white/5 sm:pl-10">
+                 <p className="obsidian-label text-info mb-2 text-opacity-80">Receivables</p>
+                 <h2 className="text-4xl obsidian-value text-info tracking-tighter mb-8 drop-shadow-md">
+                   {fmt(data?.pending_amount)}
+                 </h2>
+                 
+                 <div className="mt-auto flex sm:flex-row flex-col gap-4 w-full">
+                    <button className="btn-primary flex-1 text-[10px] py-4" onClick={() => setShowQuickAdd(true)}>
+                      Execute Rebalance
+                    </button>
+                    <button className="btn-secondary flex-1 text-[10px] py-4" onClick={() => navigate('/transactions')}>
+                      Activity Ledger
+                    </button>
+                 </div>
               </div>
-              <div className="flex flex-col">
-                <span className="text-accent font-display text-[9px] tracking-[0.15em] uppercase font-bold text-opacity-80">Receivables</span>
-                <span className="text-accent font-display font-bold text-sm tracking-widest drop-shadow-md">{fmt(data?.pending_amount)}</span>
-              </div>
-            </div>
-          </div>
 
-          <div className="flex lg:flex-row flex-col gap-4 mt-12 w-full max-w-sm">
-            <button className="btn-primary w-full" onClick={() => setShowQuickAdd(true)}>
-              Execute Rebalance
-            </button>
-            <button className="btn-secondary w-full" onClick={() => navigate('/transactions')}>
-              Activity Ledger
-            </button>
-          </div>
+           </div>
         </div>
 
-        <div className="w-full lg:w-[50%] h-[200px] z-10 mt-8 lg:mt-0">
-          {/* Abstracted Green Bar Chart */}
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data?.weekly_spending?.length ? data.weekly_spending : [{amount: 0, day: '-'}]} barSize={32} margin={{ top: 10, right: 10, left: 10, bottom: 25 }}>
-              <Tooltip content={<ChartTip />} cursor={{ fill:'rgba(255,255,255,0.02)' }} />
-              <XAxis 
-                dataKey="day" 
-                axisLine={false} 
-                tickLine={false} 
-                tick={({ x, y, payload }) => {
-                  const dayData = data?.weekly_spending?.find(d => d.day === payload.value);
-                  const val = dayData ? dayData.amount : 0;
-                  return (
-                    <g transform={`translate(${x},${y})`}>
-                      <text x={0} dy={14} textAnchor="middle" fill="#888" fontSize={9} className="font-display font-bold uppercase tracking-widest">{payload.value}</text>
-                      {val > 0 && <text x={0} dy={28} textAnchor="middle" fill="#00FFA3" fontSize={9} className="font-display font-bold opacity-80">{fmt(val)}</text>}
-                    </g>
-                  );
-                }} 
-              />
-              <Bar dataKey="amount" fill="#00FFA3" radius={[4,4,4,4]}>
-                {(data?.weekly_spending || [{amount: 0}]).map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill="url(#neonGreen)" />
-                ))}
-              </Bar>
-              <defs>
-                <linearGradient id="neonGreen" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#00FFA3" stopOpacity={1}/>
-                  <stop offset="100%" stopColor="#00cc82" stopOpacity={0.1}/>
-                </linearGradient>
-              </defs>
-            </BarChart>
-          </ResponsiveContainer>
+        {/* Secondary Metric */}
+        <div className="panel p-8 flex flex-col justify-between relative overflow-hidden">
+           <div className="absolute top-0 right-0 w-full h-full bg-purple-500/5 blur-[100px] pointer-events-none" />
+           <div>
+             <p className="obsidian-label text-purple-400 mb-2">Consolidated Net Worth</p>
+             <h2 className="text-4xl obsidian-value tracking-tighter text-purple-400 drop-shadow-md mb-8">
+               {fmt((data?.total_balance || 0) + (data?.pending_amount || 0))}
+             </h2>
+           </div>
+           <div>
+              <p className="obsidian-label text-muted mb-1 text-[10px] opacity-70">SAVINGS RATE</p>
+              <p className={`obsidian-value text-3xl ${savingsGood ? 'text-accent drop-shadow-[0_0_10px_rgba(0,255,163,0.3)]' : 'text-warning'}`}>{data?.savings_rate ?? 0}%</p>
+           </div>
         </div>
       </div>
 
+      {/* ── MIDDLE ROW: GRAPH COMES DOWN ── */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
+        
+        {/* Left Column: Graph + Market Pulse */}
         <div className="space-y-6 animate-stagger-2 flex flex-col">
           
-          {/* Detailed Balances Widget */}
-          <div className="panel p-6 bg-[#07080A]/40 backdrop-blur-3xl shadow-[0_4px_24px_rgba(0,0,0,0.5)] border-white/[0.08] flex flex-col gap-5">
-             <div className="flex justify-between items-center border-b border-white/[0.05] pb-5">
-                <div>
-                   <p className="obsidian-label text-muted mb-2 font-bold tracking-widest text-[10px]">TOTAL AMOUNT</p>
-                   <p className="obsidian-value text-3xl font-bold tracking-tight text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]">{fmt(data?.total_balance)}</p>
-                </div>
-                <div className="text-right flex flex-col items-end">
-                   <p className="obsidian-label text-muted mb-2 font-bold tracking-widest text-[10px]">SAVINGS RATE</p>
-                   <p className="obsidian-value text-2xl font-bold tracking-tight text-accent drop-shadow-[0_0_10px_rgba(0,255,163,0.3)]">{data?.savings_rate ?? 0}%</p>
-                </div>
-             </div>
-             
-             <div className="grid grid-cols-2 gap-4">
-                <div>
-                   <p className="obsidian-label text-muted mb-1 font-bold tracking-widest text-[9px] opacity-70">CASH VAULT</p>
-                   <p className="obsidian-value text-xl font-bold tracking-tight text-white/90">{fmt(data?.cash_balance)}</p>
-                </div>
-                <div className="text-right">
-                   <p className="obsidian-label text-muted mb-1 font-bold tracking-widest text-[9px] opacity-70">GPAY (UPI)</p>
-                   <p className="obsidian-value text-xl font-bold tracking-tight text-white/90">{fmt(data?.upi_balance)}</p>
-                </div>
-             </div>
+          {/* Graph Moved Down */}
+          <div className="panel p-6 h-[260px] flex flex-col">
+            <p className="obsidian-label mb-2">Weekly Spending</p>
+            <div className="flex-1 w-full min-h-0">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={data?.weekly_spending?.length ? data.weekly_spending : [{amount: 0, day: '-'}]} barSize={24} margin={{ top: 10, right: 10, left: 10, bottom: 25 }}>
+                  <Tooltip content={<ChartTip />} cursor={{ fill:'rgba(255,255,255,0.02)' }} />
+                  <XAxis 
+                    dataKey="day" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={({ x, y, payload }) => {
+                      const dayData = data?.weekly_spending?.find(d => d.day === payload.value);
+                      const val = dayData ? dayData.amount : 0;
+                      return (
+                        <g transform={`translate(${x},${y})`}>
+                          <text x={0} dy={14} textAnchor="middle" fill="#888" fontSize={9} className="font-display font-bold uppercase tracking-widest">{payload.value}</text>
+                          {val > 0 && <text x={0} dy={28} textAnchor="middle" fill="#00FFA3" fontSize={9} className="font-display font-bold opacity-80">{fmt(val)}</text>}
+                        </g>
+                      );
+                    }} 
+                  />
+                  <Bar dataKey="amount" fill="#00FFA3" radius={[4,4,4,4]}>
+                    {(data?.weekly_spending || [{amount: 0}]).map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill="url(#neonGreen)" />
+                    ))}
+                  </Bar>
+                  <defs>
+                    <linearGradient id="neonGreen" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#00FFA3" stopOpacity={1}/>
+                      <stop offset="100%" stopColor="#00cc82" stopOpacity={0.1}/>
+                    </linearGradient>
+                  </defs>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
 
-          {/* Market Pulse (Mini Stats converted) */}
+          {/* Market Pulse */}
           <div>
             <p className="obsidian-label mb-4">Market Pulse</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -400,7 +400,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Asset Allocation */}
+        {/* Right Column: Asset Allocation */}
         <div className="space-y-4 animate-stagger-3">
           <p className="obsidian-label mb-4">Asset Allocation</p>
           <div className="panel p-8 h-[312px] flex flex-col md:flex-row items-center justify-between gap-8 relative">
