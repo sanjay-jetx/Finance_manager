@@ -259,9 +259,23 @@ export default function Dashboard() {
 
   const savingsGood = data?.savings_rate > 20
 
+  const today = new Date().toLocaleDateString('en-US', {
+    weekday: 'long', 
+    month: 'long', 
+    day: 'numeric'
+  })
+
   return (
     <div className="space-y-6 lg:space-y-8 pb-20">
       {showQuickAdd && <QuickAddModal onClose={() => setShowQuickAdd(false)} onSuccess={() => refetch(true)} />}
+
+      {/* ── HEADER WITH DATE ── */}
+      <div className="flex items-center justify-between animate-stagger-1 text-white px-1 -mb-2">
+         <div>
+            <h1 className="text-xl font-display font-bold">Dashboard</h1>
+            <p className="text-muted text-[11px] uppercase tracking-widest font-bold mt-1.5">{today}</p>
+         </div>
+      </div>
 
       {/* ── ROW 1: BALANCE OVERVIEW (Based on Screenshot) ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-stagger-1 text-white">
