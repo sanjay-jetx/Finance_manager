@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import api from '../api/axios'
 import toast from 'react-hot-toast'
+import { GoogleLogin } from '@react-oauth/google'
 import { TrendingUp, Eye, EyeOff, ArrowRight, Wallet, BarChart3, Shield, Zap } from 'lucide-react'
 
 /* ─── Floating Stat Pill ─────────────────────────────────────────────────── */
@@ -426,6 +427,31 @@ export default function Login() {
               </button>
 
             </form>
+
+            <div style={{ display: 'flex', alignItems: 'center', margin: '24px 0 16px' }}>
+              <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.06)' }} />
+              <span style={{ margin: '0 12px', fontSize: 10, color: 'rgba(100,116,139,0.8)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px' }}>Or continue with</span>
+              <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.06)' }} />
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <GoogleLogin
+                onSuccess={async (credentialResponse) => {
+                  setLoading(true)
+                  try {
+                    const res = await api.post('/auth/google', { token: credentialResponse.credential })
+                    login(res.data.access_token, { user_name: res.data.user_name }, res.data.expires_in)
+                    toast.success(`Welcome back, ${res.data.user_name}! 👋`)
+                    navigate('/dashboard')
+                  } catch (err) {
+                    triggerShake(err.response?.data?.detail || 'Google login failed')
+                  } finally { setLoading(false) }
+                }}
+                onError={() => triggerShake('Google Login Failed')}
+                theme="filled_black"
+                shape="pill"
+              />
+            </div>
           </div>
 
           {/* Signup link */}

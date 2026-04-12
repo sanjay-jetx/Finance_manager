@@ -289,12 +289,27 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="w-full lg:w-[50%] h-[200px] z-10">
+        <div className="w-full lg:w-[50%] h-[200px] z-10 mt-8 lg:mt-0">
           {/* Abstracted Green Bar Chart */}
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data?.weekly_spending?.length ? data.weekly_spending : [{amount: 0}]} barSize={40}>
+            <BarChart data={data?.weekly_spending?.length ? data.weekly_spending : [{amount: 0, day: '-'}]} barSize={32} margin={{ top: 10, right: 10, left: 10, bottom: 25 }}>
               <Tooltip content={<ChartTip />} cursor={{ fill:'rgba(255,255,255,0.02)' }} />
-              <Bar dataKey="amount" fill="#00FFA3" radius={[2,2,0,0]}>
+              <XAxis 
+                dataKey="day" 
+                axisLine={false} 
+                tickLine={false} 
+                tick={({ x, y, payload }) => {
+                  const dayData = data?.weekly_spending?.find(d => d.day === payload.value);
+                  const val = dayData ? dayData.amount : 0;
+                  return (
+                    <g transform={`translate(${x},${y})`}>
+                      <text x={0} dy={14} textAnchor="middle" fill="#888" fontSize={9} className="font-display font-bold uppercase tracking-widest">{payload.value}</text>
+                      {val > 0 && <text x={0} dy={28} textAnchor="middle" fill="#00FFA3" fontSize={9} className="font-display font-bold opacity-80">{fmt(val)}</text>}
+                    </g>
+                  );
+                }} 
+              />
+              <Bar dataKey="amount" fill="#00FFA3" radius={[4,4,4,4]}>
                 {(data?.weekly_spending || [{amount: 0}]).map((entry, index) => (
                   <Cell key={`cell-${index}`} fill="url(#neonGreen)" />
                 ))}
