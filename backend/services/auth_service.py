@@ -42,8 +42,8 @@ GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 # ── Password Hashing ───────────────────────────────────────────────────────
 
 def hash_password(password: str) -> str:
-    """Hash a plaintext password with bcrypt + random salt."""
-    salt = bcrypt.gensalt()
+    """Hash a plaintext password with bcrypt + random salt (optimized for speed)."""
+    salt = bcrypt.gensalt(rounds=8)
     return bcrypt.hashpw(password.encode("utf-8"), salt).decode("utf-8")
 
 

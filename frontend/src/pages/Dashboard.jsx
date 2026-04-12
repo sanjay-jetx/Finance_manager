@@ -334,11 +334,11 @@ export default function Dashboard() {
               <div className="flex justify-between items-center mb-6">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded bg-[#F7931A]/10 flex items-center justify-center text-[#F7931A] font-bold pb-0.5">₿</div>
-                  <span className="font-display font-bold uppercase tracking-widest text-[11px]">Bitcoin</span>
+                  <span className="font-display font-bold uppercase tracking-widest text-[11px]">Bitcoin (INR)</span>
                 </div>
                 <span className="text-accent font-display font-bold text-[11px]">+2.1%</span>
               </div>
-              <p className="obsidian-value text-3xl tracking-tight text-white mb-2">$64,812.40</p>
+              <p className="obsidian-value text-3xl tracking-tight text-white mb-2">₹54,12,840</p>
               <div className="w-full h-1 bg-white/5 rounded overflow-hidden mt-6"><div className="w-[80%] h-full bg-accent rounded"></div></div>
             </div>
 
@@ -346,11 +346,11 @@ export default function Dashboard() {
               <div className="flex justify-between items-center mb-6">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded bg-purple-500/10 flex items-center justify-center text-purple-500"><TrendingUp size={14}/></div>
-                  <span className="font-display font-bold uppercase tracking-widest text-[11px]">S&P 500</span>
+                  <span className="font-display font-bold uppercase tracking-widest text-[11px]">NIFTY 50</span>
                 </div>
                 <span className="text-accent font-display font-bold text-[11px]">+0.84%</span>
               </div>
-              <p className="obsidian-value text-3xl tracking-tight text-white mb-2">5,241.53</p>
+              <p className="obsidian-value text-3xl tracking-tight text-white mb-2">22,514.65</p>
               <div className="w-full h-1 bg-white/5 rounded overflow-hidden mt-6"><div className="w-[65%] h-full bg-accent rounded"></div></div>
             </div>
             

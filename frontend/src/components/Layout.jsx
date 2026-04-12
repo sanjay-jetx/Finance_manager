@@ -9,8 +9,6 @@ import { useState } from 'react'
 const navItems = [
   { to: '/dashboard',     icon: LayoutDashboard, label: 'OVERVIEW' },
   { to: '/transactions',  icon: ArrowLeftRight,  label: 'ACTIVITY' },
-  { to: '/budgets',       icon: PieChart,        label: 'WEALTH' },
-  { to: '/goals',         icon: Target,          label: 'GOALS' },
   { to: '/receivables',   icon: HandCoins,       label: 'RECEIVABLES' },
   { to: '/wallets',       icon: Wallet,          label: 'VAULTS' },
   { to: '/stocks',        icon: TrendingUp,      label: 'STOCKS' },
