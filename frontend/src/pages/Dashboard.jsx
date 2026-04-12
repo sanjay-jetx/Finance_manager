@@ -263,78 +263,53 @@ export default function Dashboard() {
     <div className="space-y-6 lg:space-y-8 pb-20">
       {showQuickAdd && <QuickAddModal onClose={() => setShowQuickAdd(false)} onSuccess={() => refetch(true)} />}
 
-      {/* ── TOP HERO ROW ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 animate-stagger-1 text-white">
-        
-        {/* Main Balances */}
-        <div className="panel p-8 flex flex-col justify-between col-span-1 lg:col-span-2 relative overflow-hidden">
-           <div className="absolute top-0 left-0 w-1/2 h-full bg-accent/5 blur-[120px] pointer-events-none" />
-           <div className="absolute bottom-0 right-0 w-1/2 h-full bg-info/5 blur-[120px] pointer-events-none" />
-           
-           <div className="z-10 flex flex-col sm:flex-row justify-between gap-10 h-full">
-              
-              {/* Total + Cash/GPay below */}
-              <div className="flex-1 flex flex-col">
-                 <p className="obsidian-label text-accent mb-2">Total Amount (Liquid)</p>
-                 <h2 className="text-5xl obsidian-value mb-8 tracking-tighter" style={{ textShadow: '0 0 40px rgba(0, 255, 163, 0.2)' }}>
-                   {fmt(data?.total_balance)}
-                 </h2>
-                 <div className="flex gap-10 mt-auto">
-                    <div>
-                      <p className="obsidian-label text-muted mb-1 text-[10px] opacity-70">CASH VAULT</p>
-                      <p className="obsidian-value text-2xl text-white/90">{fmt(data?.cash_balance)}</p>
-                    </div>
-                    <div>
-                      <p className="obsidian-label text-muted mb-1 text-[10px] opacity-70">GPAY (UPI)</p>
-                      <p className="obsidian-value text-2xl text-white/90">{fmt(data?.upi_balance)}</p>
-                    </div>
-                 </div>
-              </div>
-
-              {/* Receivables beside */}
-              <div className="flex-1 flex flex-col justify-start sm:border-l border-white/5 sm:pl-10">
-                 <p className="obsidian-label text-info mb-2 text-opacity-80">Receivables</p>
-                 <h2 className="text-4xl obsidian-value text-info tracking-tighter mb-8 drop-shadow-md">
-                   {fmt(data?.pending_amount)}
-                 </h2>
-                 
-                 <div className="mt-auto flex sm:flex-row flex-col gap-4 w-full">
-                    <button className="btn-primary flex-1 text-[10px] py-4" onClick={() => setShowQuickAdd(true)}>
-                      Execute Rebalance
-                    </button>
-                    <button className="btn-secondary flex-1 text-[10px] py-4" onClick={() => navigate('/transactions')}>
-                      Activity Ledger
-                    </button>
-                 </div>
-              </div>
-
-           </div>
-        </div>
-
-        {/* Secondary Metric */}
-        <div className="panel p-8 flex flex-col justify-between relative overflow-hidden">
-           <div className="absolute top-0 right-0 w-full h-full bg-purple-500/5 blur-[100px] pointer-events-none" />
-           <div>
-             <p className="obsidian-label text-purple-400 mb-2">Consolidated Net Worth</p>
-             <h2 className="text-4xl obsidian-value tracking-tighter text-purple-400 drop-shadow-md mb-8">
-               {fmt((data?.total_balance || 0) + (data?.pending_amount || 0))}
-             </h2>
-           </div>
-           <div>
-              <p className="obsidian-label text-muted mb-1 text-[10px] opacity-70">SAVINGS RATE</p>
-              <p className={`obsidian-value text-3xl ${savingsGood ? 'text-accent drop-shadow-[0_0_10px_rgba(0,255,163,0.3)]' : 'text-warning'}`}>{data?.savings_rate ?? 0}%</p>
-           </div>
-        </div>
+      {/* ── TOP STATS ROW (Old Structure) ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 animate-stagger-1 text-white">
+        <StatCard 
+          icon={Wallet} 
+          label="Total Balance" 
+          value={fmt(data?.total_balance)} 
+          sub={`Cash: ${fmt(data?.cash_balance)} | GPay: ${fmt(data?.upi_balance)}`}
+          accentClass="text-white" 
+          iconBg="bg-white/5 border border-white/10" 
+          delayIdx={1} 
+        />
+        <StatCard 
+          icon={HandCoins} 
+          label="Receivables" 
+          value={fmt(data?.pending_amount)} 
+          sub="Pending Incoming"
+          accentClass="text-info" 
+          iconBg="bg-info/10" 
+          delayIdx={2} 
+        />
+        <StatCard 
+          icon={ArrowUpRight} 
+          label="Monthly Income" 
+          value={fmt(data?.monthly_income)} 
+          sub={`${data?.savings_rate ?? 0}% Savings Rate`}
+          accentClass="text-success" 
+          iconBg="bg-success/10" 
+          delayIdx={3} 
+        />
+        <StatCard 
+          icon={ArrowDownRight} 
+          label="Monthly Expense" 
+          value={fmt(data?.monthly_expense)} 
+          sub={`Today: ${fmt(data?.today_spending)}`}
+          accentClass="text-danger" 
+          iconBg="bg-danger/10" 
+          delayIdx={4} 
+        />
       </div>
 
-      {/* ── MIDDLE ROW: GRAPH COMES DOWN ── */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
+      {/* ── MIDDLE ROW: CHARTS ── */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8 pt-4">
         
-        {/* Left Column: Graph + Market Pulse */}
+        {/* Left Column: Weekly Spending Graph + Market Pulse */}
         <div className="space-y-6 animate-stagger-2 flex flex-col">
           
-          {/* Graph Moved Down */}
-          <div className="panel p-6 h-[260px] flex flex-col">
+          <div className="panel p-6 h-[280px] flex flex-col">
             <p className="obsidian-label mb-2">Weekly Spending</p>
             <div className="flex-1 w-full min-h-0">
               <ResponsiveContainer width="100%" height="100%">
@@ -371,7 +346,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Market Pulse */}
           <div>
             <p className="obsidian-label mb-4">Market Pulse</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -402,8 +376,8 @@ export default function Dashboard() {
 
         {/* Right Column: Asset Allocation */}
         <div className="space-y-4 animate-stagger-3">
-          <p className="obsidian-label mb-4">Asset Allocation</p>
-          <div className="panel p-8 h-[312px] flex flex-col md:flex-row items-center justify-between gap-8 relative">
+          <p className="obsidian-label mb-4 text-transparent">.</p>
+          <div className="panel p-8 h-[280px] flex flex-col md:flex-row items-center justify-between gap-8 relative">
             <div className="w-full md:w-1/2 h-full flex items-center justify-center relative pt-4">
                <ResponsiveContainer width="100%" height={260}>
                  <RePie>
@@ -441,22 +415,21 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Intelligent Activity Ledger */}
+      {/* ── BOTTOM ROW: RECENT TRANSACTIONS ── */}
       <div className="animate-stagger-4 pt-6">
         <div className="flex items-center justify-between mb-5 px-1">
-          <h3 className="obsidian-label text-muted">Intelligent Activity</h3>
+          <h3 className="obsidian-label text-muted">Recent Transactions</h3>
           <button onClick={() => navigate('/transactions')} className="obsidian-label text-accent hover:text-accent-light flex items-center gap-2 tracking-[0.2em] transition-colors border-b border-transparent hover:border-accent">
-            View Full Ledger
+            View All
           </button>
         </div>
 
         <div className="panel">
           {/* Header Row */}
           <div className="grid grid-cols-12 gap-4 px-8 py-5 border-b border-white/5 text-[10px] font-bold uppercase tracking-[0.2em] text-muted font-display">
-            <div className="col-span-6 sm:col-span-5 lg:col-span-5">Transaction Path</div>
-            <div className="col-span-hidden sm:col-span-4 lg:col-span-3 hidden sm:block">Intelligence Insight</div>
-            <div className="col-span-4 lg:col-span-2 hidden lg:block">Status</div>
-            <div className="col-span-6 sm:col-span-3 lg:col-span-2 text-right">Net Impact</div>
+            <div className="col-span-8 lg:col-span-6">Transaction Details</div>
+            <div className="col-span-hidden lg:col-span-4 hidden lg:block">Category</div>
+            <div className="col-span-4 lg:col-span-2 text-right">Amount</div>
           </div>
 
           {data?.recent_transactions?.length > 0 ? (
@@ -466,33 +439,25 @@ export default function Dashboard() {
                 const isCredit = isCreditUiType(uiType);
                 const isTransfer = uiType === 'transfer';
                 
-                let insight = isCredit ? { text: 'Autopilot Yield', color: 'bg-[#1A1124] text-[#A855F7] border border-[#A855F7]/30', icon: '⚡' } :
-                              isTransfer ? { text: 'Optimized Routing', color: 'bg-[#0A1A12] text-[#00FFA3] border border-[#00FFA3]/30', icon: '⟲' } :
-                              { text: 'Risk Adapted', color: 'bg-[#1F0A0E] text-[#FF3366] border border-[#FF3366]/30', icon: '⚠' };
-
                 return (
                   <div key={txn._id} className={`grid grid-cols-12 gap-4 px-8 py-6 items-center hover:bg-white/[0.02] transition-colors border-b border-white/[0.03] ${idx === data.recent_transactions.length -1 ? 'border-b-0' : ''}`}>
-                    <div className="col-span-6 sm:col-span-5 lg:col-span-5 flex items-center gap-5">
+                    <div className="col-span-8 lg:col-span-6 flex items-center gap-5">
                       <div className="w-12 h-12 rounded bg-[#15161A] border border-white/5 flex items-center justify-center flex-shrink-0">
                         {isTransfer ? <RefreshCw size={16} className="text-muted" /> : isCredit ? <ArrowUpRight size={16} className="text-muted"/> : <ArrowDownRight size={16} className="text-muted" />}
                       </div>
                       <div className="min-w-0">
                         <p className="text-foreground font-display font-semibold text-[14px] truncate">{txn.notes || txn.category || txn.source || 'Transaction'}</p>
-                        <p className="text-muted text-[11px] mt-1.5">{txn.timestamp ? new Date(txn.timestamp).toLocaleString('en-US', {hour:'2-digit', minute:'2-digit', month:'short', day:'numeric'}) : ''}</p>
+                        <p className="text-muted text-[11px] mt-1.5 font-medium tracking-wide">{txn.timestamp ? new Date(txn.timestamp).toLocaleString('en-US', {month:'short', day:'numeric', year:'numeric'}) : ''}</p>
                       </div>
                     </div>
                     
-                    <div className="col-span-hidden sm:col-span-4 lg:col-span-3 hidden sm:flex items-center">
-                       <span className={`text-[9px] font-bold uppercase tracking-[0.1em] px-2.5 py-1.5 rounded flex items-center gap-1.5 font-display ${insight.color}`}>
-                         <span>{insight.icon}</span> {insight.text}
+                    <div className="col-span-hidden lg:col-span-4 hidden lg:flex items-center">
+                       <span className="text-muted text-[11px] uppercase tracking-widest font-bold bg-white/5 px-3 py-1.5 rounded">
+                         {txn.category || txn.source || 'Transfer'}
                        </span>
                     </div>
 
-                    <div className="col-span-4 lg:col-span-2 hidden lg:flex items-center">
-                      <span className="text-muted text-[10px] uppercase tracking-widest font-bold">Completed</span>
-                    </div>
-
-                    <div className="col-span-6 sm:col-span-3 lg:col-span-2 text-right">
+                    <div className="col-span-4 lg:col-span-2 text-right">
                       <p className={`obsidian-value text-[16px] ${isCredit ? 'text-success' : 'text-foreground'}`}>
                         {isCredit ? '+' : '-'}{fmt(txn.amount)}
                       </p>
@@ -502,7 +467,7 @@ export default function Dashboard() {
               })}
             </div>
           ) : (
-            <div className="p-20 text-center text-muted font-display text-sm tracking-widest uppercase border-dashed border-t border-white/5">No Intel Activity</div>
+            <div className="p-20 text-center text-muted font-display text-sm tracking-widest uppercase border-dashed border-t border-white/5">No Recent Transactions</div>
           )}
         </div>
       </div>

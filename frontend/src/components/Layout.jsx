@@ -58,8 +58,8 @@ export default function Layout() {
               <Gem size={20} className="text-accent relative z-10" />
             </div>
             <div>
-              <h1 className="text-foreground font-display font-bold text-[14px] leading-tight tracking-wider uppercase">Obsidian Vault</h1>
-              <p className="obsidian-label text-accent/80 mt-1">Private Tier</p>
+              <h1 className="text-foreground font-display font-bold text-[14px] leading-tight tracking-wider uppercase">FinTrack</h1>
+              <p className="obsidian-label text-accent/80 mt-1">Personal Finance</p>
             </div>
             <button className="ml-auto lg:hidden text-muted hover:text-foreground bg-white/5 p-2 rounded"
               onClick={() => setSidebarOpen(false)}>
@@ -105,7 +105,7 @@ export default function Layout() {
         {/* Top bar (mobile) */}
         <header className="lg:hidden flex items-center justify-between px-6 py-5 bg-[#050505]/70 backdrop-blur-2xl border-b border-white/5 z-20 sticky top-0 shadow-lg">
           <div className="flex items-center gap-3">
-            <h1 className="text-accent font-display font-bold tracking-widest text-[14px] uppercase drop-shadow-[0_0_8px_rgba(0,255,163,0.3)]">Obsidian</h1>
+            <h1 className="text-accent font-display font-bold tracking-widest text-[14px] uppercase drop-shadow-[0_0_8px_rgba(0,255,163,0.3)]">FinTrack</h1>
           </div>
           <button onClick={() => setSidebarOpen(true)} className="text-muted hover:text-foreground">
             <Menu size={24} />
@@ -114,7 +114,7 @@ export default function Layout() {
 
         {/* Top Navigation Bar / Branding (Desktop) */}
         <header className="hidden lg:flex items-center justify-between px-10 py-6 sticky top-0 z-20 bg-[#050505]/40 backdrop-blur-3xl border-b border-white/[0.03]">
-          <h1 className="text-accent font-display font-bold tracking-[0.2em] uppercase text-xl drop-shadow-[0_0_10px_rgba(0,255,163,0.2)]">Obsidian</h1>
+          <h1 className="text-accent font-display font-bold tracking-[0.2em] uppercase text-xl drop-shadow-[0_0_10px_rgba(0,255,163,0.2)]">FinTrack</h1>
           
           <div className="flex gap-8">
             <button className="text-muted hover:text-accent font-display uppercase text-[11px] font-bold tracking-widest transition-colors">Overview</button>
