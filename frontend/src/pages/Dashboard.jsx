@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { fmt } from '../utils/format'
 import { useDashboard } from '../hooks/useDashboard'
 import {
-  Wallet, TrendingUp, Users, ArrowUpRight, ArrowDownRight,
+  Wallet, TrendingUp, Users, ArrowUpRight, ArrowDownRight, HandCoins,
   Banknote, Smartphone, RefreshCw, Target, Plus, X, Check,
   Zap, PieChart as PieChartIcon, Bell, Sparkles, ArrowRight, ArrowLeftRight
 } from 'lucide-react'
@@ -270,12 +270,31 @@ export default function Dashboard() {
         <div className="w-full lg:w-1/2 z-10 flex flex-col justify-center">
           <p className="obsidian-label text-accent mb-4">Consolidated Net Worth</p>
           <h2 className="text-5xl lg:text-7xl obsidian-value text-white mb-3 tracking-tighter" style={{ textShadow: '0 0 40px rgba(0, 255, 163, 0.2)' }}>
-            {fmt(data?.net_worth || data?.total_balance)}
+            {fmt((data?.total_balance || 0) + (data?.pending_amount || 0))}
           </h2>
-          <div className="flex items-center gap-3 mt-2">
-            <ArrowUpRight size={16} className="text-accent" />
-            <span className="text-accent font-display font-bold text-sm tracking-widest uppercase">+{fmt(data?.monthly_income)} EARNED</span>
-            <span className="text-muted font-display text-[10px] tracking-widest uppercase ml-2">PAST 30 DAYS</span>
+          
+          <div className="flex flex-wrap items-center gap-3 lg:gap-5 mt-3 bg-white/[0.02] inline-flex p-3 lg:pr-6 rounded-[20px] border border-white/5 shadow-inner">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 flex-shrink-0 rounded-[12px] bg-white/5 flex items-center justify-center border border-white/5">
+                 <Wallet size={16} className="text-white opacity-80" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-muted font-display text-[9px] tracking-[0.15em] uppercase font-bold text-opacity-80">Liquid Amount</span>
+                <span className="text-white font-display font-bold text-sm tracking-widest">{fmt(data?.total_balance)}</span>
+              </div>
+            </div>
+
+            <div className="text-muted font-bold text-xs opacity-50">+</div>
+
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 flex-shrink-0 rounded-[12px] bg-accent/10 flex items-center justify-center border border-accent/20 shadow-[0_0_15px_rgba(0,255,163,0.1)]">
+                 <HandCoins size={16} className="text-accent" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-accent font-display text-[9px] tracking-[0.15em] uppercase font-bold text-opacity-80">Receivables</span>
+                <span className="text-accent font-display font-bold text-sm tracking-widest drop-shadow-md">{fmt(data?.pending_amount)}</span>
+              </div>
+            </div>
           </div>
 
           <div className="flex lg:flex-row flex-col gap-4 mt-12 w-full max-w-sm">
@@ -325,42 +344,58 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
-        {/* Market Pulse (Mini Stats converted) */}
-        <div className="space-y-4 animate-stagger-2">
-          <p className="obsidian-label mb-4">Market Pulse</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="panel p-6 hover:border-accent/30 cursor-pointer">
-              <div className="flex justify-between items-center mb-6">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded bg-[#F7931A]/10 flex items-center justify-center text-[#F7931A] font-bold pb-0.5">₿</div>
-                  <span className="font-display font-bold uppercase tracking-widest text-[11px]">Bitcoin (INR)</span>
+        <div className="space-y-6 animate-stagger-2 flex flex-col">
+          
+          {/* Detailed Balances Widget */}
+          <div className="panel p-6 bg-[#07080A]/40 backdrop-blur-3xl shadow-[0_4px_24px_rgba(0,0,0,0.5)] border-white/[0.08] flex flex-col gap-5">
+             <div className="flex justify-between items-center border-b border-white/[0.05] pb-5">
+                <div>
+                   <p className="obsidian-label text-muted mb-2 font-bold tracking-widest text-[10px]">TOTAL AMOUNT</p>
+                   <p className="obsidian-value text-3xl font-bold tracking-tight text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]">{fmt(data?.total_balance)}</p>
                 </div>
-                <span className="text-accent font-display font-bold text-[11px]">+2.1%</span>
-              </div>
-              <p className="obsidian-value text-3xl tracking-tight text-white mb-2">₹54,12,840</p>
-            </div>
+                <div className="text-right flex flex-col items-end">
+                   <p className="obsidian-label text-muted mb-2 font-bold tracking-widest text-[10px]">SAVINGS RATE</p>
+                   <p className="obsidian-value text-2xl font-bold tracking-tight text-accent drop-shadow-[0_0_10px_rgba(0,255,163,0.3)]">{data?.savings_rate ?? 0}%</p>
+                </div>
+             </div>
+             
+             <div className="grid grid-cols-2 gap-4">
+                <div>
+                   <p className="obsidian-label text-muted mb-1 font-bold tracking-widest text-[9px] opacity-70">CASH VAULT</p>
+                   <p className="obsidian-value text-xl font-bold tracking-tight text-white/90">{fmt(data?.cash_balance)}</p>
+                </div>
+                <div className="text-right">
+                   <p className="obsidian-label text-muted mb-1 font-bold tracking-widest text-[9px] opacity-70">GPAY (UPI)</p>
+                   <p className="obsidian-value text-xl font-bold tracking-tight text-white/90">{fmt(data?.upi_balance)}</p>
+                </div>
+             </div>
+          </div>
 
-            <div className="panel p-6 hover:border-accent/30 cursor-pointer">
-              <div className="flex justify-between items-center mb-6">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded bg-purple-500/10 flex items-center justify-center text-purple-500"><TrendingUp size={14}/></div>
-                  <span className="font-display font-bold uppercase tracking-widest text-[11px]">NIFTY 50</span>
+          {/* Market Pulse (Mini Stats converted) */}
+          <div>
+            <p className="obsidian-label mb-4">Market Pulse</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="panel p-6 hover:border-accent/30 cursor-pointer">
+                <div className="flex justify-between items-center mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded bg-[#F7931A]/10 flex items-center justify-center text-[#F7931A] font-bold pb-0.5">₿</div>
+                    <span className="font-display font-bold uppercase tracking-widest text-[11px]">Bitcoin (INR)</span>
+                  </div>
+                  <span className="text-accent font-display font-bold text-[11px]">+2.1%</span>
                 </div>
-                <span className="text-accent font-display font-bold text-[11px]">+0.84%</span>
+                <p className="obsidian-value text-3xl tracking-tight text-white mb-2">₹54,12,840</p>
               </div>
-              <p className="obsidian-value text-3xl tracking-tight text-white mb-2">22,514.65</p>
-            </div>
-            
-            {/* Real Stats abstracted */}
-            <div className="panel p-6 col-span-1 sm:col-span-2 flex justify-between items-center">
-               <div>
-                  <p className="obsidian-label text-muted mb-2">Liquid Balance</p>
-                  <p className="obsidian-value text-2xl">{fmt(data?.total_balance)}</p>
-               </div>
-               <div className="text-right">
-                 <p className="obsidian-label text-muted mb-2">Savings Rate</p>
-                 <p className="obsidian-value text-2xl text-accent">{data?.savings_rate ?? 0}%</p>
-               </div>
+
+              <div className="panel p-6 hover:border-accent/30 cursor-pointer">
+                <div className="flex justify-between items-center mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded bg-purple-500/10 flex items-center justify-center text-purple-500"><TrendingUp size={14}/></div>
+                    <span className="font-display font-bold uppercase tracking-widest text-[11px]">NIFTY 50</span>
+                  </div>
+                  <span className="text-accent font-display font-bold text-[11px]">+0.84%</span>
+                </div>
+                <p className="obsidian-value text-3xl tracking-tight text-white mb-2">22,514.65</p>
+              </div>
             </div>
           </div>
         </div>
