@@ -42,7 +42,7 @@ function StatCard({ icon: Icon, label, value, sub, accentClass, iconBg, delayIdx
 }
 
 /* ── Quick Add Modal ───────────────────────────────────────────────────────── */
-const EXPENSE_CATS = ['Food', 'Gym', 'Petrol', 'Snacks', 'Shopping', 'Entertainment', 'Health', 'Person']
+const EXPENSE_CATS = ['Food', 'Gym', 'Petrol', 'Snacks', 'Shopping', 'Entertainment', 'Health', 'Person', 'Other']
 const INCOME_SRCS  = ['Pocket Money','Salary','Freelance','Business','Gift','Refund','Other']
 
 function QuickAddModal({ onClose, onSuccess }) {
@@ -50,8 +50,8 @@ function QuickAddModal({ onClose, onSuccess }) {
   const [amount, setAmount] = useState('')
   const [cat, setCat]       = useState('Food')
   const [src, setSrc]       = useState('Pocket Money')
-  const [wallet, setWallet] = useState('cash')
-  const [toWallet, setToWallet] = useState('upi')
+  const [wallet, setWallet] = useState('upi')
+  const [toWallet, setToWallet] = useState('cash')
   const [notes, setNotes]   = useState('')
   const [personName, setPersonName] = useState('')
   const [noDebit, setNoDebit]       = useState(false)
@@ -91,10 +91,10 @@ function QuickAddModal({ onClose, onSuccess }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-background/80 backdrop-blur-md transition-all"
+    <div className="fixed inset-0 z-50 flex flex-col p-0 sm:p-4 bg-black/60 sm:bg-background/80 backdrop-blur-md transition-all justify-end sm:justify-center"
          onMouseDown={e => e.target === e.currentTarget && onClose()}>
-      <div className="w-full max-w-md rounded-[24px] bg-surface relative overflow-hidden shadow-soft-drop border border-white/10 animate-stagger-1">
-        <div className={`absolute top-0 left-0 right-0 h-1 ${isIncome ? 'bg-gradient-success' : isTransfer ? 'bg-gradient-to-r from-purple-500 to-indigo-500' : 'bg-gradient-to-r from-rose-500 to-pink-600'}`} />
+      <div className="w-full max-w-md mx-auto rounded-t-[32px] sm:rounded-[24px] bg-surface relative overflow-hidden shadow-[0_-20px_50px_rgba(0,0,0,0.5)] sm:shadow-soft-drop border border-white/10 animate-stagger-1 border-b-0 sm:border-b">
+        <div className={`absolute top-0 left-0 right-0 h-1.5 sm:h-1 ${isIncome ? 'bg-gradient-success' : isTransfer ? 'bg-gradient-to-r from-purple-500 to-indigo-500' : 'bg-gradient-to-r from-rose-500 to-pink-600'}`} />
         
         {/* Header */}
         <div className="flex items-center justify-between px-6 pt-7 pb-5">
@@ -127,15 +127,15 @@ function QuickAddModal({ onClose, onSuccess }) {
                 <div>
                   <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-2 ml-1">From</label>
                   <div className="flex gap-2">
-                    <button type="button" onClick={() => { setWallet('cash'); setToWallet('upi'); }} className={`flex-1 py-3.5 rounded-2xl text-sm font-bold border transition-all ${wallet === 'cash' ? 'bg-purple-500/15 border-purple-500/50 text-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.15)]' : 'bg-black/50 border-white/10 text-muted'}`}>CASH</button>
                     <button type="button" onClick={() => { setWallet('upi'); setToWallet('cash'); }} className={`flex-1 py-3.5 rounded-2xl text-sm font-bold border transition-all ${wallet === 'upi' ? 'bg-purple-500/15 border-purple-500/50 text-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.15)]' : 'bg-black/50 border-white/10 text-muted'}`}>UPI</button>
+                    <button type="button" onClick={() => { setWallet('cash'); setToWallet('upi'); }} className={`flex-1 py-3.5 rounded-2xl text-sm font-bold border transition-all ${wallet === 'cash' ? 'bg-purple-500/15 border-purple-500/50 text-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.15)]' : 'bg-black/50 border-white/10 text-muted'}`}>CASH</button>
                   </div>
                 </div>
                 <div>
                   <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-2 ml-1">To</label>
                   <div className="flex gap-2">
-                    <button type="button" onClick={() => { setToWallet('cash'); setWallet('upi'); }} className={`flex-1 py-3.5 rounded-2xl text-sm font-bold border transition-all ${toWallet === 'cash' ? 'bg-indigo-500/15 border-indigo-500/50 text-indigo-400 shadow-[0_0_15px_rgba(99,102,241,0.15)]' : 'bg-black/50 border-white/10 text-muted'}`}>CASH</button>
                     <button type="button" onClick={() => { setToWallet('upi'); setWallet('cash'); }} className={`flex-1 py-3.5 rounded-2xl text-sm font-bold border transition-all ${toWallet === 'upi' ? 'bg-indigo-500/15 border-indigo-500/50 text-indigo-400 shadow-[0_0_15px_rgba(99,102,241,0.15)]' : 'bg-black/50 border-white/10 text-muted'}`}>UPI</button>
+                    <button type="button" onClick={() => { setToWallet('cash'); setWallet('upi'); }} className={`flex-1 py-3.5 rounded-2xl text-sm font-bold border transition-all ${toWallet === 'cash' ? 'bg-indigo-500/15 border-indigo-500/50 text-indigo-400 shadow-[0_0_15px_rgba(99,102,241,0.15)]' : 'bg-black/50 border-white/10 text-muted'}`}>CASH</button>
                   </div>
                 </div>
               </>
@@ -153,13 +153,13 @@ function QuickAddModal({ onClose, onSuccess }) {
                 <div>
                   <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-2 ml-1">Wallet</label>
                   <div className="flex gap-2">
-                    <button type="button" onClick={() => setWallet('cash')}
-                      className={`flex-1 py-3.5 rounded-2xl text-sm font-bold border transition-all ${wallet === 'cash' ? 'bg-accent/15 border-accent text-accent shadow-[0_0_15px_rgba(99,102,241,0.2)]' : 'bg-black/50 border-white/10 text-muted'}`}>
-                      CASH
-                    </button>
                     <button type="button" onClick={() => setWallet('upi')}
                       className={`flex-1 py-3.5 rounded-2xl text-sm font-bold border transition-all ${wallet === 'upi' ? 'bg-accent/15 border-accent text-accent shadow-[0_0_15px_rgba(99,102,241,0.2)]' : 'bg-black/50 border-white/10 text-muted'}`}>
                       UPI
+                    </button>
+                    <button type="button" onClick={() => setWallet('cash')}
+                      className={`flex-1 py-3.5 rounded-2xl text-sm font-bold border transition-all ${wallet === 'cash' ? 'bg-accent/15 border-accent text-accent shadow-[0_0_15px_rgba(99,102,241,0.2)]' : 'bg-black/50 border-white/10 text-muted'}`}>
+                      CASH
                     </button>
                   </div>
                 </div>
@@ -203,9 +203,10 @@ function QuickAddModal({ onClose, onSuccess }) {
 /* ── Custom chart tooltip ──────────────────────────────────────────────────── */
 function ChartTip({ active, payload, label }) {
   if (!active || !payload?.length) return null
+  const displayLabel = label || payload[0]?.name
   return (
-    <div className="bg-surface/95 backdrop-blur border border-white/10 rounded-xl p-3 shadow-soft-drop">
-      <p className="text-muted text-xs font-semibold mb-1 uppercase tracking-widest">{label}</p>
+    <div className="bg-background/95 backdrop-blur border border-white/10 rounded-xl p-3 shadow-soft-drop min-w-[100px]">
+      <p className="text-muted text-xs font-semibold mb-1 uppercase tracking-widest">{displayLabel}</p>
       <p className="text-foreground font-display font-bold text-lg">{fmt(payload[0].value)}</p>
     </div>
   )
@@ -288,7 +289,7 @@ export default function Dashboard() {
         {/* Total Balance Panel */}
         <div className="panel lg:col-span-2 p-8 lg:p-10 flex flex-col justify-between animate-stagger-1 relative overflow-hidden group border-accent/20">
           {/* Stunning Background Glow */}
-          <div className="absolute top-[-50%] right-[-10%] w-[80%] h-[150%] bg-accent/30 blur-[120px] rounded-full pointer-events-none group-hover:bg-accent/40 mix-blend-screen transition-all duration-700" />
+          <div className="hidden lg:block absolute top-[-50%] right-[-10%] w-[80%] h-[150%] bg-accent/30 blur-[120px] rounded-full pointer-events-none group-hover:bg-accent/40 mix-blend-screen transition-all duration-700" />
           <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-primary shadow-[0_0_20px_rgba(99,102,241,0.8)]" />
           
           <div className="relative z-10 flex justify-between items-start">
@@ -332,7 +333,7 @@ export default function Dashboard() {
         <div className="panel p-8 flex flex-col justify-between animate-stagger-2 cursor-pointer hover:border-success/40 group relative overflow-hidden"
           onClick={() => navigate('/receivables')}>
           
-          <div className="absolute bottom-[-30%] right-[-20%] w-[80%] h-[120%] bg-success/20 blur-[100px] rounded-full pointer-events-none group-hover:bg-success/30 mix-blend-screen transition-all duration-700" />
+          <div className="hidden lg:block absolute bottom-[-30%] right-[-20%] w-[80%] h-[120%] bg-success/20 blur-[100px] rounded-full pointer-events-none group-hover:bg-success/30 mix-blend-screen transition-all duration-700" />
           
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-5">
@@ -409,8 +410,8 @@ export default function Dashboard() {
                   <Pie data={data.category_breakdown} dataKey="amount" nameKey="category" cx="50%" cy="50%" innerRadius={60} outerRadius={85} paddingAngle={3}>
                     {data.category_breakdown.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} stroke="#121214" strokeWidth={3} />)}
                   </Pie>
-                  <Tooltip formatter={v => fmt(v)} contentStyle={{ background:'#18181b', border:'1px solid #27272a', borderRadius:12, boxShadow:'0 10px 25px rgba(0,0,0,0.5)' }} />
-                  <Legend iconType="circle" iconSize={8} formatter={v => <span className="text-foreground text-xs font-semibold ml-1.5">{v}</span>} />
+                  <Tooltip content={<ChartTip />} cursor={{ fill:'rgba(255,255,255,0.03)' }} />
+                  <Legend iconType="circle" iconSize={8} formatter={(v, entry) => <span className="text-foreground text-xs font-semibold ml-1.5">{v} <span className="text-muted ml-0.5 font-normal">{fmt(entry?.payload?.value)}</span></span>} />
                 </RePie>
               </ResponsiveContainer>
             ) : (
@@ -485,7 +486,7 @@ export default function Dashboard() {
       {/* Floating Quick Add (Mobile) */}
       <button
         onClick={() => setShowQuickAdd(true)}
-        className="fixed bottom-6 right-6 z-40 w-16 h-16 rounded-full flex items-center justify-center text-white shadow-glow-accent lg:hidden active:scale-95 transition-transform"
+        className="fixed bottom-[110px] right-6 z-40 w-16 h-16 rounded-full flex items-center justify-center text-white shadow-glow-accent lg:hidden active:scale-95 transition-transform"
         style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' }}
       >
         <Plus size={28} strokeWidth={2.5} />

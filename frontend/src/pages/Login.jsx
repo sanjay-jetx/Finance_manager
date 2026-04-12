@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { GoogleLogin } from '@react-oauth/google'
 import api from '../api/axios'
 import toast from 'react-hot-toast'
 import { TrendingUp, Eye, EyeOff, ArrowRight, Wallet, BarChart3, Shield, Zap } from 'lucide-react'
@@ -104,17 +103,6 @@ export default function Login() {
     } catch (err) {
       triggerShake(err.response?.data?.detail || 'Incorrect email or password')
     } finally { setLoading(false) }
-  }
-
-  const handleGoogle = async (credentialResponse) => {
-    try {
-      const res = await api.post('/auth/google', { token: credentialResponse.credential })
-      login(res.data.access_token, { user_name: res.data.user_name }, res.data.expires_in)
-      toast.success(`Welcome, ${res.data.user_name}! 🎉`)
-      navigate('/dashboard')
-    } catch (err) {
-      toast.error(err.response?.data?.detail || 'Google Sign-In failed')
-    }
   }
 
   return (
@@ -397,6 +385,7 @@ export default function Login() {
                   color: 'rgba(100,116,139,0.7)', fontSize: 12, fontWeight: 600,
                   padding: 0, transition: 'color 0.2s',
                 }}
+                onClick={() => toast('Forgot password feature coming soon!')}
                 onMouseEnter={e => e.target.style.color = '#8b5cf6'}
                 onMouseLeave={e => e.target.style.color = 'rgba(100,116,139,0.7)'}
                 >
@@ -436,24 +425,6 @@ export default function Login() {
                 )}
               </button>
 
-              {/* Divider */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 }}>
-                <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.05)' }} />
-                <span style={{ fontSize: 10, fontWeight: 800, color: 'rgba(100,116,139,0.5)', textTransform: 'uppercase', letterSpacing: '3px' }}>or</span>
-                <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.05)' }} />
-              </div>
-
-              {/* Google */}
-              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 4 }}>
-                <GoogleLogin
-                  onSuccess={handleGoogle}
-                  onError={() => toast.error('Google Sign-In failed')}
-                  theme="filled_black"
-                  shape="pill"
-                  size="large"
-                  width="340"
-                />
-              </div>
             </form>
           </div>
 

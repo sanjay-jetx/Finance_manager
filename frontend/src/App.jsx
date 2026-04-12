@@ -1,16 +1,28 @@
+import { Suspense, lazy } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider, useAuth } from './context/AuthContext'
-import Login from './pages/Login'
-import Signup from './pages/Signup'
-import Dashboard from './pages/Dashboard'
-import Transactions from './pages/Transactions'
-import Receivables from './pages/Receivables'
-import Wallets from './pages/Wallets'
-import Metals from './pages/Metals'
-import Stocks from './pages/Stocks'
-import Profile from './pages/Profile'
-import Layout from './components/Layout'
+
+const Login = lazy(() => import('./pages/Login'))
+const Signup = lazy(() => import('./pages/Signup'))
+const Dashboard = lazy(() => import('./pages/Dashboard'))
+const Transactions = lazy(() => import('./pages/Transactions'))
+const Receivables = lazy(() => import('./pages/Receivables'))
+const Wallets = lazy(() => import('./pages/Wallets'))
+const Metals = lazy(() => import('./pages/Metals'))
+const Stocks = lazy(() => import('./pages/Stocks'))
+const Profile = lazy(() => import('./pages/Profile'))
+const Budgets = lazy(() => import('./pages/Budgets'))
+const Goals = lazy(() => import('./pages/Goals'))
+const Layout = lazy(() => import('./components/Layout'))
+
+function PageFallback() {
+  return (
+    <div className="flex h-screen items-center justify-center bg-background">
+      <div className="w-10 h-10 border-[3px] border-accent/20 border-t-accent rounded-full animate-spin" />
+    </div>
+  )
+}
 
 function PrivateRoute({ children }) {
   const { isAuth } = useAuth()
@@ -39,22 +51,26 @@ export default function App() {
             error:   { iconTheme: { primary: '#ef4444', secondary: '#fff' } },
           }}
         />
-        <Routes>
-          <Route path="/login"  element={<PublicRoute><Login /></PublicRoute>} />
-          <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
-          <Route path="/" element={<PrivateRoute><Layout /></PrivateRoute>}>
-            <Route index element={<Navigate to="/dashboard" replace />} />
-            <Route path="dashboard"    element={<Dashboard />} />
-            <Route path="transactions" element={<Transactions />} />
-            <Route path="receivables" element={<Receivables />} />
-            <Route path="lending" element={<Navigate to="/receivables" replace />} />
-            <Route path="wallets"      element={<Wallets />} />
-            <Route path="stocks"       element={<Stocks />} />
-            <Route path="metals"       element={<Metals />} />
-            <Route path="profile"       element={<Profile />} />
-          </Route>
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
-        </Routes>
+        <Suspense fallback={<PageFallback />}>
+          <Routes>
+            <Route path="/login"  element={<PublicRoute><Login /></PublicRoute>} />
+            <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
+            <Route path="/" element={<PrivateRoute><Layout /></PrivateRoute>}>
+              <Route index element={<Navigate to="/dashboard" replace />} />
+              <Route path="dashboard"    element={<Dashboard />} />
+              <Route path="transactions" element={<Transactions />} />
+              <Route path="budgets"      element={<Budgets />} />
+              <Route path="goals"        element={<Goals />} />
+              <Route path="receivables" element={<Receivables />} />
+              <Route path="lending" element={<Navigate to="/receivables" replace />} />
+              <Route path="wallets"      element={<Wallets />} />
+              <Route path="stocks"       element={<Stocks />} />
+              <Route path="metals"       element={<Metals />} />
+              <Route path="profile"       element={<Profile />} />
+            </Route>
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          </Routes>
+        </Suspense>
       </BrowserRouter>
     </AuthProvider>
   )

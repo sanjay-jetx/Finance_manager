@@ -120,16 +120,21 @@ def verify_google_token(id_token_value: str) -> dict | None:
     Returns dict with email, name, google_id or None on failure.
     """
     try:
-        from google.oauth2 import id_token as google_id_token
-        from google.auth.transport import requests as google_requests
-
         if not GOOGLE_CLIENT_ID:
             logger.error("GOOGLE_CLIENT_ID is not set in .env")
             raise RuntimeError("GOOGLE_CLIENT_ID is not set in .env")
+            
+        from google.oauth2 import id_token as google_id_token
+        from google.auth.transport import requests as google_requests
+        
+        # Cache the HTTP session globally to prevent re-fetching certs
+        global _google_request_session
+        if '_google_request_session' not in globals():
+            _google_request_session = google_requests.Request()
 
         id_info = google_id_token.verify_oauth2_token(
             id_token_value,
-            google_requests.Request(),
+            _google_request_session,
             GOOGLE_CLIENT_ID,
         )
 

@@ -12,96 +12,104 @@ router = APIRouter(tags=["Dashboard"])
 async def get_dashboard(user_id: str = Depends(get_current_user)):
     db = get_db()
 
-    # Wallet balances
-    wallet = await get_or_create_wallet(user_id)
-    cash_balance = wallet.get("cash_balance", 0.0)
-    upi_balance  = wallet.get("upi_balance", 0.0)
-    total_balance = round(cash_balance + upi_balance, 2)
+    from routers.budgets import get_budgets
+    import asyncio
 
-    # Pending receivables
-    pending_amount = 0.0
-    pending_count  = 0
-    async for row in db.debts.find({"user_id": user_id, "status": "pending"}):
-        pending_amount += row["amount"]
-        pending_count  += 1
-
-    try:
-        metals_data = await get_portfolio(user_id=user_id)
-        metals_value = metals_data.get("total_value", 0.0)
-    except Exception:
-        metals_value = 0.0
-
-    net_worth = round(total_balance + pending_amount + metals_value, 2)
-
-    # This month
+    # Setup time bounds
     now = datetime.now(timezone.utc)
     month_start = datetime(now.year, now.month, 1, tzinfo=timezone.utc)
+    today_start = datetime(now.year, now.month, now.day, tzinfo=timezone.utc)
 
     async def _sum(pipeline):
         result = await db.transactions.aggregate(pipeline).to_list(1)
         return result[0]["total"] if result else 0.0
 
-    monthly_expense = await _sum([
-        {"$match": {"user_id": user_id, "type": "expense", "timestamp": {"$gte": month_start}}},
-        {"$group": {"_id": None, "total": {"$sum": "$amount"}}},
-    ])
-    monthly_income = await _sum([
-        {"$match": {"user_id": user_id, "type": "income", "timestamp": {"$gte": month_start}}},
-        {"$group": {"_id": None, "total": {"$sum": "$amount"}}},
-    ])
+    async def _get_pending():
+        amt, count = 0.0, 0
+        async for row in db.debts.find({"user_id": user_id, "status": "pending"}):
+            amt += row["amount"]
+            count += 1
+        return amt, count
 
-    # Savings rate %
-    savings_rate = 0.0
-    if monthly_income > 0:
-        savings_rate = round(((monthly_income - monthly_expense) / monthly_income) * 100, 1)
+    async def _get_safe_portfolio():
+        try:
+            return await get_portfolio(user_id=user_id)
+        except Exception:
+            return {"total_value": 0.0}
 
-    # Today's spending
-    today_start = datetime(now.year, now.month, now.day, tzinfo=timezone.utc)
-    today_spending = await _sum([
-        {"$match": {"user_id": user_id, "type": "expense", "timestamp": {"$gte": today_start}}},
-        {"$group": {"_id": None, "total": {"$sum": "$amount"}}},
-    ])
+    async def _get_cats():
+        cat_result = await db.transactions.aggregate([
+            {"$match": {"user_id": user_id, "type": "expense", "timestamp": {"$gte": month_start}}},
+            {"$group": {"_id": "$category", "total": {"$sum": "$amount"}}},
+            {"$sort": {"total": -1}},
+            {"$limit": 6},
+        ]).to_list(6)
+        if not cat_result:
+            return [], None
+        return [{"category": r["_id"], "amount": r["total"]} for r in cat_result], cat_result[0]["_id"]
 
-    # Weekly spending (last 7 days)
-    week_data = []
+    async def _get_recent():
+        recent_txns = []
+        async for doc in db.transactions.find({"user_id": user_id}).sort("timestamp", -1).limit(5):
+            doc["_id"] = str(doc["_id"])
+            if doc.get("timestamp"):
+                doc["timestamp"] = doc["timestamp"].isoformat()
+            recent_txns.append(doc)
+        return recent_txns
+
+    # Prepare weekly pipelines
+    week_pipelines = []
+    days_info = []
     for i in range(6, -1, -1):
         day = now - timedelta(days=i)
         day_start = datetime(day.year, day.month, day.day, tzinfo=timezone.utc)
         day_end   = day_start + timedelta(days=1)
-        total = await _sum([
-            {"$match": {"user_id": user_id, "type": "expense",
-                        "timestamp": {"$gte": day_start, "$lt": day_end}}},
+        week_pipelines.append([
+            {"$match": {"user_id": user_id, "type": "expense", "timestamp": {"$gte": day_start, "$lt": day_end}}},
             {"$group": {"_id": None, "total": {"$sum": "$amount"}}},
         ])
-        week_data.append({"day": day.strftime("%a"), "date": day.strftime("%d %b"), "amount": total})
+        days_info.append({"day": day.strftime("%a"), "date": day.strftime("%d %b")})
 
-    # Category breakdown (top 6 this month)
-    cat_result = await db.transactions.aggregate([
-        {"$match": {"user_id": user_id, "type": "expense", "timestamp": {"$gte": month_start}}},
-        {"$group": {"_id": "$category", "total": {"$sum": "$amount"}}},
-        {"$sort": {"total": -1}},
-        {"$limit": 6},
-    ]).to_list(6)
-    categories  = [{"category": r["_id"], "amount": r["total"]} for r in cat_result]
-    top_category = cat_result[0]["_id"] if cat_result else None
+    # Execute all core queries simultaneously (MASSIVE speedup)
+    (
+        wallet, 
+        (pending_amount, pending_count), 
+        metals_data, 
+        monthly_expense, 
+        monthly_income, 
+        today_spending, 
+        (categories, top_category), 
+        recent, 
+        budget_res
+    ) = await asyncio.gather(
+        get_or_create_wallet(user_id),
+        _get_pending(),
+        _get_safe_portfolio(),
+        _sum([{"$match": {"user_id": user_id, "type": "expense", "timestamp": {"$gte": month_start}}}, {"$group": {"_id": None, "total": {"$sum": "$amount"}}}]),
+        _sum([{"$match": {"user_id": user_id, "type": "income", "timestamp": {"$gte": month_start}}}, {"$group": {"_id": None, "total": {"$sum": "$amount"}}}]),
+        _sum([{"$match": {"user_id": user_id, "type": "expense", "timestamp": {"$gte": today_start}}}, {"$group": {"_id": None, "total": {"$sum": "$amount"}}}]),
+        _get_cats(),
+        _get_recent(),
+        get_budgets(user_id=user_id)
+    )
 
-    # Recent 5 transactions
-    recent = []
-    async for doc in db.transactions.find({"user_id": user_id}).sort("timestamp", -1).limit(5):
-        doc["_id"]       = str(doc["_id"])
-        doc["timestamp"] = doc["timestamp"].isoformat() if doc.get("timestamp") else None
-        recent.append(doc)
+    # Execute all 7 weekly queries simultaneously
+    week_totals = await asyncio.gather(*[_sum(p) for p in week_pipelines])
+    week_data = [{"day": d["day"], "date": d["date"], "amount": t} for d, t in zip(days_info, week_totals)]
 
-    # Budgets
-    from routers.budgets import get_budgets
-    budget_res = await get_budgets(user_id=user_id)
+    # Calculations
+    cash_balance = wallet.get("cash_balance", 0.0)
+    upi_balance  = wallet.get("upi_balance", 0.0)
+    total_balance = round(cash_balance + upi_balance, 2)
+    metals_value = metals_data.get("total_value", 0.0)
+    net_worth = round(total_balance + pending_amount + metals_value, 2)
+
+    savings_rate = 0.0
+    if monthly_income > 0:
+        savings_rate = round(((monthly_income - monthly_expense) / monthly_income) * 100, 1)
+
     budgets = budget_res.get("budgets", [])
-
-    # Budget alerts — any category over 80%
-    budget_alerts = [
-        b["category"] for b in budgets
-        if b.get("limit", 0) > 0 and (b.get("spent", 0) / b["limit"]) >= 0.8
-    ]
+    budget_alerts = [b["category"] for b in budgets if b.get("limit", 0) > 0 and (b.get("spent", 0) / b["limit"]) >= 0.8]
 
     return {
         "cash_balance":              cash_balance,

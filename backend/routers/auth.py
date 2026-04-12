@@ -12,6 +12,7 @@ from fastapi import APIRouter, HTTPException, Request, Response
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 import os
+import asyncio
 
 from schemas.auth import SignupSchema, LoginSchema, GoogleAuthSchema, TokenSchema
 from services.auth_service import (
@@ -46,9 +47,9 @@ def _set_refresh_cookie(response: Response, refresh_token: str) -> None:
     response.set_cookie(
         key=REFRESH_COOKIE_NAME,
         value=refresh_token,
-        httponly=True,           # JavaScript cannot read this cookie
-        secure=_SECURE_COOKIE,   # True in production (HTTPS), False in dev
-        samesite="lax",          # CSRF protection
+        httponly=True,           
+        secure=_SECURE_COOKIE,   
+        samesite="none" if _SECURE_COOKIE else "lax", 
         max_age=REFRESH_COOKIE_MAX_AGE,
         path="/auth",            # Cookie only sent to /auth/* endpoints
     )
@@ -59,8 +60,8 @@ def _clear_refresh_cookie(response: Response) -> None:
     response.delete_cookie(
         key=REFRESH_COOKIE_NAME,
         httponly=True,
-        secure=_SECURE_COOKIE,   # Must match set_cookie settings exactly
-        samesite="lax",
+        secure=_SECURE_COOKIE,   
+        samesite="none" if _SECURE_COOKIE else "lax",
         path="/auth",
     )
 
@@ -76,18 +77,20 @@ async def signup(data: SignupSchema, request: Request, response: Response):
         if existing:
             if not existing.get("hashed_password"):
                 # Seamlessly link new password to existing Google-oauth account
+                hashed_pw = await asyncio.to_thread(hash_password, data.password)
                 await db.users.update_one(
                     {"_id": existing["_id"]},
-                    {"$set": {"hashed_password": hash_password(data.password), "auth_provider": "linked"}}
+                    {"$set": {"hashed_password": hashed_pw, "auth_provider": "linked"}}
                 )
                 user_id = str(existing["_id"])
             else:
                 raise HTTPException(status_code=400, detail="Email already registered")
         else:
+            hashed_pw = await asyncio.to_thread(hash_password, data.password)
             user_doc = {
                 "name": data.name,
                 "email": data.email,
-                "hashed_password": hash_password(data.password),
+                "hashed_password": hashed_pw,
                 "auth_provider": "email",
             }
             result = await db.users.insert_one(user_doc)
@@ -133,7 +136,8 @@ async def login(data: LoginSchema, request: Request, response: Response):
                 detail="This account uses Google Sign-In. To use a password, create one in 'Create free account'.",
             )
 
-        if not verify_password(data.password, user["hashed_password"]):
+        is_valid = await asyncio.to_thread(verify_password, data.password, user["hashed_password"])
+        if not is_valid:
             raise HTTPException(status_code=401, detail="Invalid email or password")
 
         user_id = str(user["_id"])
@@ -165,8 +169,9 @@ async def login(data: LoginSchema, request: Request, response: Response):
 @limiter.limit("5/minute")
 async def google_login(data: GoogleAuthSchema, request: Request, response: Response):
     """Verify a Google ID token, create/find user, return JWT."""
+    import asyncio
     try:
-        google_info = verify_google_token(data.token)
+        google_info = await asyncio.to_thread(verify_google_token, data.token)
         if not google_info:
             raise HTTPException(status_code=401, detail="Invalid Google token")
 

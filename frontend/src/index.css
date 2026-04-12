@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -8,53 +8,59 @@
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
   body {
-    @apply text-foreground font-sans antialiased overflow-x-hidden selection:bg-accent selection:text-white;
-    background: linear-gradient(135deg, #0B0F1A 0%, #1E1B4B 50%, #000000 100%);
-    background-attachment: fixed;
+    @apply bg-background text-foreground font-sans antialiased overflow-x-hidden selection:bg-accent selection:text-black;
+    min-height: 100vh;
+  }
+  
+  @supports (padding-bottom: env(safe-area-inset-bottom)) {
+    .pb-safe { padding-bottom: env(safe-area-inset-bottom, 20px); }
   }
 }
 
 @layer components {
-  /* Premium Glassmorphism Cards */
+  /* Obsidian Panels - Flat, Matte, Sharp */
   .panel {
-    @apply bg-white/[0.08] backdrop-blur-xl border border-white/20 rounded-[24px] relative overflow-hidden transition-all duration-300;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4), inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+    @apply bg-surface border border-white/5 rounded-xl relative transition-all duration-300;
   }
   
-  .panel:hover {
-    @apply border-white/30 bg-white/[0.12];
-    transform: translateY(-4px) scale(1.01);
-    box-shadow: 0 12px 40px -10px rgba(99,102,241,0.2), 0 8px 32px 0 rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
+  .panel-hover:hover {
+    @apply border-borderFocus;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 40px -10px rgba(0,0,0,0.8);
   }
 
-  /* Stunning primary button */
+  /* Solid Neon Button */
   .btn-primary {
-    @apply text-white font-semibold px-5 py-3 rounded-xl 
-           flex items-center justify-center gap-2 text-sm relative overflow-hidden
-           active:scale-[0.98] transition-all;
-    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-    box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.39), inset 0 1px 0 0 rgba(255,255,255,0.2);
+    @apply bg-accent text-black font-display font-bold uppercase tracking-widest px-6 py-3 rounded text-[13px] transition-all;
+    box-shadow: 0 4px 20px rgba(0, 255, 163, 0.15);
   }
   .btn-primary:hover {
-    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45), inset 0 1px 0 0 rgba(255,255,255,0.2);
+    @apply bg-[#33FFB5] text-black;
+    box-shadow: 0 6px 25px rgba(0, 255, 163, 0.3);
     transform: translateY(-1px);
   }
 
-  /* Navigation Links */
-  .nav-link {
-    @apply flex items-center gap-3 px-4 py-3 rounded-xl text-muted
-           hover:text-foreground hover:bg-white/[0.04] transition-all duration-300
-           font-medium text-[15px];
-  }
-  .nav-link.active {
-    @apply text-foreground bg-accent/10 border border-accent/20;
-    box-shadow: 0 0 15px rgba(99, 102, 241, 0.1);
+  .btn-secondary {
+    @apply bg-[#1A1C21] text-foreground border border-white/10 font-display font-semibold uppercase tracking-widest px-6 py-3 rounded text-[13px] transition-all hover:border-white/20 hover:bg-[#252830];
   }
 
-  /* Beautiful gradient text component */
-  .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-white to-muted;
+  /* Elite Navigation */
+  .nav-link {
+    @apply flex items-center gap-4 px-5 py-3.5 text-muted hover:text-foreground transition-all duration-300 font-medium text-[13px] tracking-wide uppercase font-display;
+  }
+  .nav-link.active {
+    @apply text-accent bg-accent/5 border-l-4 border-accent;
+  }
+
+  /* Typography Utilities */
+  .obsidian-title {
+    @apply font-display font-bold text-foreground text-2xl tracking-tight;
+  }
+  .obsidian-value {
+    @apply font-display font-bold text-foreground tracking-tight tabular-nums;
+  }
+  .obsidian-label {
+    @apply font-display font-semibold text-muted text-[10px] uppercase tracking-[0.2em];
   }
 
   /* Scrollbars */
@@ -63,27 +69,27 @@
   ::-webkit-scrollbar-thumb { @apply bg-white/10 rounded-full hover:bg-white/20; }
 }
 
-/* Stagger Animations — fast so page feels instant */
-.animate-stagger-1 { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.02s both; }
-.animate-stagger-2 { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both; }
-.animate-stagger-3 { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.08s both; }
-.animate-stagger-4 { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.11s both; }
+/* Stagger Animations */
+.animate-stagger-1 { animation: fadeSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.02s both; }
+.animate-stagger-2 { animation: fadeSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both; }
+.animate-stagger-3 { animation: fadeSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.08s both; }
+.animate-stagger-4 { animation: fadeSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.11s both; }
 
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(16px); }
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Skeleton shimmer for fast-perceived loading */
+/* Skeleton shimmer */
 .skeleton {
-  @apply bg-white/5 rounded-xl overflow-hidden relative;
+  @apply bg-[#1C1E26] rounded overflow-hidden relative;
 }
 .skeleton::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.06) 50%, transparent 100%);
-  animation: shimmer 1.4s infinite;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.03) 50%, transparent 100%);
+  animation: shimmer 1.5s infinite;
 }
 @keyframes shimmer {
   from { transform: translateX(-100%); }

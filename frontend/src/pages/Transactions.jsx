@@ -35,7 +35,7 @@ export default function Transactions() {
 
   const [showForm, setShowForm] = useState(false)
   const [formType, setFormType] = useState('expense')
-  const [form, setForm] = useState({ amount: '', category: '', wallet: 'cash', notes: '', source: '' })
+  const [form, setForm] = useState({ amount: '', category: '', wallet: 'upi', notes: '', source: '' })
   const [submitting, setSubmitting] = useState(false)
   const [editingId, setEditingId] = useState(null)
 
@@ -183,8 +183,8 @@ export default function Transactions() {
                 <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-2 ml-1">Wallet</label>
                 <select className="w-full bg-black/50 border border-white/10 rounded-2xl px-4 py-3.5 text-white text-sm font-medium focus:outline-none focus:border-accent"
                   value={form.wallet} onChange={e => setForm({...form, wallet: e.target.value})}>
-                  <option value="cash" className="bg-surface">CASH</option>
                   <option value="upi" className="bg-surface">UPI</option>
+                  <option value="cash" className="bg-surface">CASH</option>
                 </select>
               </div>
               {formType === 'expense' ? (
@@ -226,34 +226,41 @@ export default function Transactions() {
       )}
 
       {/* Filters Area */}
-      <div className="flex flex-wrap gap-4 items-center animate-stagger-2 select-none">
-        <div className="relative flex-1 min-w-[200px] lg:max-w-md">
-          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
-          <input type="text" placeholder="Search notes, categories..." 
-            className="w-full bg-white/[0.04] border border-white/10 rounded-2xl pl-11 pr-4 py-3 text-sm font-medium text-foreground focus:outline-none focus:border-accent/50 focus:bg-white/[0.06] transition-all shadow-inner"
-            value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+      {/* Filters Area */}
+      <div className="flex flex-col gap-4 animate-stagger-2 select-none">
+        <div className="flex flex-wrap gap-4 items-center">
+            <div className="relative flex-1 min-w-[200px] lg:max-w-md">
+              <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
+              <input type="text" placeholder="Search notes, categories..." 
+                className="w-full bg-white/[0.04] border border-white/10 rounded-2xl pl-11 pr-4 py-3 text-sm font-medium text-foreground focus:outline-none focus:border-accent/50 focus:bg-white/[0.06] transition-all shadow-inner"
+                value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+            </div>
+            
+            <div className="flex items-center gap-3 overflow-x-auto pb-1 max-w-full no-scrollbar">
+                <div className="flex p-1 bg-white/[0.04] border border-white/10 rounded-2xl shrink-0">
+                    <button onClick={() => setFilterWallet('')} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${filterWallet === '' ? 'bg-white/10 text-white shadow-sm' : 'text-muted hover:text-white'}`}>All Wallets</button>
+                    <button onClick={() => setFilterWallet('cash')} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${filterWallet === 'cash' ? 'bg-white/10 text-white shadow-sm' : 'text-muted hover:text-white'}`}>CASH</button>
+                    <button onClick={() => setFilterWallet('upi')} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${filterWallet === 'upi' ? 'bg-white/10 text-white shadow-sm' : 'text-muted hover:text-white'}`}>UPI</button>
+                </div>
+
+                <div className="flex p-1 bg-white/[0.04] border border-white/10 rounded-2xl shrink-0">
+                    <button onClick={() => setFilterType('')} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${filterType === '' ? 'bg-white/10 text-white shadow-sm' : 'text-muted hover:text-white'}`}>All</button>
+                    <button onClick={() => setFilterType('income')} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${filterType === 'income' ? 'bg-white/10 text-success shadow-sm' : 'text-muted hover:text-success'}`}>In</button>
+                    <button onClick={() => setFilterType('expense')} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${filterType === 'expense' ? 'bg-white/10 text-danger shadow-sm' : 'text-muted hover:text-danger'}`}>Out</button>
+                    <button onClick={() => setFilterType('lend')} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${filterType === 'lend' ? 'bg-white/10 text-warning shadow-sm' : 'text-muted hover:text-warning'}`}>Lent</button>
+                    <button onClick={() => setFilterType('transfer')} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${filterType === 'transfer' ? 'bg-white/10 text-purple-400 shadow-sm' : 'text-muted hover:text-purple-400'}`}>Transfer</button>
+                </div>
+            </div>
         </div>
-        <div className="flex items-center gap-3 overflow-x-auto pb-1 max-w-full no-scrollbar">
-          <select className="bg-white/[0.04] border border-white/10 text-muted rounded-2xl px-4 py-3 text-sm font-medium focus:outline-none focus:text-foreground focus:border-accent/50 transition-all shadow-inner"
-            value={filterWallet} onChange={e => setFilterWallet(e.target.value)}>
-            <option value="" className="bg-[#121214]">All Wallets</option>
-            <option value="cash" className="bg-[#121214]">CASH</option>
-            <option value="upi" className="bg-[#121214]">UPI</option>
-          </select>
-          <select className="bg-white/[0.04] border border-white/10 text-muted rounded-2xl px-4 py-3 text-sm font-medium focus:outline-none focus:text-foreground focus:border-accent/50 transition-all shadow-inner"
-            value={filterType} onChange={e => setFilterType(e.target.value)}>
-            <option value="" className="bg-[#121214]">All Types</option>
-            <option value="expense" className="bg-[#121214]">Expense</option>
-            <option value="income" className="bg-[#121214]">Income</option>
-            <option value="lend" className="bg-[#121214]">Lent</option>
-            <option value="transfer" className="bg-[#121214]">Transfer</option>
-          </select>
-          <select className="bg-white/[0.04] border border-white/10 text-muted rounded-2xl px-4 py-3 text-sm font-medium focus:outline-none focus:text-foreground focus:border-accent/50 transition-all shadow-inner"
-            value={filterCategory} onChange={e => setFilterCategory(e.target.value)}>
-            <option value="" className="bg-[#121214]">All Categories</option>
-            {categories.map(c => <option key={c._id} value={c.name} className="bg-[#121214]">{c.name}</option>)}
-          </select>
-        </div>
+        
+        {(!filterType || filterType === 'expense') && categories.length > 0 && (
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar shrink-0">
+              <button onClick={() => setFilterCategory('')} className={`px-3 py-1.5 rounded-lg text-[11px] font-bold border transition-all whitespace-nowrap ${filterCategory === '' ? 'bg-white/10 border-white/20 text-white' : 'bg-transparent border-white/5 text-muted hover:border-white/10'}`}>All Categories</button>
+              {categories.map(c => (
+                  <button key={c._id} onClick={() => setFilterCategory(c.name)} className={`px-3 py-1.5 rounded-lg text-[11px] font-bold border transition-all whitespace-nowrap ${filterCategory === c.name ? 'bg-accent/20 border-accent/30 text-accent-light' : 'bg-transparent border-white/5 text-muted hover:border-white/10'}`}>{c.name}</button>
+              ))}
+          </div>
+        )}
       </div>
 
       {/* List */}

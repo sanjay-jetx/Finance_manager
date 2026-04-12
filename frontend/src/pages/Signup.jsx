@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { GoogleLogin } from '@react-oauth/google'
 import api from '../api/axios'
 import toast from 'react-hot-toast'
 import { TrendingUp, Eye, EyeOff, ArrowRight, CheckCircle2, XCircle, Sparkles } from 'lucide-react'
@@ -82,17 +81,6 @@ export default function Signup() {
     } catch (err) {
       triggerShake(err.response?.data?.detail || 'Signup failed. Please try again.')
     } finally { setLoading(false) }
-  }
-
-  const handleGoogle = async (credentialResponse) => {
-    try {
-      const res = await api.post('/auth/google', { token: credentialResponse.credential })
-      login(res.data.access_token, { user_name: res.data.user_name }, res.data.expires_in)
-      toast.success(`Welcome, ${res.data.user_name}! 🎉`)
-      navigate('/dashboard')
-    } catch (err) {
-      toast.error(err.response?.data?.detail || 'Google sign-in failed')
-    }
   }
 
   /* shared input style */
@@ -390,26 +378,6 @@ export default function Signup() {
                   <><span>Create Free Account</span><ArrowRight size={16} /></>
                 )}
               </button>
-
-              {/* Divider */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-                <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.05)' }} />
-                <span style={{ fontSize: 10, fontWeight: 800, color: 'rgba(100,116,139,0.5)', textTransform: 'uppercase', letterSpacing: '3px' }}>or</span>
-                <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.05)' }} />
-              </div>
-
-              {/* Google */}
-              <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <GoogleLogin
-                  onSuccess={handleGoogle}
-                  onError={() => toast.error('Google Sign-In failed')}
-                  theme="filled_black"
-                  size="large"
-                  width="340"
-                  text="signup_with"
-                  shape="pill"
-                />
-              </div>
             </form>
           </div>
 

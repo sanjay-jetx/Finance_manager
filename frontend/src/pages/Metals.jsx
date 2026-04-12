@@ -227,9 +227,9 @@ export default function Metals() {
                         <ChevronDown size={16} className={`text-muted transition-transform ${showPurityDrop ? 'rotate-180' : ''}`} />
                       </button>
                       {showPurityDrop && (
-                        <div className="absolute z-20 left-0 right-0 mt-2 rounded-[16px] border border-white/10 bg-surface shadow-soft-drop overflow-hidden">
+                        <div className="absolute z-50 left-0 right-0 mt-2 rounded-[16px] border border-white/10 bg-[#1e202e] shadow-soft-drop overflow-hidden">
                           {PURITIES.map((p, i) => (
-                            <button key={p.value} type="button" onClick={() => { setGoldPurity(p.value); setShowPurityDrop(false) }}
+                            <button key={p.value} type="button" onMouseDown={(e) => { e.preventDefault(); setGoldPurity(p.value); setShowPurityDrop(false) }}
                               className={`w-full text-left px-5 py-3.5 transition-colors ${i ? 'border-t border-white/5' : ''} ${goldPurity === p.value ? 'bg-warning/10 border-l-2 border-l-warning' : 'hover:bg-white/5 border-l-2 border-l-transparent'}`}>
                               <p className={`font-bold text-sm ${goldPurity === p.value ? 'text-warning' : 'text-foreground'}`}>{p.value}</p>
                               <p className="text-muted text-[10px] uppercase font-bold tracking-widest mt-1">{p.badge}</p>
