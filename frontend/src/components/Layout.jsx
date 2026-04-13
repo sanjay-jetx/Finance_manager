@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, Outlet } from 'react-router-dom'
 import {
   LayoutDashboard, RefreshCw, Wallet, Users, Target,
   LogOut, PieChart as PieChartIcon, Settings, Menu, X, Layers, Activity, Smartphone, CreditCard, Bell
@@ -7,7 +7,7 @@ import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import toast from 'react-hot-toast'
 
-export default function Layout({ children }) {
+export default function Layout() {
   const { pathname } = useLocation()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const { user, logout } = useAuth()
@@ -133,7 +133,7 @@ export default function Layout({ children }) {
         </div>
         
         <div className="p-4 lg:p-10 pt-20 lg:pt-0 max-w-[1400px] mx-auto min-h-full flex flex-col">
-          {children}
+          <Outlet />
         </div>
       </main>
       
