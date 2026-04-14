@@ -3,9 +3,10 @@ import api from '../api/axios'
 import { getCached, setCached } from '../api/cache'
 import { fmt } from '../utils/format'
 import toast from 'react-hot-toast'
+import { useLocation } from 'react-router-dom'
 import {
   Plus, X, ArrowDownRight, ArrowUpRight, RefreshCw,
-  Filter, Banknote, Smartphone, Users, Download, ArrowLeftRight, Target, Trash2, Search, Edit2
+  Filter, Banknote, Smartphone, Users, Download, ArrowLeftRight, Target, Trash2, Search, Edit2, Calendar
 } from 'lucide-react'
 
 import { transactionUiType, isCreditUiType, displayCategoryForUi } from '../utils/transactionsUi'
@@ -37,6 +38,22 @@ export default function Transactions() {
   const [form, setForm] = useState({ amount: '', category: '', wallet: 'upi', notes: '', source: '' })
   const [submitting, setSubmitting] = useState(false)
   const [editingId, setEditingId] = useState(null)
+  const [monthFilter, setMonthFilter] = useState(false)
+
+  const location = useLocation()
+
+  // Apply pre-filters when navigating from dashboard stat cards
+  useEffect(() => {
+    const state = location.state
+    if (state?.filterType) {
+      setFilterType(state.filterType)
+    }
+    if (state?.period === 'month') {
+      setMonthFilter(true)
+    }
+    // Clear state so back-navigation doesn't re-apply
+    window.history.replaceState({}, '')
+  }, [])
 
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this transaction? Your balance will be reversed automatically.')) return
@@ -113,6 +130,20 @@ export default function Transactions() {
 
   const isIncome = formType === 'income'
 
+  // Current-month boundaries for client-side filter
+  const now = new Date()
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime()
+  const monthEnd   = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999).getTime()
+
+  const displayedTxns = monthFilter
+    ? txns.filter(t => {
+        const ts = new Date(t.timestamp).getTime()
+        return ts >= monthStart && ts <= monthEnd
+      })
+    : txns
+
+  const MONTH_LABEL = now.toLocaleString('en-US', { month: 'long', year: 'numeric' })
+
   return (
     <div className="space-y-6 lg:space-y-8 pb-20">
       {/* Header */}
@@ -120,7 +151,10 @@ export default function Transactions() {
         <div>
           <h1 className="text-3xl font-display font-bold tracking-widest uppercase text-foreground">Transactions</h1>
           <p className="obsidian-label mt-2">
-            {totalCount > 0 ? `${txns.length} OF ${totalCount} INTELLIGENCE RECORDS` : `${txns.length} RECORDS`}
+            {monthFilter
+              ? `${displayedTxns.length} TRANSACTIONS · ${MONTH_LABEL}`
+              : totalCount > 0 ? `${txns.length} OF ${totalCount} RECORDS` : `${txns.length} RECORDS`
+            }
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -153,6 +187,22 @@ export default function Transactions() {
           </button>
         </div>
       </div>
+
+      {/* Month Filter Active Banner */}
+      {monthFilter && (
+        <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-accent/5 border border-accent/20 animate-stagger-1">
+          <Calendar size={14} className="text-accent flex-shrink-0" />
+          <p className="text-accent text-[11px] font-bold font-display uppercase tracking-widest flex-1">
+            Showing {filterType === 'expense' ? 'Expenses' : 'Income'} for {MONTH_LABEL}
+          </p>
+          <button
+            onClick={() => { setMonthFilter(false); setFilterType('') }}
+            className="p-1 text-muted hover:text-foreground transition-colors"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      )}
 
       {/* Add Form */}
       {showForm && (
@@ -251,14 +301,29 @@ export default function Transactions() {
             </div>
         </div>
         
-        {(!filterType || filterType === 'expense') && categories.length > 0 && (
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar shrink-0">
+        {(!filterType || filterType === 'expense') && categories.length > 0 && (() => {
+          const PRIORITY = ['Petrol', 'Food & Dining', 'Food']
+          const sorted = [...categories].sort((a, b) => {
+            const ai = PRIORITY.indexOf(a.name)
+            const bi = PRIORITY.indexOf(b.name)
+            const aIsOther = a.name.toLowerCase() === 'other'
+            const bIsOther = b.name.toLowerCase() === 'other'
+            if (aIsOther) return 1
+            if (bIsOther) return -1
+            if (ai !== -1 && bi !== -1) return ai - bi
+            if (ai !== -1) return -1
+            if (bi !== -1) return 1
+            return a.name.localeCompare(b.name)
+          })
+          return (
+            <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar shrink-0">
               <button onClick={() => setFilterCategory('')} className={`px-4 py-2 rounded text-[10px] tracking-widest font-bold uppercase border transition-all whitespace-nowrap ${filterCategory === '' ? 'bg-[#15161A] border-white/10 text-white' : 'bg-transparent border-white/5 text-muted hover:border-white/10'}`}>All Categories</button>
-              {categories.map(c => (
-                  <button key={c._id} onClick={() => setFilterCategory(c.name)} className={`px-4 py-2 rounded text-[10px] tracking-widest font-bold uppercase border transition-all whitespace-nowrap ${filterCategory === c.name ? 'bg-accent/10 border-accent/20 text-accent' : 'bg-transparent border-white/5 text-muted hover:border-white/10'}`}>{c.name}</button>
+              {sorted.map(c => (
+                <button key={c._id} onClick={() => setFilterCategory(c.name)} className={`px-4 py-2 rounded text-[10px] tracking-widest font-bold uppercase border transition-all whitespace-nowrap ${filterCategory === c.name ? 'bg-accent/10 border-accent/20 text-accent' : 'bg-transparent border-white/5 text-muted hover:border-white/10'}`}>{c.name}</button>
               ))}
-          </div>
-        )}
+            </div>
+          )
+        })()}
       </div>
 
       {/* List */}
@@ -297,7 +362,7 @@ export default function Transactions() {
             </div>
 
             <div className="flex flex-col gap-2.5 px-4 pb-6">
-              {txns.map((txn, idx) => {
+              {displayedTxns.map((txn, idx) => {
                 const uiType = transactionUiType(txn);
                 const cfg = typeConfig[uiType] || typeConfig.expense;
                 const Icon = cfg.icon;

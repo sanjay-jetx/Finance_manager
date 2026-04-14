@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { fmt } from '../utils/format'
 import { useDashboard } from '../hooks/useDashboard'
@@ -18,9 +18,12 @@ import api from '../api/axios'
 const PIE_COLORS = ['#00FFA3', '#8B5CF6', '#38BDF8', '#F59E0B', '#F43F5E', '#A855F7']
 
 /* ── Stat mini-card ─────────────────────────────────────────────────────────── */
-function StatCard({ icon: Icon, label, value, sub, accentClass, valueClass = 'text-foreground', delayIdx = 1, badge, gradientClass = '' }) {
+function StatCard({ icon: Icon, label, value, sub, accentClass, valueClass = 'text-foreground', delayIdx = 1, badge, gradientClass = '', onClick }) {
   return (
-    <div className={`panel p-6 flex flex-col animate-stagger-${delayIdx} group ${gradientClass}`}>
+    <div
+      className={`panel p-6 flex flex-col animate-stagger-${delayIdx} group ${gradientClass} ${onClick ? 'cursor-pointer' : ''}`}
+      onClick={onClick}
+    >
       <div className="flex items-start justify-between relative z-10">
         <div className={`w-10 h-10 rounded bg-[#15161A] border border-white/5 flex items-center justify-center flex-shrink-0 group-hover:border-white/10 transition-colors`}>
           <Icon size={14} className={accentClass} />
@@ -355,7 +358,8 @@ export default function Dashboard() {
           accentClass="text-danger" 
           valueClass="text-foreground"
           gradientClass="bg-gradient-to-br from-rose-500/10 via-transparent to-transparent"
-          delayIdx={1} 
+          delayIdx={1}
+          onClick={() => navigate('/transactions', { state: { filterType: 'expense', period: 'month' } })}
         />
         <StatCard 
           icon={ArrowUpRight} 
@@ -364,7 +368,8 @@ export default function Dashboard() {
           accentClass="text-success" 
           valueClass="text-success"
           gradientClass="bg-gradient-to-br from-emerald-500/10 via-transparent to-transparent"
-          delayIdx={2} 
+          delayIdx={2}
+          onClick={() => navigate('/transactions', { state: { filterType: 'income', period: 'month' } })}
         />
         <StatCard 
           icon={Zap} 
