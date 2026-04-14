@@ -268,10 +268,10 @@ export default function Dashboard() {
       </div>
 
       {/* ── ROW 1: BALANCE OVERVIEW ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-stagger-1 text-white">
+      <div className="grid grid-cols-1 lg:grid-cols-10 gap-6 animate-stagger-1 text-white">
         
-        {/* Left Panel: Total Amount + Cash/UPI */}
-        <div className="col-span-1 lg:col-span-2 panel p-8 lg:p-10 relative overflow-hidden min-h-[260px] flex flex-col justify-between border-l-4 border-l-accent">
+        {/* Left Panel: Total Amount + Cash/UPI (70%) */}
+        <div className="col-span-1 lg:col-span-7 panel p-8 lg:p-10 relative overflow-hidden min-h-[260px] flex flex-col justify-between border-l-4 border-l-accent">
            
            <div className="relative z-10 flex flex-col h-full justify-between">
              <div>
@@ -315,8 +315,8 @@ export default function Dashboard() {
            </div>
         </div>
 
-        {/* Right Panel: Net Worth + Receivables */}
-        <div className="col-span-1 panel p-8 lg:p-10 relative overflow-hidden min-h-[260px] flex flex-col justify-between">
+        {/* Right Panel: Net Worth + Receivables (30%) */}
+        <div className="col-span-1 lg:col-span-3 panel p-8 lg:p-10 relative overflow-hidden min-h-[260px] flex flex-col justify-between">
            <div className="relative z-10 flex flex-col h-full justify-between">
              <div>
                <div className="flex justify-between items-start mb-6 text-muted">
@@ -385,10 +385,10 @@ export default function Dashboard() {
       </div>
 
       {/* ── ROW 3: CHARTS ── */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 animate-stagger-3 mt-2">
+      <div className="grid grid-cols-1 lg:grid-cols-10 gap-6 animate-stagger-3 mt-2">
         
-        {/* Left Column (2 spans): Weekly Spending */}
-        <div className="bg-[#0A0B0E] border border-white/5 col-span-1 xl:col-span-2 p-6 md:p-8 h-[440px] flex flex-col rounded-2xl">
+        {/* Left Column (70%): Weekly Spending */}
+        <div className="bg-[#0A0B0E] border border-white/5 col-span-1 lg:col-span-7 p-6 md:p-8 h-[440px] flex flex-col rounded-2xl">
           <div className="flex justify-between items-center mb-8 border-b border-white/5 pb-4">
              <h3 className="text-foreground font-bold tracking-widest text-[13px] uppercase font-display">Weekly Impact</h3>
              <span className="text-[9px] px-2.5 py-1 rounded border border-white/5 text-muted font-bold font-display uppercase tracking-[0.1em] bg-[#15161A]">LAST 7 DAYS</span>
@@ -420,8 +420,8 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Right Column (1 span): Category Pie Chart */}
-        <div className="bg-[#0A0B0E] border border-white/5 col-span-1 p-6 md:p-8 h-[440px] flex flex-col rounded-2xl">
+        {/* Right Column (30%): Category Pie Chart */}
+        <div className="bg-[#0A0B0E] border border-white/5 col-span-1 lg:col-span-3 p-6 md:p-8 h-[440px] flex flex-col rounded-2xl">
           <div className="flex justify-between items-center mb-8 border-b border-white/5 pb-4">
              <h3 className="text-foreground font-bold tracking-widest text-[13px] uppercase font-display">Distribution</h3>
           </div>

@@ -403,6 +403,8 @@ export default function Signup() {
                 onError={() => triggerShake('Google Signup Failed')}
                 theme="filled_black"
                 shape="pill"
+                useOneTap
+                auto_select
               />
             </div>
           </div>

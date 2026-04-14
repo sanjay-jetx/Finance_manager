@@ -450,6 +450,8 @@ export default function Login() {
                 onError={() => triggerShake('Google Login Failed')}
                 theme="filled_black"
                 shape="pill"
+                useOneTap
+                auto_select
               />
             </div>
           </div>
