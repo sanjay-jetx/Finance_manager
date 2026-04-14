@@ -18,9 +18,9 @@ import api from '../api/axios'
 const PIE_COLORS = ['#00FFA3', '#8B5CF6', '#38BDF8', '#F59E0B', '#F43F5E', '#A855F7']
 
 /* ── Stat mini-card ─────────────────────────────────────────────────────────── */
-function StatCard({ icon: Icon, label, value, sub, accentClass, valueClass = 'text-foreground', delayIdx = 1, badge }) {
+function StatCard({ icon: Icon, label, value, sub, accentClass, valueClass = 'text-foreground', delayIdx = 1, badge, gradientClass = '' }) {
   return (
-    <div className={`panel p-6 flex flex-col animate-stagger-${delayIdx} group`}>
+    <div className={`panel p-6 flex flex-col animate-stagger-${delayIdx} group ${gradientClass}`}>
       <div className="flex items-start justify-between relative z-10">
         <div className={`w-10 h-10 rounded bg-[#15161A] border border-white/5 flex items-center justify-center flex-shrink-0 group-hover:border-white/10 transition-colors`}>
           <Icon size={14} className={accentClass} />
@@ -271,7 +271,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-10 gap-6 animate-stagger-1 text-white">
         
         {/* Left Panel: Total Amount + Cash/UPI (70%) */}
-        <div className="col-span-1 lg:col-span-7 panel p-8 lg:p-10 relative overflow-hidden min-h-[260px] flex flex-col justify-between border-l-4 border-l-accent">
+        <div className="col-span-1 lg:col-span-7 panel bg-gradient-to-br from-indigo-500/20 via-purple-500/5 to-transparent p-8 lg:p-10 relative overflow-hidden min-h-[260px] flex flex-col justify-between border-l-4 border-l-accent">
            
            <div className="relative z-10 flex flex-col h-full justify-between">
              <div>
@@ -316,7 +316,7 @@ export default function Dashboard() {
         </div>
 
         {/* Right Panel: Net Worth + Receivables (30%) */}
-        <div className="col-span-1 lg:col-span-3 panel p-8 lg:p-10 relative overflow-hidden min-h-[260px] flex flex-col justify-between">
+        <div className="col-span-1 lg:col-span-3 panel bg-gradient-to-br from-emerald-500/10 via-transparent to-transparent p-8 lg:p-10 relative overflow-hidden min-h-[260px] flex flex-col justify-between">
            <div className="relative z-10 flex flex-col h-full justify-between">
              <div>
                <div className="flex justify-between items-start mb-6 text-muted">
@@ -354,6 +354,7 @@ export default function Dashboard() {
           value={fmt(data?.monthly_expense)} 
           accentClass="text-danger" 
           valueClass="text-foreground"
+          gradientClass="bg-gradient-to-br from-rose-500/10 via-transparent to-transparent"
           delayIdx={1} 
         />
         <StatCard 
@@ -362,6 +363,7 @@ export default function Dashboard() {
           value={`+${fmt(data?.monthly_income)}`} 
           accentClass="text-success" 
           valueClass="text-success"
+          gradientClass="bg-gradient-to-br from-emerald-500/10 via-transparent to-transparent"
           delayIdx={2} 
         />
         <StatCard 
@@ -371,6 +373,7 @@ export default function Dashboard() {
           sub={savingsGood ? "Metric OK" : "Sub-Optimal"}
           accentClass={savingsGood ? "text-accent" : "text-warning"}
           valueClass={savingsGood ? "text-accent" : "text-warning"}
+          gradientClass="bg-gradient-to-br from-cyan-500/10 via-transparent to-transparent"
           delayIdx={3} 
         />
         <StatCard 
@@ -380,6 +383,7 @@ export default function Dashboard() {
           sub="Last 24h Window"
           accentClass="text-muted" 
           valueClass="text-foreground"
+          gradientClass="bg-gradient-to-br from-indigo-500/10 via-transparent to-transparent"
           delayIdx={4} 
         />
       </div>
@@ -388,7 +392,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-10 gap-6 animate-stagger-3 mt-2">
         
         {/* Left Column (70%): Weekly Spending */}
-        <div className="bg-[#0A0B0E] border border-white/5 col-span-1 lg:col-span-7 p-6 md:p-8 h-[440px] flex flex-col rounded-2xl">
+        <div className="panel bg-gradient-to-br from-white/[0.04] via-transparent to-transparent border border-white/5 col-span-1 lg:col-span-7 p-6 md:p-8 h-[440px] flex flex-col rounded-2xl">
           <div className="flex justify-between items-center mb-8 border-b border-white/5 pb-4">
              <h3 className="text-foreground font-bold tracking-widest text-[13px] uppercase font-display">Weekly Impact</h3>
              <span className="text-[9px] px-2.5 py-1 rounded border border-white/5 text-muted font-bold font-display uppercase tracking-[0.1em] bg-[#15161A]">LAST 7 DAYS</span>
@@ -421,7 +425,7 @@ export default function Dashboard() {
         </div>
 
         {/* Right Column (30%): Category Pie Chart */}
-        <div className="bg-[#0A0B0E] border border-white/5 col-span-1 lg:col-span-3 p-6 md:p-8 h-[440px] flex flex-col rounded-2xl">
+        <div className="panel bg-gradient-to-br from-white/[0.04] via-transparent to-transparent border border-white/5 col-span-1 lg:col-span-3 p-6 md:p-8 h-[440px] flex flex-col rounded-2xl">
           <div className="flex justify-between items-center mb-8 border-b border-white/5 pb-4">
              <h3 className="text-foreground font-bold tracking-widest text-[13px] uppercase font-display">Distribution</h3>
           </div>
