@@ -97,7 +97,7 @@ function QuickAddModal({ onClose, onSuccess }) {
         <div className={`absolute top-0 left-0 w-1 h-full ${isIncome ? 'bg-accent' : isTransfer ? 'bg-purple-500' : 'bg-danger'}`} />
 
         <div className="flex items-center justify-between mb-6">
-          <h3 className="obsidian-label text-foreground">LOG ACTIVITY</h3>
+          <h3 className="obsidian-label text-foreground">ADD TRANSACTION</h3>
           <button onClick={onClose} className="p-1.5 rounded bg-[#15161A] border border-white/5 text-muted hover:text-foreground transition-colors"><X size={16} /></button>
         </div>
 
@@ -110,7 +110,7 @@ function QuickAddModal({ onClose, onSuccess }) {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-3 ml-1 flex justify-between">Net Impact (₹)</label>
+            <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-3 ml-1 flex justify-between">Amount (₹)</label>
             <div className="relative group">
               <span className="absolute left-5 top-1/2 -translate-y-1/2 text-muted font-display font-bold text-xl group-focus-within:text-white">₹</span>
               <input type="number" min="1" step="0.01" autoFocus required placeholder="0.00"
@@ -123,7 +123,7 @@ function QuickAddModal({ onClose, onSuccess }) {
             {isTransfer ? (
               <>
                 <div>
-                  <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-3 ml-1">From Vault</label>
+                  <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-3 ml-1">From Account</label>
                   <select className="w-full bg-[#15161A] border border-white/5 rounded-lg px-5 py-4 text-white text-sm font-display focus:outline-none focus:border-white/20 uppercase tracking-widest"
                     value={wallet} onChange={e => setWallet(e.target.value)}>
                     <option value="upi" className="bg-surface">UPI</option>
@@ -131,7 +131,7 @@ function QuickAddModal({ onClose, onSuccess }) {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-3 ml-1">To Vault</label>
+                  <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-3 ml-1">To Account</label>
                   <select className="w-full bg-[#15161A] border border-white/5 rounded-lg px-5 py-4 text-white text-sm font-display focus:outline-none focus:border-white/20 uppercase tracking-widest"
                     value={toWallet} onChange={e => setToWallet(e.target.value)}>
                     <option value="upi" className="bg-surface">UPI</option>
@@ -143,7 +143,7 @@ function QuickAddModal({ onClose, onSuccess }) {
               <>
                 <div>
                   <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-3 ml-1">
-                    {!isIncome ? 'Classification' : 'Source'}
+                    {!isIncome ? 'Type' : 'Source'}
                   </label>
                   <select value={!isIncome ? cat : src} onChange={e => !isIncome ? setCat(e.target.value) : setSrc(e.target.value)}
                     className="w-full bg-[#15161A] border border-white/5 rounded-lg px-4 py-4 text-white text-sm font-display focus:outline-none focus:border-white/20">
@@ -151,7 +151,7 @@ function QuickAddModal({ onClose, onSuccess }) {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-3 ml-1">Vault</label>
+                  <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-3 ml-1">Account</label>
                   <select className="w-full bg-[#15161A] border border-white/5 rounded-lg px-5 py-4 text-white text-sm font-display focus:outline-none focus:border-white/20 uppercase tracking-widest"
                     value={wallet} onChange={e => setWallet(e.target.value)}>
                     <option value="upi" className="bg-surface">UPI</option>
@@ -262,7 +262,7 @@ export default function Dashboard() {
           
           <button onClick={() => setShowQuickAdd(true)} className="btn-primary flex items-center gap-2 h-[42px]">
             <Plus size={16} />
-            Log Activity
+            Add Transaction
           </button>
         </div>
       </div>
@@ -278,7 +278,7 @@ export default function Dashboard() {
                <div className="flex justify-between items-start mb-6">
                   <div className="flex items-center gap-2 text-accent">
                      <Target size={14} />
-                     <span className="text-[10px] font-bold uppercase tracking-[0.2em] font-display">Consolidated Vaults</span>
+                     <span className="text-[10px] font-bold uppercase tracking-[0.2em] font-display">Total Balance</span>
                   </div>
                </div>
                
@@ -291,7 +291,7 @@ export default function Dashboard() {
 
              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-8 lg:gap-12 mt-auto pt-6 border-t border-white/5 w-full">
                <div className="flex-1 w-full">
-                 <p className="text-muted text-[10px] font-bold font-display uppercase tracking-[0.15em] mb-3">Cash Vault</p>
+                 <p className="text-muted text-[10px] font-bold font-display uppercase tracking-[0.15em] mb-3">Cash Account</p>
                  <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded bg-[#15161A] border border-white/5 flex items-center justify-center flex-shrink-0">
                        <Banknote size={16} className="text-accent" />
@@ -303,7 +303,7 @@ export default function Dashboard() {
                <div className="hidden sm:block flex-shrink-0 w-px h-12 bg-white/5"></div>
                
                <div className="flex-1 w-full">
-                 <p className="text-muted text-[10px] font-bold font-display uppercase tracking-[0.15em] mb-3">UPI Platform</p>
+                 <p className="text-muted text-[10px] font-bold font-display uppercase tracking-[0.15em] mb-3">UPI Account</p>
                  <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded bg-[#15161A] border border-white/5 flex items-center justify-center flex-shrink-0">
                        <Smartphone size={16} className="text-[#38BDF8]" />

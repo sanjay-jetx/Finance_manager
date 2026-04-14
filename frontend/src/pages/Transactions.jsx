@@ -118,7 +118,7 @@ export default function Transactions() {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4 animate-stagger-1">
         <div>
-          <h1 className="text-3xl font-display font-bold tracking-widest uppercase text-foreground">Activity Ledger</h1>
+          <h1 className="text-3xl font-display font-bold tracking-widest uppercase text-foreground">Transactions</h1>
           <p className="obsidian-label mt-2">
             {totalCount > 0 ? `${txns.length} OF ${totalCount} INTELLIGENCE RECORDS` : `${txns.length} RECORDS`}
           </p>
@@ -137,11 +137,11 @@ export default function Transactions() {
               }
             }
           }} className="panel px-4 py-3 bg-[#1F0A0E] hover:bg-[#2A0510] border border-[#FF3366]/20 text-danger transition-colors flex items-center gap-3 font-display uppercase tracking-widest font-bold text-[10px]">
-            <Trash2 size={14} /> <span className="hidden sm:inline">Purge Data</span>
+            <Trash2 size={14} /> <span className="hidden sm:inline">Clear Transactions</span>
           </button>
           
           <button onClick={handleExport} className="panel px-4 py-3 hover:bg-surfaceHover border border-white/5 text-muted hover:text-foreground transition-colors flex items-center gap-3 font-display uppercase tracking-widest font-bold text-[10px]">
-            <Download size={14} /> <span className="hidden sm:inline">Export Log</span>
+            <Download size={14} /> <span className="hidden sm:inline">Export Transactions</span>
           </button>
           <button onClick={() => {
               if (showForm) { setShowForm(false); setEditingId(null); setForm({ amount:'', category:'', wallet:'cash', notes:'', source:'' }) }
@@ -149,7 +149,7 @@ export default function Transactions() {
             }}
             className="btn-primary flex items-center gap-2">
             {showForm ? <X size={16} /> : <Plus size={16} />}
-            {showForm ? 'Cancel' : 'Log Activity'}
+            {showForm ? 'Cancel' : 'Add Transaction'}
           </button>
         </div>
       </div>
@@ -158,7 +158,7 @@ export default function Transactions() {
       {showForm && (
         <div className="panel p-6 sm:p-8 animate-stagger-2 relative overflow-hidden bg-surface/60 backdrop-blur-3xl border border-white/[0.08] shadow-[0_12px_40px_rgba(0,0,0,0.6)]">
           <div className={`absolute top-0 left-0 w-1 h-full ${isIncome ? 'bg-accent' : 'bg-danger'}`} />
-          <h3 className="obsidian-label text-foreground mb-6">{editingId ? 'EDIT INTELLIGENCE RECORD' : 'LOG ACTIVITY'}</h3>
+          <h3 className="obsidian-label text-foreground mb-6">{editingId ? 'EDIT INTELLIGENCE RECORD' : 'ADD TRANSACTION'}</h3>
           
           <div className="flex p-1.5 bg-[#15161A] rounded-[4px] border border-white/5 mb-6 max-w-sm relative">
             <div className={`absolute top-1.5 bottom-1.5 w-[calc(50%-6px)] bg-[#1A1C21] rounded shadow-[0_0_10px_rgba(0,0,0,0.5)] transition-all duration-300 ${isIncome ? 'translate-x-full' : 'translate-x-0'}`} />
@@ -168,7 +168,7 @@ export default function Transactions() {
 
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-3 ml-1">Net Impact (₹)</label>
+              <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-3 ml-1">Amount (₹)</label>
               <div className="relative group">
                 <span className="absolute left-5 top-1/2 -translate-y-1/2 text-muted font-display font-bold text-xl group-focus-within:text-white">₹</span>
                 <input type="number" min="1" step="0.01" required placeholder="0.00"
@@ -179,7 +179,7 @@ export default function Transactions() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-3 ml-1">Wallet/Vault</label>
+                <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-3 ml-1">Account</label>
                 <select className="w-full bg-[#15161A] border border-white/5 rounded-lg px-5 py-4 text-white text-sm font-display focus:outline-none focus:border-accent"
                   value={form.wallet} onChange={e => setForm({...form, wallet: e.target.value})}>
                   <option value="upi" className="bg-surface">UPI</option>
@@ -236,7 +236,7 @@ export default function Transactions() {
             
             <div className="flex items-center gap-3 overflow-x-auto pb-1 max-w-full no-scrollbar">
                 <div className="flex p-1.5 bg-[#0C0D10] border border-white/5 rounded-lg shrink-0">
-                    <button onClick={() => setFilterWallet('')} className={`px-5 py-2.5 rounded text-[10px] tracking-widest font-bold uppercase transition-all ${filterWallet === '' ? 'bg-[#15161A] text-white' : 'text-muted hover:text-white'}`}>All Vaults</button>
+                    <button onClick={() => setFilterWallet('')} className={`px-5 py-2.5 rounded text-[10px] tracking-widest font-bold uppercase transition-all ${filterWallet === '' ? 'bg-[#15161A] text-white' : 'text-muted hover:text-white'}`}>All Accounts</button>
                     <button onClick={() => setFilterWallet('cash')} className={`px-5 py-2.5 rounded text-[10px] tracking-widest font-bold uppercase transition-all ${filterWallet === 'cash' ? 'bg-[#15161A] text-white' : 'text-muted hover:text-white'}`}>CASH</button>
                     <button onClick={() => setFilterWallet('upi')} className={`px-5 py-2.5 rounded text-[10px] tracking-widest font-bold uppercase transition-all ${filterWallet === 'upi' ? 'bg-[#15161A] text-white' : 'text-muted hover:text-white'}`}>UPI</button>
                 </div>
@@ -291,9 +291,9 @@ export default function Transactions() {
             {/* Header Row */}
             <div className="grid grid-cols-12 gap-4 px-8 py-5 border-b border-white/5 text-[10px] font-bold uppercase tracking-[0.2em] text-muted font-display">
                 <div className="col-span-12 sm:col-span-5 lg:col-span-5">Record Identifier</div>
-                <div className="col-span-hidden sm:col-span-4 lg:col-span-3 hidden sm:block">Classification</div>
-                <div className="col-span-4 lg:col-span-2 hidden lg:block">Execution Date</div>
-                <div className="col-span-hidden sm:col-span-3 lg:col-span-2 hidden sm:block text-right">Impact</div>
+                <div className="col-span-hidden sm:col-span-4 lg:col-span-3 hidden sm:block">Type</div>
+                <div className="col-span-4 lg:col-span-2 hidden lg:block">Date</div>
+                <div className="col-span-hidden sm:col-span-3 lg:col-span-2 hidden sm:block text-right">Amount</div>
             </div>
 
             <div className="flex flex-col">
@@ -312,7 +312,7 @@ export default function Transactions() {
                       </div>
                       <div className="min-w-0">
                         <p className="text-foreground font-display font-semibold text-[13px] truncate">{txn.notes || txn.source || txn.category || cfg.label}</p>
-                        <p className="text-muted text-[10px] mt-1 hidden sm:block">{txn.wallet === 'cash' ? 'Cash Vault' : 'UPI Platform'}</p>
+                        <p className="text-muted text-[10px] mt-1 hidden sm:block">{txn.wallet === 'cash' ? 'Cash Account' : 'UPI Account'}</p>
                         <div className="sm:hidden flex items-center gap-2 mt-1">
                           <p className={`obsidian-value text-[14px] ${isCredit ? 'text-success' : 'text-foreground'}`}>
                             {isCredit ? '+' : '-'}{fmt(txn.amount)}
