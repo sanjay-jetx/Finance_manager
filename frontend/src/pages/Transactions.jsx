@@ -289,14 +289,14 @@ export default function Transactions() {
       ) : (
         <div className="panel animate-stagger-3 mt-4">
             {/* Header Row */}
-            <div className="grid grid-cols-12 gap-4 px-8 py-5 border-b border-white/5 text-[10px] font-bold uppercase tracking-[0.2em] text-muted font-display">
-                <div className="col-span-12 sm:col-span-5 lg:col-span-5">Record Identifier</div>
+            <div className="grid grid-cols-12 gap-4 px-8 py-5 text-[10px] font-bold uppercase tracking-[0.2em] text-muted font-display mb-2">
+                <div className="col-span-12 sm:col-span-5 lg:col-span-5 pl-2">Record Identifier</div>
                 <div className="col-span-hidden sm:col-span-4 lg:col-span-3 hidden sm:block">Type</div>
                 <div className="col-span-4 lg:col-span-2 hidden lg:block">Date</div>
-                <div className="col-span-hidden sm:col-span-3 lg:col-span-2 hidden sm:block text-right">Amount</div>
+                <div className="col-span-hidden sm:col-span-3 lg:col-span-2 hidden sm:block text-right pr-2">Amount</div>
             </div>
 
-            <div className="flex flex-col">
+            <div className="flex flex-col gap-2.5 px-4 pb-6">
               {txns.map((txn, idx) => {
                 const uiType = transactionUiType(txn);
                 const cfg = typeConfig[uiType] || typeConfig.expense;
@@ -304,17 +304,23 @@ export default function Transactions() {
                 const isCredit = isCreditUiType(uiType);
                 const isTransfer = uiType === 'transfer';
                 
+                const boxStyle = isTransfer
+                  ? 'bg-gradient-to-r from-purple-500/[0.08] to-transparent border border-purple-500/10 hover:border-purple-500/30 hover:from-purple-500/[0.12]'
+                  : isCredit
+                  ? 'bg-gradient-to-r from-success/[0.08] to-transparent border border-success/10 hover:border-success/30 hover:from-success/[0.12]'
+                  : 'bg-gradient-to-r from-danger/[0.08] to-transparent border border-danger/10 hover:border-danger/30 hover:from-danger/[0.12]';
+
                 return (
-                  <div key={txn._id} className={`grid grid-cols-12 gap-4 px-8 py-5 items-center hover:bg-white/[0.02] transition-colors border-b border-white/[0.03] relative group ${idx === txns.length -1 ? 'border-b-0' : ''}`}>
-                    <div className="col-span-12 sm:col-span-5 lg:col-span-5 flex items-center gap-5">
-                      <div className="w-10 h-10 rounded bg-[#15161A] border border-white/5 flex items-center justify-center flex-shrink-0">
-                        {isTransfer ? <RefreshCw size={14} className="text-muted" /> : isCredit ? <ArrowUpRight size={14} className="text-muted"/> : <ArrowDownRight size={14} className="text-muted" />}
+                  <div key={txn._id} className={`grid grid-cols-12 gap-4 px-4 py-4 rounded-xl items-center transition-all relative group ${boxStyle}`}>
+                    <div className="col-span-12 sm:col-span-5 lg:col-span-5 flex items-center gap-4">
+                      <div className={`w-10 h-10 rounded-lg bg-[#0C0D10]/50 border border-white/5 flex items-center justify-center flex-shrink-0 shadow-inner`}>
+                        {isTransfer ? <RefreshCw size={14} className="text-purple-400" /> : isCredit ? <ArrowUpRight size={14} className="text-success"/> : <ArrowDownRight size={14} className="text-danger" />}
                       </div>
                       <div className="min-w-0">
                         <p className="text-foreground font-display font-semibold text-[13px] truncate">{txn.notes || txn.source || txn.category || cfg.label}</p>
                         <p className="text-muted text-[10px] mt-1 hidden sm:block">{txn.wallet === 'cash' ? 'Cash Account' : 'UPI Account'}</p>
                         <div className="sm:hidden flex items-center gap-2 mt-1">
-                          <p className={`obsidian-value text-[14px] ${isCredit ? 'text-success' : 'text-foreground'}`}>
+                          <p className={`obsidian-value text-[14px] ${isCredit ? 'text-success' : 'text-danger'}`}>
                             {isCredit ? '+' : '-'}{fmt(txn.amount)}
                           </p>
                         </div>
@@ -322,7 +328,7 @@ export default function Transactions() {
                     </div>
                     
                     <div className="col-span-hidden sm:col-span-4 lg:col-span-3 hidden sm:flex items-center">
-                       <span className={`text-[9px] font-bold uppercase tracking-[0.1em] px-2.5 py-1 rounded font-display bg-[#15161A] border border-white/5`}>
+                       <span className={`text-[9px] font-bold uppercase tracking-[0.1em] px-2.5 py-1 rounded font-display bg-[#0C0D10]/50 border border-white/5 shadow-inner`}>
                          {cfg.label}
                        </span>
                     </div>
@@ -331,23 +337,23 @@ export default function Transactions() {
                       <span className="text-muted text-[11px] font-semibold tracking-widest">{txn.timestamp ? new Date(txn.timestamp).toLocaleDateString('en-US',{month:'short', day:'2-digit', year:'numeric'}) : ''}</span>
                     </div>
 
-                    <div className="col-span-hidden sm:col-span-3 lg:col-span-2 text-right hidden sm:block">
-                      <p className={`obsidian-value text-[15px] ${isCredit ? 'text-success' : 'text-foreground'}`}>
+                    <div className="col-span-hidden sm:col-span-3 lg:col-span-2 text-right hidden sm:block pr-2">
+                      <p className={`obsidian-value text-[15px] ${isCredit ? 'text-success' : 'text-danger'}`}>
                         {isCredit ? '+' : '-'}{fmt(txn.amount)}
                       </p>
                     </div>
 
                     {/* Actions Menu overlay */}
-                    <div className="absolute right-6 top-1/2 -translate-y-1/2 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-l from-[#0A0B0E] via-[#0A0B0E]/90 to-transparent pl-8 py-2">
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity bg-[#0C0D10]/90 backdrop-blur pb-1 px-3 py-1.5 rounded-lg border border-white/10 shadow-xl">
                         {['expense', 'income'].includes(txn.type) && (
                           <button onClick={(e) => { e.stopPropagation(); handleEdit(txn); }} title="Edit transaction"
-                            className="p-2 text-muted hover:text-accent transition-colors drop-shadow-md">
-                            <Edit2 size={14} />
+                            className="p-1.5 text-muted hover:text-accent transition-colors drop-shadow-md">
+                            <Edit2 size={12} />
                           </button>
                         )}
                         <button onClick={(e) => { e.stopPropagation(); handleDelete(txn._id); }} title="Delete transaction"
-                          className="p-2 text-muted hover:text-danger transition-colors drop-shadow-md">
-                          <Trash2 size={14} />
+                          className="p-1.5 text-muted hover:text-danger transition-colors drop-shadow-md">
+                          <Trash2 size={12} />
                         </button>
                     </div>
                   </div>
