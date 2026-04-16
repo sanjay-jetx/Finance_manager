@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import api from '../api/axios'
 import toast from 'react-hot-toast'
 import { GoogleLogin } from '@react-oauth/google'
-import { TrendingUp, Eye, EyeOff, ArrowRight, CheckCircle2, XCircle, Sparkles } from 'lucide-react'
+import { Eye, EyeOff, Layers, Lock, Mail, ArrowRight, Shield, Terminal, CheckSquare, XSquare, User } from 'lucide-react'
 
 /* ─── Password strength ──────────────────────────────────────────────── */
 function getStrength(p) {
@@ -16,23 +16,17 @@ function getStrength(p) {
   return s
 }
 const STRENGTH = [
-  { label: 'Too short', bar: '#ef4444', text: '#f87171' },
-  { label: 'Weak',      bar: '#f97316', text: '#fb923c' },
-  { label: 'Fair',      bar: '#eab308', text: '#fbbf24' },
-  { label: 'Good',      bar: '#22c55e', text: '#4ade80' },
-  { label: 'Strong',    bar: '#10b981', text: '#34d399' },
+  { label: 'Unacceptable', bar: 'bg-danger', text: 'text-danger' },
+  { label: 'Weak', bar: 'bg-[#fb923c]', text: 'text-[#fb923c]' },
+  { label: 'Fair', bar: 'bg-[#fbbf24]', text: 'text-[#fbbf24]' },
+  { label: 'Good', bar: 'bg-[#a3e635]', text: 'text-[#a3e635]' },
+  { label: 'Secure', bar: 'bg-accent', text: 'text-accent' },
 ]
 
 function Req({ met, text }) {
   return (
-    <span style={{
-      display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 600,
-      color: met ? '#34d399' : 'rgba(100,116,139,0.5)',
-      transition: 'color 0.3s',
-    }}>
-      {met
-        ? <CheckCircle2 size={11} color="#34d399" />
-        : <XCircle      size={11} color="rgba(100,116,139,0.4)" />}
+    <span className={`flex items-center gap-1.5 text-[10px] font-bold tracking-wider font-display uppercase ${met ? 'text-accent' : 'text-muted/50'} transition-colors`}>
+      {met ? <CheckSquare size={12} className="text-accent" /> : <XSquare size={12} className="text-muted/40" />}
       {text}
     </span>
   )
@@ -40,11 +34,11 @@ function Req({ met, text }) {
 
 /* ─── Feature check list for left panel ─────────────────────────────── */
 const FEATURES = [
-  { text: 'Cash & UPI wallet management',   color: '#10b981' },
-  { text: 'Smart budget alerts & goals',     color: '#06b6d4' },
-  { text: 'Lending & receivables tracker',   color: '#8b5cf6' },
-  { text: 'Beautiful charts & analytics',    color: '#f59e0b' },
-  { text: 'Real-time performance insights',  color: '#ec4899' },
+  'Cash & UPI Distributed Ledger',
+  'Real-Time Capital Flow Analysis',
+  'Encrypted Receivable Tracking',
+  'Automated Budget Ops',
+  'Zero-Latency Synchronization',
 ]
 
 export default function Signup() {
@@ -53,7 +47,6 @@ export default function Signup() {
   const [form, setForm]     = useState({ name: '', email: '', password: '' })
   const [loading, setLoading]   = useState(false)
   const [showPass, setShowPass] = useState(false)
-  const [activeField, setActiveField] = useState(null)
   const [emailOk, setEmailOk]   = useState(null)
   const [shake, setShake]       = useState(false)
 
@@ -71,383 +64,262 @@ export default function Signup() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (emailOk === false) { triggerShake('Enter a valid email address'); return }
-    if (strength < 2) { triggerShake('Password is too weak — add uppercase & numbers'); return }
+    if (emailOk === false) { triggerShake('Invalid email sequence'); return }
+    if (strength < 2) { triggerShake('Security clearance denied: Password too weak'); return }
     setLoading(true)
     try {
       const res = await api.post('/auth/signup', form)
       login(res.data.access_token, { user_name: res.data.user_name }, res.data.expires_in)
-      toast.success(`Welcome to FinTrack, ${res.data.user_name}! 🎉`)
+      toast.success(`System Access Granted. Welcome, ${res.data.user_name}.`)
       navigate('/dashboard')
     } catch (err) {
-      triggerShake(err.response?.data?.detail || 'Signup failed. Please try again.')
+      triggerShake(err.response?.data?.detail || 'Registration sequence failed')
     } finally { setLoading(false) }
   }
 
-  /* shared input style */
-  const inputStyle = (field) => ({
-    width: '100%', boxSizing: 'border-box',
-    background: activeField === field ? 'rgba(16,185,129,0.05)' : 'rgba(255,255,255,0.03)',
-    border: `1.5px solid ${
-      activeField === field ? 'rgba(16,185,129,0.5)' : 'rgba(255,255,255,0.07)'
-    }`,
-    borderRadius: 14, color: '#fff', fontSize: 15, fontWeight: 500, outline: 'none',
-    boxShadow: activeField === field ? '0 0 0 3px rgba(16,185,129,0.08)' : 'none',
-    transition: 'all 0.2s ease',
-  })
-
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', background: '#050508', overflow: 'hidden' }}>
+    <div className="min-h-screen bg-background flex overflow-hidden font-sans relative">
 
-      {/* ══ LEFT PANEL ══════════════════════════════════════════════════════ */}
-      <div style={{ flex: '0 0 44%', position: 'relative', overflow: 'hidden', display: 'none' }}
-           className="lg:flex flex-col justify-between p-14">
+      {/* Background terminal grid */}
+      <div className="absolute inset-0 pointer-events-none opacity-[0.03]"
+           style={{
+             backgroundImage: `linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)`,
+             backgroundSize: '32px 32px'
+           }} />
 
-        {/* Aurora — emerald / teal / cyan */}
-        <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
-          <div style={{
-            position: 'absolute', inset: 0,
-            background: `
-              radial-gradient(ellipse at 20% 20%, rgba(16,185,129,0.28) 0%, transparent 50%),
-              radial-gradient(ellipse at 80% 80%, rgba(6,182,212,0.22) 0%, transparent 50%),
-              radial-gradient(ellipse at 50% 60%, rgba(139,92,246,0.10) 0%, transparent 60%)
-            `,
-            animation: 'auroraShift 10s ease-in-out infinite alternate',
-          }} />
-          <div style={{
-            position: 'absolute', inset: 0, opacity: 0.025,
-            backgroundImage: `linear-gradient(rgba(255,255,255,1) 1px, transparent 1px),linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)`,
-            backgroundSize: '48px 48px',
-          }} />
-        </div>
+      {/* ══ LEFT PANEL (Brand & Value) ══════════════════════════════════════ */}
+      <div className="hidden lg:flex flex-col justify-between p-14 w-[55%] relative border-r border-white/5 z-10 bg-[#0B0C10]">
+        
+        {/* Glow behind text */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-accent/5 rounded-full blur-[120px] pointer-events-none" />
 
         {/* Logo */}
-        <div className="relative z-10" style={{ animation: 'riseIn 0.6s ease-out 0.1s both', display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{
-            width: 38, height: 38, borderRadius: 12,
-            background: 'linear-gradient(135deg, #10b981, #06b6d4)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 0 20px rgba(16,185,129,0.4)',
-          }}>
-            <TrendingUp size={18} color="#fff" />
+        <div className="relative z-10 animate-stagger-1">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded border border-accent/30 bg-accent/5 flex items-center justify-center shadow-[0_0_30px_rgba(0,255,163,0.15)] text-accent">
+              <Layers size={22} />
+            </div>
+            <div className="flex flex-col">
+               <span className="text-white font-display font-bold text-2xl tracking-tight leading-none">FinTrack</span>
+               <span className="text-accent text-[10px] font-bold tracking-[0.4em] mt-2 uppercase">Terminal Ops</span>
+            </div>
           </div>
-          <span style={{ color: '#fff', fontWeight: 900, fontSize: 20, letterSpacing: '-0.5px' }}>FinTrack</span>
         </div>
 
         {/* Hero content */}
-        <div className="relative z-10">
-          <div style={{ animation: 'riseIn 0.7s ease-out 0.2s both', marginBottom: 36 }}>
-            <div style={{
-              display: 'inline-flex', alignItems: 'center', gap: 6, marginBottom: 14,
-              background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)',
-              borderRadius: 999, padding: '5px 14px',
-            }}>
-              <Sparkles size={12} color="#10b981" />
-              <span style={{ color: '#10b981', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '3px' }}>
-                Free Forever
-              </span>
+        <div className="relative z-10 flex-1 flex flex-col justify-center max-w-xl">
+          <div className="animate-stagger-2 mb-10">
+            <div className="inline-flex items-center gap-2 mb-6 border border-accent/20 bg-accent/[0.03] px-4 py-2 rounded">
+              <Terminal size={14} className="text-accent" />
+              <span className="text-accent text-[10px] font-bold uppercase tracking-[0.3em] font-display">Open Access</span>
             </div>
-            <h2 style={{
-              fontSize: 46, fontWeight: 900, color: '#fff', lineHeight: 1.08,
-              letterSpacing: '-0.04em', marginBottom: 16,
-            }}>
-              Start Building<br />
-              <span style={{
-                background: 'linear-gradient(135deg, #10b981, #06b6d4, #8b5cf6)',
-                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-              }}>
-                Real Wealth
-              </span>
+            <h2 className="text-[48px] lg:text-[60px] font-bold text-white leading-[1.05] tracking-tight font-display mb-6">
+              Establish<br />
+              <span className="text-accent">New Identity.</span>
             </h2>
-            <p style={{ color: 'rgba(148,163,184,0.75)', fontSize: 16, fontWeight: 500, lineHeight: 1.6, maxWidth: 360 }}>
-              Join thousands of smart spenders who track every rupee, smash every goal, and grow every month.
+            <p className="text-muted text-[15px] leading-relaxed max-w-sm font-mono">
+              Join operational network. Track every transaction, trace every flow, and command your net worth securely.
             </p>
           </div>
 
           {/* Feature list */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14, animation: 'riseIn 0.7s ease-out 0.35s both' }}>
-            {FEATURES.map(({ text, color }, i) => (
-              <div key={text} style={{
-                display: 'flex', alignItems: 'center', gap: 12,
-                animation: `riseIn 0.5s ease-out ${0.3 + i * 0.1}s both`,
-              }}>
-                <div style={{
-                  width: 28, height: 28, borderRadius: 8, flexShrink: 0,
-                  background: color + '18', border: `1px solid ${color}30`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                  <CheckCircle2 size={14} color={color} />
+          <div className="flex flex-col gap-4 animate-stagger-3">
+            {FEATURES.map((text, i) => (
+              <div key={text} className="flex items-center gap-4" style={{ animationDelay: `${0.3 + i * 0.1}s` }}>
+                <div className="w-8 h-8 rounded border border-accent/20 bg-accent/5 flex items-center justify-center flex-shrink-0">
+                  <CheckSquare size={14} className="text-accent" />
                 </div>
-                <span style={{ color: 'rgba(203,213,225,0.85)', fontSize: 14, fontWeight: 500 }}>{text}</span>
+                <span className="text-muted font-display font-bold text-[11px] uppercase tracking-widest">{text}</span>
               </div>
             ))}
           </div>
         </div>
 
         {/* Footer */}
-        <div className="relative z-10" style={{ animation: 'riseIn 0.6s ease-out 0.6s both' }}>
-          <p style={{ fontSize: 9, fontWeight: 800, color: 'rgba(100,116,139,0.5)', textTransform: 'uppercase', letterSpacing: '3px' }}>
-            © 2025 FinTrack — Your Trusted Financial Partner
-          </p>
+        <div className="relative z-10 animate-stagger-4">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded border border-white/5 bg-surface text-[10px] font-bold tracking-widest text-muted uppercase font-display">
+              <Shield size={12} className="text-accent" /> Enterprise Grade
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* ══ RIGHT PANEL ═════════════════════════════════════════════════════ */}
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px 24px', position: 'relative' }}>
+      {/* ══ RIGHT PANEL (Auth Form) ═════════════════════════════════════════ */}
+      <div className="flex-1 flex items-center justify-center p-6 relative z-10">
 
-        <div style={{
-          position: 'absolute', inset: 0, pointerEvents: 'none',
-          background: 'radial-gradient(ellipse at 60% 50%, rgba(16,185,129,0.05) 0%, transparent 65%)',
-        }} />
-
-        <div style={{ width: '100%', maxWidth: 400, position: 'relative', zIndex: 1 }}>
+        <div className="w-full max-w-[440px]">
 
           {/* Mobile logo */}
-          <div className="lg:hidden" style={{ textAlign: 'center', marginBottom: 28, animation: 'riseIn 0.5s ease-out 0.1s both' }}>
-            <div style={{
-              display: 'inline-flex', width: 52, height: 52, borderRadius: 16,
-              background: 'linear-gradient(135deg, #10b981, #06b6d4)',
-              alignItems: 'center', justifyContent: 'center',
-              boxShadow: '0 0 24px rgba(16,185,129,0.4)', marginBottom: 10,
-            }}>
-              <TrendingUp size={24} color="#fff" />
+          <div className="lg:hidden text-center mb-10 animate-stagger-1">
+            <div className="w-14 h-14 mx-auto rounded border border-accent/20 bg-accent/5 flex items-center justify-center shadow-[0_0_30px_rgba(0,255,163,0.15)] text-accent mb-4">
+              <Layers size={24} />
             </div>
-            <div style={{ color: '#fff', fontWeight: 900, fontSize: 22 }}>FinTrack</div>
+            <div className="text-white font-display font-bold text-2xl tracking-tight">FinTrack</div>
+            <div className="text-accent text-[9px] font-bold tracking-[0.3em] mt-1.5 uppercase">Terminal</div>
           </div>
 
           {/* Header */}
-          <div style={{ marginBottom: 24, animation: 'riseIn 0.6s ease-out 0.15s both' }}>
-            <h1 style={{ color: '#fff', fontSize: 28, fontWeight: 900, letterSpacing: '-0.03em', marginBottom: 5 }}>
-              Create your account
-            </h1>
-            <p style={{ color: 'rgba(100,116,139,0.9)', fontSize: 15, fontWeight: 500 }}>
-              Free forever — no credit card needed
-            </p>
+          <div className="mb-8 animate-stagger-1">
+            <h1 className="text-3xl font-display font-bold text-white tracking-tight mb-2">Register Operator</h1>
+            <p className="text-muted text-[13px] font-mono">Fill operational credentials.</p>
           </div>
 
           {/* Card */}
-          <div style={{
-            borderRadius: 28, padding: '26px 28px', position: 'relative',
-            background: 'linear-gradient(160deg, rgba(17,24,39,0.95), rgba(5,5,8,0.97))',
-            backdropFilter: 'blur(32px)',
-            border: '1px solid rgba(255,255,255,0.07)',
-            boxShadow: '0 40px 80px -20px rgba(0,0,0,0.7)',
-            animation: `riseIn 0.6s ease-out 0.2s both${shake ? ', shake 0.4s ease-in-out' : ''}`,
-          }}>
-            {/* Top gradient border */}
-            <div style={{
-              position: 'absolute', top: 0, left: 28, right: 28, height: 1,
-              background: 'linear-gradient(90deg, transparent, rgba(16,185,129,0.5), rgba(6,182,212,0.4), transparent)',
-            }} />
+          <div className={`panel p-8 sm:p-10 border border-white/[0.04] rounded outline outline-1 outline-white/[0.02] shadow-2xl bg-[#0B0C10] animate-stagger-2 ${shake ? 'animate-shake' : ''}`}>
 
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} className="space-y-5">
 
               {/* Name */}
-              <div style={{ marginBottom: 15 }}>
-                <label style={{ display: 'block', fontSize: 10, fontWeight: 800, color: 'rgba(100,116,139,0.8)', textTransform: 'uppercase', letterSpacing: '2.5px', marginBottom: 7 }}>
-                  Full Name
-                </label>
-                <div style={{ position: 'relative' }}>
+              <div>
+                <label className="block text-[10px] font-bold text-muted uppercase tracking-[0.2em] font-display mb-2 ml-1">Operator Alias</label>
+                <div className="relative group">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-accent transition-colors">
+                    <User size={16} />
+                  </div>
                   <input
-                    id="signup-name" type="text" required placeholder="John Doe"
+                    type="text"
+                    required
+                    placeholder="John Doe"
                     value={form.name}
                     onChange={e => setForm({ ...form, name: e.target.value })}
-                    onFocus={() => setActiveField('name')}
-                    onBlur={()  => setActiveField(null)}
-                    style={{ ...inputStyle('name'), padding: '12px 16px 12px 44px' }}
+                    className="w-full bg-[#121318] border border-white/5 rounded py-4 pl-12 pr-4 text-white font-mono text-[14px] focus:outline-none focus:border-accent transition-all shadow-inner"
                   />
-                  {/* Person icon */}
-                  <div style={{ position: 'absolute', left: 15, top: '50%', transform: 'translateY(-50%)', color: activeField === 'name' ? '#10b981' : 'rgba(100,116,139,0.5)', transition: 'color 0.2s' }}>
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
-                    </svg>
-                  </div>
                 </div>
               </div>
 
               {/* Email */}
-              <div style={{ marginBottom: 15 }}>
-                <label style={{ display: 'block', fontSize: 10, fontWeight: 800, color: 'rgba(100,116,139,0.8)', textTransform: 'uppercase', letterSpacing: '2.5px', marginBottom: 7 }}>
-                  Email Address
-                </label>
-                <div style={{ position: 'relative' }}>
+              <div>
+                <label className="block text-[10px] font-bold text-muted uppercase tracking-[0.2em] font-display mb-2 ml-1">Secure Contact</label>
+                <div className="relative group">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-accent transition-colors">
+                    <Mail size={16} />
+                  </div>
                   <input
-                    id="signup-email" type="email" required placeholder="you@example.com"
+                    type="email"
+                    required
+                    placeholder="operator@fintrack.local"
                     value={form.email}
                     onChange={e => setForm({ ...form, email: e.target.value })}
-                    onFocus={() => setActiveField('email')}
-                    onBlur={()  => setActiveField(null)}
-                    style={{
-                      ...inputStyle('email'),
-                      padding: '12px 36px 12px 44px',
-                      borderColor: emailOk === false ? 'rgba(239,68,68,0.5)'
-                                 : emailOk === true  ? 'rgba(16,185,129,0.5)'
-                                 : activeField === 'email' ? 'rgba(16,185,129,0.5)' : 'rgba(255,255,255,0.07)',
-                    }}
+                    className={`w-full bg-[#121318] border rounded py-4 pl-12 pr-12 text-white font-mono text-[14px] focus:outline-none focus:border-accent transition-all shadow-inner ${
+                      emailOk === false ? 'border-danger' : emailOk === true ? 'border-accent/50' : 'border-white/5'
+                    }`}
                   />
-                  <div style={{ position: 'absolute', left: 15, top: '50%', transform: 'translateY(-50%)', color: activeField === 'email' ? '#10b981' : 'rgba(100,116,139,0.5)', fontSize: 15, fontWeight: 700, transition: 'color 0.2s' }}>@</div>
                   {emailOk !== null && (
-                    <div style={{ position: 'absolute', right: 13, top: '50%', transform: 'translateY(-50%)', width: 7, height: 7, borderRadius: '50%', background: emailOk ? '#10b981' : '#ef4444' }} />
+                    <div className={`absolute right-4 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full ${emailOk ? 'bg-accent shadow-[0_0_8px_rgba(0,255,163,0.8)]' : 'bg-danger shadow-[0_0_8px_rgba(255,51,102,0.8)]'}`} />
                   )}
                 </div>
-                {emailOk === false && form.email.length > 5 && (
-                  <p style={{ color: '#f87171', fontSize: 11, fontWeight: 600, marginTop: 5, marginLeft: 2 }}>
-                    Please enter a valid email address
-                  </p>
-                )}
               </div>
 
               {/* Password */}
-              <div style={{ marginBottom: 18 }}>
-                <label style={{ display: 'block', fontSize: 10, fontWeight: 800, color: 'rgba(100,116,139,0.8)', textTransform: 'uppercase', letterSpacing: '2.5px', marginBottom: 7 }}>
-                  Password
-                </label>
-                <div style={{ position: 'relative' }}>
+              <div>
+                <label className="block text-[10px] font-bold text-muted uppercase tracking-[0.2em] font-display mb-2 ml-1">Master Key</label>
+                <div className="relative group">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-accent transition-colors">
+                    <Lock size={16} />
+                  </div>
                   <input
-                    id="signup-password"
                     type={showPass ? 'text' : 'password'}
                     required
                     placeholder="Min 8 chars, 1 uppercase, 1 number"
                     value={form.password}
                     onChange={e => setForm({ ...form, password: e.target.value })}
-                    onFocus={() => setActiveField('pass')}
-                    onBlur={()  => setActiveField(null)}
-                    style={{ ...inputStyle('pass'), padding: '12px 46px 12px 44px' }}
+                    className="w-full bg-[#121318] border border-white/5 rounded py-4 pl-12 pr-12 text-white font-mono text-[14px] focus:outline-none focus:border-accent transition-all shadow-inner"
                   />
-                  <div style={{ position: 'absolute', left: 15, top: '50%', transform: 'translateY(-50%)', color: activeField === 'pass' ? '#10b981' : 'rgba(100,116,139,0.5)', transition: 'color 0.2s' }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                    </svg>
-                  </div>
-                  <button type="button" onClick={() => setShowPass(!showPass)} style={{
-                    position: 'absolute', right: 13, top: '50%', transform: 'translateY(-50%)',
-                    background: 'none', border: 'none', cursor: 'pointer',
-                    color: 'rgba(100,116,139,0.6)', display: 'flex', alignItems: 'center', padding: 3,
-                  }}>
+                  <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted hover:text-white transition-colors">
                     {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
 
                 {/* Strength bar */}
                 {form.password && (
-                  <div style={{ marginTop: 10 }}>
-                    <div style={{ display: 'flex', gap: 4, marginBottom: 8 }}>
+                  <div className="mt-4 p-4 bg-[#121318] border border-white/5 rounded">
+                    <div className="flex gap-1 mb-3">
                       {[0,1,2,3].map(i => (
-                        <div key={i} style={{
-                          height: 3, flex: 1, borderRadius: 999,
-                          background: i <= strength && sc ? sc.bar : 'rgba(255,255,255,0.06)',
-                          transition: 'background 0.3s ease',
-                        }} />
+                        <div key={i} className={`h-1 flex-1 rounded-full transition-all duration-300 ${i <= strength && sc ? sc.bar : 'bg-white/5'}`} />
                       ))}
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="flex gap-4 flex-wrap">
                         <Req met={form.password.length >= 8}    text="8+ chars" />
-                        <Req met={/[A-Z]/.test(form.password)}  text="Uppercase" />
+                        <Req met={/[A-Z]/.test(form.password)}  text="Upper" />
                         <Req met={/[0-9]/.test(form.password)}  text="Number" />
                         <Req met={/[^A-Za-z0-9]/.test(form.password)} text="Symbol" />
                       </div>
-                      {sc && <span style={{ fontSize: 10, fontWeight: 800, color: sc.text, textTransform: 'uppercase', letterSpacing: '2px' }}>{sc.label}</span>}
+                      {sc && <span className={`text-[9px] font-bold font-display uppercase tracking-widest ${sc.text}`}>{sc.label}</span>}
                     </div>
                   </div>
                 )}
               </div>
 
-              {/* CTA — Emerald */}
+              {/* CTA */}
               <button
-                id="signup-submit"
                 type="submit"
                 disabled={loading}
-                style={{
-                  width: '100%', border: 'none', cursor: loading ? 'not-allowed' : 'pointer',
-                  borderRadius: 16, padding: '15px 24px',
-                  background: loading ? 'rgba(16,185,129,0.4)'
-                    : 'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)',
-                  color: '#000', fontWeight: 900, fontSize: 14,
-                  textTransform: 'uppercase', letterSpacing: '2px',
-                  boxShadow: loading ? 'none' : '0 8px 24px rgba(16,185,129,0.3)',
-                  transition: 'all 0.3s ease',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-                  marginBottom: 18,
-                }}
-                onMouseEnter={e => { if (!loading) { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 12px 32px rgba(16,185,129,0.4)' }}}
-                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = loading ? 'none' : '0 8px 24px rgba(16,185,129,0.3)' }}
+                className="btn-primary w-full h-[52px] mt-2 flex items-center justify-center gap-3 disabled:opacity-70 group bg-surface text-foreground border border-white/5 shadow-none hover:bg-white/5"
               >
                 {loading ? (
-                  <><span style={{ width: 16, height: 16, border: '2.5px solid rgba(0,0,0,0.25)', borderTopColor: '#000', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.7s linear infinite' }} /> Creating Account...</>
+                  <span className="w-4 h-4 border-2 border-accent/30 border-t-accent rounded-full animate-spin" />
                 ) : (
-                  <><span>Create Free Account</span><ArrowRight size={16} /></>
+                  <>
+                    <span className="font-display font-bold uppercase tracking-[0.15em] text-[12px] group-hover:text-accent transition-colors">Initialize</span>
+                    <ArrowRight size={14} className="text-muted group-hover:text-accent transition-colors" />
+                  </>
                 )}
               </button>
             </form>
 
-            <div style={{ display: 'flex', alignItems: 'center', margin: '20px 0 16px' }}>
-              <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.06)' }} />
-              <span style={{ margin: '0 12px', fontSize: 10, color: 'rgba(100,116,139,0.8)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px' }}>Or continue with</span>
-              <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.06)' }} />
+            {/* Divider */}
+            <div className="flex items-center gap-4 my-8">
+              <div className="flex-1 h-px bg-white/5" />
+              <span className="text-[9px] font-bold text-muted uppercase tracking-[0.2em] font-display">External Creation Protocol</span>
+              <div className="flex-1 h-px bg-white/5" />
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
+            {/* Google */}
+            <div className="flex justify-center flex-col gap-4">
               <GoogleLogin
                 onSuccess={async (credentialResponse) => {
                   setLoading(true)
                   try {
                     const res = await api.post('/auth/google', { token: credentialResponse.credential })
                     login(res.data.access_token, { user_name: res.data.user_name }, res.data.expires_in)
-                    toast.success(`Welcome to FinTrack, ${res.data.user_name}! 🎉`)
+                    toast.success(`System Access Granted. Welcome, ${res.data.user_name}.`)
                     navigate('/dashboard')
                   } catch (err) {
-                    triggerShake(err.response?.data?.detail || 'Google signup failed')
+                    triggerShake(err.response?.data?.detail || 'External Auth Failed')
                   } finally { setLoading(false) }
                 }}
-                onError={() => triggerShake('Google Signup Failed')}
+                onError={() => triggerShake('External Auth Terminated')}
                 theme="filled_black"
-                shape="pill"
-                useOneTap
-                auto_select
+                shape="rectangular"
+                width="100%"
+                text="continue_with"
+                size="large"
               />
             </div>
           </div>
 
           {/* Login link */}
-          <p style={{ textAlign: 'center', color: 'rgba(100,116,139,0.8)', fontSize: 14, fontWeight: 500, marginTop: 20, animation: 'riseIn 0.6s ease-out 0.5s both' }}>
-            Already have an account?{' '}
-            <Link to="/login" style={{ color: '#10b981', fontWeight: 800, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-              Sign in <ArrowRight size={13} />
+          <p className="text-center mt-8 text-[12px] text-muted font-display animate-stagger-3">
+            Already verified?{' '}
+            <Link to="/login" className="text-accent font-bold hover:underline underline-offset-4 tracking-wide flex inline-flex items-center justify-center gap-1.5 ml-1">
+              Authenticate <ArrowRight size={12} />
             </Link>
           </p>
 
-          {/* TOS */}
-          <p style={{ textAlign: 'center', color: 'rgba(100,116,139,0.4)', fontSize: 11, fontWeight: 500, marginTop: 10, animation: 'riseIn 0.6s ease-out 0.55s both' }}>
-            By signing up you agree to our{' '}
-            <span style={{ color: 'rgba(100,116,139,0.7)', cursor: 'pointer' }}>Terms</span> &{' '}
-            <span style={{ color: 'rgba(100,116,139,0.7)', cursor: 'pointer' }}>Privacy Policy</span>
-          </p>
         </div>
       </div>
 
       <style>{`
-        @keyframes riseIn {
-          from { opacity: 0; transform: translateY(20px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
         @keyframes shake {
           0%,100%{ transform: translateX(0); }
-          20%    { transform: translateX(-10px); }
-          40%    { transform: translateX(10px); }
-          60%    { transform: translateX(-6px); }
-          80%    { transform: translateX(6px); }
+          20%    { transform: translateX(-8px); }
+          40%    { transform: translateX(8px); }
+          60%    { transform: translateX(-4px); }
+          80%    { transform: translateX(4px); }
         }
-        @keyframes auroraShift {
-          from { transform: scale(1) rotate(0deg); }
-          to   { transform: scale(1.08) rotate(3deg); }
-        }
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-        #signup-name::placeholder,
-        #signup-email::placeholder,
-        #signup-password::placeholder { color: rgba(100,116,139,0.35); }
+        .animate-shake { animation: shake 0.4s ease-in-out; }
       `}</style>
     </div>
   )

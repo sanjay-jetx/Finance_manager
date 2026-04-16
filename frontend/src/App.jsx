@@ -14,6 +14,7 @@ const Stocks = lazy(() => import('./pages/Stocks'))
 const Profile = lazy(() => import('./pages/Profile'))
 const Budgets = lazy(() => import('./pages/Budgets'))
 const Goals = lazy(() => import('./pages/Goals'))
+const Subscriptions = lazy(() => import('./pages/Subscriptions'))
 const Layout = lazy(() => import('./components/Layout'))
 
 function PageFallback() {
@@ -40,15 +41,30 @@ export default function App() {
       <BrowserRouter>
         <Toaster
           position="top-right"
+          gutter={8}
           toastOptions={{
+            duration: 3500,
             style: {
-              background: '#1e1e2e',
-              color: '#e2e8f0',
-              border: '1px solid rgba(255,255,255,0.1)',
-              borderRadius: '12px',
+              background: '#0E0F13',
+              color: '#F5F5F7',
+              border: '1px solid rgba(255,255,255,0.06)',
+              borderRadius: '4px',
+              fontSize: '12px',
+              fontFamily: 'JetBrains Mono, monospace',
+              fontWeight: '600',
+              letterSpacing: '0.04em',
+              padding: '14px 18px',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.03)',
+              maxWidth: '360px',
             },
-            success: { iconTheme: { primary: '#10b981', secondary: '#fff' } },
-            error:   { iconTheme: { primary: '#ef4444', secondary: '#fff' } },
+            success: {
+              iconTheme: { primary: '#00FFA3', secondary: '#020305' },
+              style: { borderLeft: '2px solid #00FFA3' },
+            },
+            error: {
+              iconTheme: { primary: '#FF3366', secondary: '#fff' },
+              style: { borderLeft: '2px solid #FF3366' },
+            },
           }}
         />
         <Suspense fallback={<PageFallback />}>
@@ -57,16 +73,17 @@ export default function App() {
             <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
             <Route path="/" element={<PrivateRoute><Layout /></PrivateRoute>}>
               <Route index element={<Navigate to="/dashboard" replace />} />
-              <Route path="dashboard"    element={<Dashboard />} />
-              <Route path="transactions" element={<Transactions />} />
-              <Route path="budgets"      element={<Budgets />} />
-              <Route path="goals"        element={<Goals />} />
-              <Route path="receivables" element={<Receivables />} />
-              <Route path="lending" element={<Navigate to="/receivables" replace />} />
-              <Route path="wallets"      element={<Wallets />} />
-              <Route path="stocks"       element={<Stocks />} />
-              <Route path="metals"       element={<Metals />} />
-              <Route path="profile"       element={<Profile />} />
+              <Route path="dashboard"      element={<Dashboard />} />
+              <Route path="transactions"   element={<Transactions />} />
+              <Route path="budgets"        element={<Budgets />} />
+              <Route path="goals"          element={<Goals />} />
+              <Route path="receivables"    element={<Receivables />} />
+              <Route path="lending"        element={<Navigate to="/receivables" replace />} />
+              <Route path="wallets"        element={<Wallets />} />
+              <Route path="stocks"         element={<Stocks />} />
+              <Route path="metals"         element={<Metals />} />
+              <Route path="subscriptions"  element={<Subscriptions />} />
+              <Route path="profile"        element={<Profile />} />
             </Route>
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>

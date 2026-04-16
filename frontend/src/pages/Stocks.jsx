@@ -2,57 +2,53 @@ import { useState } from 'react'
 import { useStocks } from '../hooks/useStocks'
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
 import { TrendingUp, TrendingDown, RefreshCw, BarChart2, Globe } from 'lucide-react'
-import { fmt } from '../utils/format'
 
 function ChartTip({ active, payload, label }) {
   if (!active || !payload?.length) return null
   return (
-    <div className="bg-white/[0.08] backdrop-blur-xl border border-white/20 rounded-xl p-3 shadow-soft-drop">
-      <p className="text-muted text-xs font-semibold mb-1 uppercase tracking-widest">{label}</p>
-      <p className="text-foreground font-display font-bold text-lg">{payload[0].value.toLocaleString()}</p>
+    <div className="bg-[#0B0C10] border border-white/5 rounded-sm p-4 shadow-2xl">
+      <p className="text-muted text-[10px] uppercase font-bold tracking-[0.2em] font-display mb-1.5">{label}</p>
+      <p className="text-foreground font-mono font-bold text-xl">{payload[0].value.toLocaleString()}</p>
     </div>
   )
 }
 
-function StockCard({ title, data, selected, onClick, icon: Icon, currencySync }) {
+function StockCard({ title, data, selected, onClick, icon: Icon }) {
   if (!data) return null
   
   const isUp = data.change >= 0
   const TrendIcon = isUp ? TrendingUp : TrendingDown
-  const trendColor = isUp ? 'text-success' : 'text-danger'
-  const trendBg = isUp ? 'bg-success/10' : 'bg-danger/10'
+  const trendColor = isUp ? 'text-accent' : 'text-danger'
   
   return (
     <div 
       onClick={onClick}
-      className={`panel p-6 cursor-pointer transition-all duration-300 relative overflow-hidden group ${
-        selected ? 'border-accent shadow-[0_0_30px_rgba(99,102,241,0.15)] ring-1 ring-accent/50' : 'hover:border-white/20'
+      className={`panel p-6 pb-5 cursor-pointer transition-all duration-300 relative border ${
+        selected ? 'border-accent/40 bg-accent/[0.02] shadow-[0_0_30px_rgba(0,255,163,0.05)]' : 'border-white/[0.05] hover:border-white/20'
       }`}
     >
-      {selected && <div className="absolute top-0 left-0 w-1 h-full bg-accent" />}
-      
-      <div className="flex justify-between items-start mb-4">
-        <div className="flex items-center gap-3">
-          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${selected ? 'bg-accent/20 text-accent shadow-glow-accent' : 'bg-white/10 border border-white/10 text-muted'}`}>
-            <Icon size={20} />
+      <div className="flex justify-between items-start mb-6 border-b border-white/[0.05] pb-4">
+        <div className="flex items-center gap-4">
+          <div className="w-10 h-10 rounded border border-white/5 bg-[#0C0D10] flex items-center justify-center">
+            <Icon size={16} className={selected ? 'text-accent' : 'text-muted'} />
           </div>
           <div>
-            <h3 className="font-display font-bold text-lg text-foreground">{title}</h3>
-            <p className="text-xs font-semibold text-muted uppercase tracking-widest">{data.symbol}</p>
+            <h3 className="font-display tracking-widest uppercase font-bold text-sm text-foreground">{title}</h3>
+            <p className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] font-display mt-0.5">{data.symbol}</p>
           </div>
         </div>
       </div>
       
-      <div className="mt-4">
-        <p className="text-3xl font-display font-bold text-foreground">
+      <div>
+        <p className={`text-4xl font-mono font-bold tracking-tight mb-2 ${selected ? 'text-foreground' : 'text-foreground'}`}>
           {data.currency === 'INR' ? '₹' : (data.currency === 'USD' ? '$' : '')}{data.current_price.toLocaleString()}
         </p>
-        <div className="flex items-center gap-2 mt-2">
-          <div className={`flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-md ${trendBg} ${trendColor}`}>
-            <TrendIcon size={14} />
+        <div className="flex items-center gap-2 mt-4 text-[11px] uppercase font-bold tracking-widest font-display">
+          <div className={`flex items-center gap-1.5 px-2 py-1 rounded bg-[#0C0D10] border border-white/5 ${trendColor}`}>
+            <TrendIcon size={12} />
             {isUp ? '+' : ''}{data.change.toLocaleString()} ({data.change_percent.toLocaleString()}%)
           </div>
-          <span className="text-xs font-medium text-muted">Today</span>
+          <span className="text-muted/50 border-l border-white/10 pl-2">Session Delta</span>
         </div>
       </div>
     </div>
@@ -62,7 +58,7 @@ function StockCard({ title, data, selected, onClick, icon: Icon, currencySync })
 export default function Stocks() {
   const [range, setRange] = useState('1m')
   const { data, loading, refreshing, error, refresh } = useStocks(range)
-  const [activeTab, setActiveTab] = useState('nifty') // 'nifty' or 'nasdaq'
+  const [activeTab, setActiveTab] = useState('nifty')
   
   if (loading) {
     return (
@@ -74,14 +70,14 @@ export default function Stocks() {
   
   if (error || (!data?.nifty && !data?.nasdaq)) {
     return (
-      <div className="panel p-12 flex flex-col items-center justify-center text-center border-dashed mt-10">
-        <div className="w-14 h-14 rounded-2xl bg-danger/10 border border-danger/20 flex items-center justify-center mb-5 text-danger">
-          <BarChart2 size={24} />
+      <div className="panel p-16 flex flex-col items-center justify-center text-center border-dashed mt-10">
+        <div className="w-12 h-12 rounded border border-white/5 bg-[#0C0D10] flex items-center justify-center mb-6 text-muted">
+          <BarChart2 size={20} />
         </div>
-        <p className="text-foreground font-display font-bold text-lg mb-1.5">Market Data Unavailable</p>
-        <p className="text-muted text-sm mb-6 max-w-sm">{error || "Failed to fetch stock index data. Please try again later."}</p>
-        <button onClick={refresh} className="btn-primary">
-          <RefreshCw size={16} className={refreshing ? 'animate-spin' : ''} /> Try Again
+        <p className="text-foreground font-display font-bold text-xl uppercase tracking-widest mb-3">Market Telemetry Offline</p>
+        <p className="text-muted text-[13px] font-mono max-w-sm mb-6">{error || "Failed to establish index node connection. Verify API endpoints."}</p>
+        <button onClick={refresh} className="panel px-4 py-3 bg-surface hover:bg-white/5 border border-white/[0.05] text-muted hover:text-white transition-colors flex items-center gap-3 font-display uppercase tracking-widest font-bold text-[10px]">
+          <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} /> Attempt Reconnect
         </button>
       </div>
     )
@@ -89,7 +85,7 @@ export default function Stocks() {
 
   const activeData = activeTab === 'nifty' ? data.nifty : data.nasdaq
   const isUp = activeData?.change >= 0
-  const strokeColor = isUp ? '#10b981' : '#ef4444' // success or danger
+  const strokeColor = isUp ? '#00FFA3' : '#FF3366'
   const gradientId = `colorStock${activeTab}`
 
   return (
@@ -97,25 +93,25 @@ export default function Stocks() {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-           <h1 className="text-3xl font-display font-bold tracking-tight text-foreground">Markets</h1>
-           <p className="text-muted mt-1 font-medium">Global stock indices performance</p>
+           <h1 className="text-3xl font-display font-bold tracking-widest uppercase text-foreground">Global Markets</h1>
+           <p className="obsidian-label mt-2">INDEX PERFORMANCE TELEMETRY</p>
         </div>
-        <button onClick={refresh} className="p-3 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 text-muted hover:text-white transition-all shadow-sm">
-           <RefreshCw size={18} className={refreshing ? 'animate-spin' : ''} />
+        <button onClick={refresh} className="panel px-4 py-3 bg-surface hover:bg-white/5 border border-white/[0.05] text-muted hover:text-white transition-colors flex items-center gap-3 font-display uppercase tracking-widest font-bold text-[10px]">
+           <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} /> Refresh Feed
         </button>
       </div>
 
       {/* Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <StockCard 
-          title="Nifty 50" 
+          title="Nifty 50 Index" 
           data={data.nifty} 
           selected={activeTab === 'nifty'} 
           onClick={() => setActiveTab('nifty')}
           icon={BarChart2}
         />
         <StockCard 
-          title="NASDAQ" 
+          title="NASDAQ Composite" 
           data={data.nasdaq} 
           selected={activeTab === 'nasdaq'} 
           onClick={() => setActiveTab('nasdaq')}
@@ -125,65 +121,65 @@ export default function Stocks() {
 
       {/* Chart */}
       {activeData && activeData.history && activeData.history.length > 0 && (
-        <div className={`panel p-6 lg:p-8 animate-stagger-2 transition-opacity duration-300 ${refreshing ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
-          <div className="flex items-center justify-between mb-8">
+        <div className={`panel animate-stagger-2 transition-opacity duration-300 ${refreshing ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
+          <div className="p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between mb-2">
             <div>
-              <h3 className="text-lg font-display font-bold text-foreground mb-3">{activeTab === 'nifty' ? 'Nifty 50' : 'NASDAQ'} Trend</h3>
-              <div className="flex flex-wrap items-center gap-2">
+              <h3 className="obsidian-label text-foreground mb-4">{activeTab === 'nifty' ? 'NIFTY 50' : 'NASDAQ'} HISTORICAL TRAJECTORY</h3>
+              <div className="flex flex-wrap items-center gap-2 p-1 bg-[#101115] border border-white/5 rounded w-fit">
                 {[ {id:'1d', label:'1D'}, {id:'1w', label:'1W'}, {id:'1m', label:'1M'}, {id:'1y', label:'1Y'}, {id:'max', label:'MAX'} ].map(r => (
                   <button 
                     key={r.id} 
                     onClick={() => setRange(r.id)}
-                    className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors ${range === r.id ? 'bg-accent text-white shadow-md' : 'bg-white/5 text-muted hover:bg-white/10 hover:text-foreground'}`}
+                    className={`px-3 py-1.5 text-[10px] font-bold tracking-[0.2em] font-display uppercase transition-all rounded outline-none ${range === r.id ? 'bg-[#1A1C21] text-accent border border-white/5' : 'text-muted border border-transparent hover:text-white'}`}
                   >
                     {r.label}
                   </button>
                 ))}
               </div>
             </div>
-            <div className="flex items-end flex-col gap-1 text-right">
-              <span className="text-xs font-bold uppercase tracking-widest text-muted">Range</span>
-              <span className="text-sm font-semibold text-foreground">
-                {activeData.history[0].date} — {activeData.history[activeData.history.length-1].date}
-              </span>
+            <div className="flex flex-col gap-1.5 md:text-right mt-6 md:mt-0">
+               <span className="text-[10px] font-bold uppercase tracking-[0.2em] font-display text-muted">Observation Window</span>
+               <span className="text-[12px] font-mono font-bold text-foreground opacity-80 border-b border-white/10 pb-1">
+                 {activeData.history[0].date} <span className="text-muted px-1">—</span> {activeData.history[activeData.history.length-1].date}
+               </span>
             </div>
           </div>
           
-          <div className="h-[350px] w-full">
+          <div className="h-[400px] w-full px-4 pb-6">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={activeData.history} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
+              <AreaChart data={activeData.history} margin={{ top: 20, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={strokeColor} stopOpacity={0.4}/>
+                    <stop offset="5%" stopColor={strokeColor} stopOpacity={0.25}/>
                     <stop offset="95%" stopColor={strokeColor} stopOpacity={0.0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.05)" strokeDasharray="4 4" />
+                <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.03)" strokeDasharray="3 3" />
                 <XAxis 
                   dataKey="date" 
-                  axisLine={false} 
+                  axisLine={{ stroke: 'rgba(255,255,255,0.05)' }} 
                   tickLine={false} 
-                  tick={{ fill:'#a1a1aa', fontSize:12, fontWeight:500 }} 
+                  tick={{ fill:'rgba(255,255,255,0.4)', fontSize:11, fontFamily:'monospace' }} 
                   dy={10}
-                  minTickGap={30}
+                  minTickGap={40}
                 />
                 <YAxis 
                   domain={['auto', 'auto']}
                   axisLine={false} 
                   tickLine={false} 
-                  tick={{ fill:'#a1a1aa', fontSize:12, fontWeight:500 }}
+                  tick={{ fill:'rgba(255,255,255,0.3)', fontSize:11, fontFamily:'monospace' }}
                   dx={-10}
                   orientation="right"
                 />
-                <Tooltip content={<ChartTip />} cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1, strokeDasharray: '4 4' }} />
+                <Tooltip content={<ChartTip />} cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1, strokeDasharray: '2 2' }} />
                 <Area 
                   type="monotone" 
                   dataKey="amount" 
                   stroke={strokeColor} 
-                  strokeWidth={3}
+                  strokeWidth={2}
                   fillOpacity={1} 
                   fill={`url(#${gradientId})`} 
-                  activeDot={{ r: 6, strokeWidth: 0, fill: strokeColor }}
+                  activeDot={{ r: 5, strokeWidth: 0, fill: strokeColor }}
                 />
               </AreaChart>
             </ResponsiveContainer>

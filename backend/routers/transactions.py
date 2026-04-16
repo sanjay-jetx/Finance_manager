@@ -135,7 +135,8 @@ async def get_transactions(
     if type:
         query["type"] = type
     if category:
-        query["category"] = category
+        # Use a prefix regex so e.g. "Food" matches both "Food" and "Food & Dining"
+        query["category"] = {"$regex": f"^{category}", "$options": "i"}
 
     # Date range filters
     if start_date or end_date:

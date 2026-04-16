@@ -13,8 +13,8 @@ import { transactionUiType, isCreditUiType, displayCategoryForUi } from '../util
 import { useTransactions } from '../hooks/useTransactions'
 
 const EXPENSE_CATEGORIES = [
-  'Food & Dining','Transport','Shopping','Entertainment','Health',
-  'Bills & Utilities','Education','Travel','Groceries','Other'
+  'Food','Petrol','Transport','Shopping','Entertainment','Health',
+  'Bills & Utilities','Education','Travel','Groceries','Snacks','Gym','Other'
 ]
 
 const typeConfig = {
@@ -206,9 +206,9 @@ export default function Transactions() {
 
       {/* Add Form */}
       {showForm && (
-        <div className="panel p-6 sm:p-8 animate-stagger-2 relative overflow-hidden bg-surface/60 backdrop-blur-3xl border border-white/[0.08] shadow-[0_12px_40px_rgba(0,0,0,0.6)]">
+        <div className="panel p-6 sm:p-8 animate-stagger-2 relative overflow-hidden bg-surface/80 backdrop-blur-3xl border border-white/[0.04] shadow-2xl rounded outline outline-1 outline-white/[0.02]">
           <div className={`absolute top-0 left-0 w-1 h-full ${isIncome ? 'bg-accent' : 'bg-danger'}`} />
-          <h3 className="obsidian-label text-foreground mb-6">{editingId ? 'EDIT INTELLIGENCE RECORD' : 'ADD TRANSACTION'}</h3>
+          <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] font-display text-muted mb-6">{editingId ? 'EDIT INTELLIGENCE RECORD' : 'ADD TRANSACTION'}</h3>
           
           <div className="flex p-1.5 bg-[#15161A] rounded-[4px] border border-white/5 mb-6 max-w-sm relative">
             <div className={`absolute top-1.5 bottom-1.5 w-[calc(50%-6px)] bg-[#1A1C21] rounded shadow-[0_0_10px_rgba(0,0,0,0.5)] transition-all duration-300 ${isIncome ? 'translate-x-full' : 'translate-x-0'}`} />
@@ -265,7 +265,7 @@ export default function Transactions() {
                 className="px-8 py-3 rounded text-muted font-display uppercase font-bold text-[11px] tracking-widest hover:bg-white/5 transition-colors border border-white/5">
                 Cancel
               </button>
-              <button type="submit" disabled={submitting} className={`btn-primary flex items-center justify-center gap-2 ${isIncome ? 'bg-accent text-black' : 'bg-surface text-foreground border border-white/5'} disabled:opacity-70`}>
+              <button type="submit" disabled={submitting} className={`btn-primary flex items-center justify-center gap-2 ${isIncome ? 'bg-accent text-black shadow-none' : 'bg-surface text-foreground shadow-none border border-white/10 hover:bg-white/5'} disabled:opacity-70`}>
                 {submitting ? <span className="w-4 h-4 border-2 border-[currentColor]/30 border-t-[currentColor] rounded-full animate-spin" /> : null}
                 {editingId ? 'Update Ledger' : 'Commit Record'}
               </button>
@@ -328,17 +328,17 @@ export default function Transactions() {
 
       {/* List */}
       {loading ? (
-        <div className="panel p-3 flex flex-col gap-2 bg-white/[0.02] animate-stagger-3 border-transparent">
+        <div className="panel p-3 flex flex-col gap-2 animate-stagger-3 border-transparent">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="flex items-center gap-4 px-6 py-5 rounded-2xl border border-white/5 bg-white/[0.01]">
-              <div className="skeleton w-12 h-12 rounded-2xl flex-shrink-0" />
+            <div key={i} className="flex items-center gap-4 px-6 py-5 rounded border border-white/[0.02] bg-surface/20">
+              <div className="skeleton w-10 h-10 rounded flex-shrink-0" />
               <div className="flex-1 space-y-2">
-                <div className="skeleton h-4 w-48" />
-                <div className="skeleton h-3 w-32" />
+                <div className="skeleton h-3 w-40" />
+                <div className="skeleton h-2 w-24" />
               </div>
               <div className="text-right space-y-2">
-                <div className="skeleton h-5 w-20" />
-                <div className="skeleton h-3 w-12" />
+                <div className="skeleton h-4 w-16" />
+                <div className="skeleton h-2 w-10" />
               </div>
             </div>
           ))}
@@ -370,16 +370,16 @@ export default function Transactions() {
                 const isTransfer = uiType === 'transfer';
                 
                 const boxStyle = isTransfer
-                  ? 'bg-gradient-to-r from-purple-500/[0.08] to-transparent border border-purple-500/10 hover:border-purple-500/30 hover:from-purple-500/[0.12]'
+                  ? 'bg-purple-500/[0.02] border border-purple-500/10 hover:border-purple-500/30'
                   : isCredit
-                  ? 'bg-gradient-to-r from-success/[0.08] to-transparent border border-success/10 hover:border-success/30 hover:from-success/[0.12]'
-                  : 'bg-gradient-to-r from-danger/[0.08] to-transparent border border-danger/10 hover:border-danger/30 hover:from-danger/[0.12]';
+                  ? 'bg-accent/[0.02] border border-white/[0.04] hover:border-accent/40'
+                  : 'bg-surface/30 border border-white/[0.04] hover:border-white/10';
 
                 return (
-                  <div key={txn._id} className={`grid grid-cols-12 gap-4 px-4 py-4 rounded-xl items-center transition-all relative group ${boxStyle}`}>
+                  <div key={txn._id} className={`grid grid-cols-12 gap-4 px-4 py-4 rounded items-center transition-all relative group ${boxStyle}`}>
                     <div className="col-span-12 sm:col-span-5 lg:col-span-5 flex items-center gap-4">
-                      <div className={`w-10 h-10 rounded-lg bg-[#0C0D10]/50 border border-white/5 flex items-center justify-center flex-shrink-0 shadow-inner`}>
-                        {isTransfer ? <RefreshCw size={14} className="text-purple-400" /> : isCredit ? <ArrowUpRight size={14} className="text-success"/> : <ArrowDownRight size={14} className="text-danger" />}
+                      <div className={`w-10 h-10 rounded bg-[#0A0B0E] border ${isCredit ? 'border-accent/20' : 'border-white/5'} flex items-center justify-center flex-shrink-0`}>
+                        {isTransfer ? <RefreshCw size={14} className="text-purple-400" /> : isCredit ? <ArrowUpRight size={14} className="text-accent"/> : <ArrowDownRight size={14} className="text-danger" />}
                       </div>
                       <div className="min-w-0">
                         <p className="text-foreground font-display font-semibold text-[13px] truncate">{txn.notes || txn.source || txn.category || cfg.label}</p>
@@ -393,17 +393,17 @@ export default function Transactions() {
                     </div>
                     
                     <div className="col-span-hidden sm:col-span-4 lg:col-span-3 hidden sm:flex items-center">
-                       <span className={`text-[9px] font-bold uppercase tracking-[0.1em] px-2.5 py-1 rounded font-display bg-[#0C0D10]/50 border border-white/5 shadow-inner`}>
+                       <span className={`text-[9px] font-bold uppercase tracking-[0.1em] px-2 py-1 rounded bg-[#0B0C10] border border-white/[0.05] font-display`}>
                          {cfg.label}
                        </span>
                     </div>
 
                     <div className="col-span-4 lg:col-span-2 hidden lg:flex items-center">
-                      <span className="text-muted text-[11px] font-semibold tracking-widest">{txn.timestamp ? new Date(txn.timestamp).toLocaleDateString('en-US',{month:'short', day:'2-digit', year:'numeric'}) : ''}</span>
+                      <span className="text-muted text-[10px] font-mono tracking-widest">{txn.timestamp ? new Date(txn.timestamp).toLocaleDateString('en-US',{month:'short', day:'2-digit', year:'numeric'}) : ''}</span>
                     </div>
 
                     <div className="col-span-hidden sm:col-span-3 lg:col-span-2 text-right hidden sm:block pr-2">
-                      <p className={`obsidian-value text-[15px] ${isCredit ? 'text-success' : 'text-danger'}`}>
+                       <p className={`font-mono font-bold tracking-tight text-[15px] ${isCredit ? 'text-accent' : 'text-foreground'}`}>
                         {isCredit ? '+' : '-'}{fmt(txn.amount)}
                       </p>
                     </div>
@@ -428,14 +428,14 @@ export default function Transactions() {
 
           {/* Load More button */}
           {hasMore && (
-            <div className="flex justify-center py-6 border-t border-border/50">
+            <div className="flex justify-center py-6 border-t border-white/[0.02]">
               <button
                 onClick={loadMore}
                 disabled={loadingMore}
-                className="px-8 py-3 bg-surface border border-border rounded-xl text-sm font-semibold text-muted hover:text-foreground hover:border-accent/50 transition-all flex items-center gap-2 disabled:opacity-60"
+                className="px-8 py-3 bg-surface border border-white/[0.05] rounded text-[11px] font-bold font-display tracking-widest uppercase text-muted hover:text-white hover:border-accent/50 transition-all flex items-center gap-2 disabled:opacity-60"
               >
                 {loadingMore ? (
-                  <span className="w-4 h-4 border-2 border-muted/30 border-t-muted rounded-full animate-spin" />
+                  <span className="w-3 h-3 border-2 border-muted/30 border-t-muted rounded-full animate-spin" />
                 ) : null}
                 {loadingMore ? 'Loading…' : 'Load more'}
               </button>

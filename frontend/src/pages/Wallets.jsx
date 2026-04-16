@@ -2,28 +2,26 @@ import { useState } from 'react'
 import api from '../api/axios'
 import { fmt } from '../utils/format'
 import toast from 'react-hot-toast'
-import { ArrowDownRight, ArrowLeftRight, Banknote, RefreshCw, Smartphone, TrendingUp, TrendingDown, ArrowUpRight, Search, Plus, X, Users, Target } from 'lucide-react'
-import { transactionUiType, isCreditUiType, displayCategoryForUi } from '../utils/transactionsUi'
+import { ArrowDownRight, ArrowLeftRight, Banknote, RefreshCw, Smartphone, TrendingUp, ArrowUpRight, Search, Plus, X, Users, Target, Layers } from 'lucide-react'
+import { transactionUiType, isCreditUiType } from '../utils/transactionsUi'
 import { useWallets } from '../hooks/useWallets'
 
 const typeConfig = {
-  expense:            { label: 'Expense',     color: 'text-danger',     bg: 'bg-danger/10 border-danger/20',     icon: ArrowDownRight },
-  income:             { label: 'Income',      color: 'text-success',    bg: 'bg-success/10 border-success/20',   icon: ArrowUpRight },
-  lend:               { label: 'You lent',    color: 'text-warning',    bg: 'bg-warning/10 border-warning/20',   icon: Users },
-  debt_return:        { label: 'Received',    color: 'text-accent',     bg: 'bg-accent/10 border-accent/20',     icon: ArrowUpRight },
-  receivable_return:  { label: 'Received',    color: 'text-accent',     bg: 'bg-accent/10 border-accent/20',     icon: ArrowUpRight },
-  transfer:           { label: 'Transfer',    color: 'text-purple-400', bg: 'bg-purple-500/10 border-purple-500/20', icon: ArrowLeftRight },
-  goal_transfer:      { label: 'Goal Save',   color: 'text-info',       bg: 'bg-info/10 border-info/20',         icon: Target },
+  expense:            { label: 'Expense',     color: 'text-foreground', bg: 'bg-surface/30 border border-white/[0.04]', icon: ArrowDownRight },
+  income:             { label: 'Income',      color: 'text-accent',     bg: 'bg-accent/[0.02] border border-white/[0.04]',   icon: ArrowUpRight },
+  lend:               { label: 'You lent',    color: 'text-warning',    bg: 'bg-surface/30 border border-white/[0.04]',   icon: Users },
+  debt_return:        { label: 'Received',    color: 'text-accent',     bg: 'bg-accent/[0.02] border border-white/[0.04]',     icon: ArrowUpRight },
+  receivable_return:  { label: 'Received',    color: 'text-accent',     bg: 'bg-accent/[0.02] border border-white/[0.04]',     icon: ArrowUpRight },
+  transfer:           { label: 'Transfer',    color: 'text-purple-400', bg: 'bg-purple-500/[0.02] border border-purple-500/10', icon: ArrowLeftRight },
+  goal_transfer:      { label: 'Goal Save',   color: 'text-info',       bg: 'bg-info/[0.02] border border-info/10',         icon: Target },
 }
 
 export default function Wallets() {
-  // ── Data from hook ──────────────────────────────────────────────────────
   const {
     balances, loading, recentTxns, loadingTxns,
     categories, activeWallet, setActiveWallet, refresh,
   } = useWallets()
 
-  // ── UI-only state (forms / modals) ──────────────────────────────────────
   const [form, setForm]           = useState({ from_wallet: 'cash', to_wallet: 'upi', amount: '' })
   const [submitting, setSubmitting] = useState(false)
   const [manageAction, setManageAction] = useState('deposit')
@@ -34,11 +32,11 @@ export default function Wallets() {
 
   const handleTransfer = async (e) => {
     e.preventDefault()
-    if (form.from_wallet === form.to_wallet) return toast.error('Select different wallets')
+    if (form.from_wallet === form.to_wallet) return toast.error('Select operational difference in wallets.')
     setSubmitting(true)
     try {
       await api.post('/transfer', { from_wallet: form.from_wallet, to_wallet: form.to_wallet, amount: +form.amount })
-      toast.success(`₹${form.amount} transferred!`)
+      toast.success(`₹${form.amount} transfer sequence complete.`)
       setForm({ ...form, amount: '' })
       refresh()
       setShowTransfer(false)
@@ -52,16 +50,16 @@ export default function Wallets() {
     try {
       if (manageAction === 'deposit') {
         await api.post('/income', { amount: +manageForm.amount, source: manageForm.sourceOrCategory || 'Top-up', wallet: manageForm.wallet, notes: manageForm.notes || `Added to ${manageForm.wallet}` })
-        toast.success(`₹${manageForm.amount} added to ${manageForm.wallet}!`)
+        toast.success(`₹${manageForm.amount} routed to ${manageForm.wallet}.`)
       } else {
         const res = await api.post('/expense', { amount: +manageForm.amount, category: manageForm.sourceOrCategory || 'Other', wallet: manageForm.wallet, notes: manageForm.notes || `Spent from ${manageForm.wallet}` })
-        toast.success(`₹${manageForm.amount} spent from ${manageForm.wallet}!`)
+        toast.success(`₹${manageForm.amount} disbursed from ${manageForm.wallet}.`)
         if (res.data.budget_alert) toast(res.data.budget_alert, { icon: '⚠️' })
       }
       setManageForm({ wallet: manageForm.wallet, amount: '', sourceOrCategory: '', notes: '' })
       setShowManage(false)
       refresh()
-    } catch (err) { toast.error(err.response?.data?.detail || 'Failed') }
+    } catch (err) { toast.error(err.response?.data?.detail || 'Sequence Failed') }
     finally { setManagingFunds(false) }
   }
 
@@ -72,17 +70,17 @@ export default function Wallets() {
     <div className="space-y-6 lg:space-y-8 pb-20">
       <div className="flex flex-wrap items-center justify-between gap-4 animate-stagger-1">
         <div>
-          <h1 className="text-3xl font-display font-bold tracking-tight text-foreground">My Wallets</h1>
-          <p className="text-muted mt-1 font-medium">Manage your cash and UPI balances</p>
+          <h1 className="text-3xl font-display font-bold tracking-widest uppercase text-foreground">Operational Wallets</h1>
+          <p className="obsidian-label mt-2">ACTIVE LIQUIDITY PROTOCOLS</p>
         </div>
         <div className="flex flex-wrap gap-3">
           <button onClick={() => { setShowManage(!showManage); if(!showManage) setShowTransfer(false); }}
-            className={`px-4 py-2 bg-surface hover:bg-white/5 border border-border text-muted hover:text-foreground transition-colors flex items-center gap-2 font-semibold text-sm rounded-xl ${showManage ? 'border-accent text-accent' : ''}`}>
-            {showManage ? <X size={16} /> : <TrendingUp size={16} />} Manage Funds
+            className={`panel px-4 py-3 bg-surface hover:bg-white/5 border border-white/[0.05] text-muted hover:text-white transition-colors flex items-center gap-3 font-display uppercase tracking-widest font-bold text-[10px] ${showManage ? 'border-accent text-accent' : ''}`}>
+            {showManage ? <X size={14} /> : <TrendingUp size={14} />} Fund Control
           </button>
           <button onClick={() => { setShowTransfer(!showTransfer); if(!showTransfer) setShowManage(false); }}
-            className={`px-4 py-2 bg-surface hover:bg-white/5 border border-border text-muted hover:text-foreground transition-colors flex items-center gap-2 font-semibold text-sm rounded-xl ${showTransfer ? 'border-accent text-accent' : ''}`}>
-            {showTransfer ? <X size={16} /> : <ArrowLeftRight size={16} />} Transfer
+            className={`panel px-4 py-3 bg-surface hover:bg-white/5 border border-white/[0.05] text-muted hover:text-white transition-colors flex items-center gap-3 font-display uppercase tracking-widest font-bold text-[10px] ${showTransfer ? 'border-accent text-accent' : ''}`}>
+            {showTransfer ? <X size={14} /> : <ArrowLeftRight size={14} />} Relay Vector
           </button>
         </div>
       </div>
@@ -92,118 +90,129 @@ export default function Wallets() {
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5 animate-stagger-2">
+            
             {/* Cash */}
             <div onClick={() => setActiveWallet('cash')}
-              className={`panel p-6 flex flex-col justify-between cursor-pointer transition-all ${activeWallet === 'cash' ? 'ring-1 ring-success border-success/50 bg-success/5' : 'hover:border-success/30'}`}>
+              className={`panel relative p-6 flex flex-col justify-between cursor-pointer transition-all border ${activeWallet === 'cash' ? 'border-accent/40 bg-accent/[0.02]' : 'border-white/[0.05] hover:border-white/20'}`}>
               <div className="flex items-center justify-between mb-8">
-                <div className="w-12 h-12 rounded-2xl bg-success/10 border border-success/20 flex items-center justify-center">
-                  <Banknote size={20} className="text-success" />
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded border border-white/5 bg-[#0C0D10] flex items-center justify-center">
+                        <Banknote size={16} className={activeWallet === 'cash' ? 'text-accent' : 'text-muted'} />
+                    </div>
+                    <span className="text-[10px] font-bold text-muted tracking-[0.2em] uppercase font-display">Reserves</span>
                 </div>
-                <span className="text-[10px] font-bold text-success px-2 py-0.5 rounded-full border border-success/20 uppercase tracking-widest bg-success/10">Cash</span>
+                <span className={`text-[9px] font-bold px-2 py-1 bg-[#0C0D10] border border-white/[0.05] rounded uppercase tracking-[0.1em] font-display ${activeWallet === 'cash' ? 'text-accent border-accent/20' : 'text-muted'}`}>Physical</span>
               </div>
-              <div>
-                <p className="text-3xl font-display font-bold text-foreground mb-1">{fmt(balances.cash_balance)}</p>
-                <div className="flex items-center justify-between mt-4 mb-2"><p className="text-[10px] text-muted font-bold uppercase tracking-widest">Physical Cash</p><p className="text-[10px] text-success font-bold">{cashPct.toFixed(0)}%</p></div>
-                <div className="h-1.5 bg-black/40 rounded-full border border-white/5 overflow-hidden">
-                  <div className="bg-success h-full transition-all duration-1000 ease-out" style={{ width: `${cashPct}%` }} />
+              <div className="relative">
+                <p className={`font-mono font-bold tracking-tight text-3xl mb-1 ${activeWallet === 'cash' ? 'text-accent' : 'text-foreground'}`}>{fmt(balances.cash_balance)}</p>
+                <div className="flex items-center justify-between mt-4 mb-2"><p className="text-[10px] text-muted font-bold font-display uppercase tracking-[0.2em]">Allocation</p><p className={`text-[10px] font-mono font-bold ${activeWallet === 'cash' ? 'text-accent' : 'text-muted'}`}>{cashPct.toFixed(0)}%</p></div>
+                <div className="h-1 bg-[#0A0B0E] rounded border border-white/[0.02] overflow-hidden">
+                  <div className={`${activeWallet === 'cash' ? 'bg-accent' : 'bg-muted'} h-full transition-all duration-1000 ease-out`} style={{ width: `${cashPct}%` }} />
                 </div>
               </div>
             </div>
 
             {/* UPI */}
             <div onClick={() => setActiveWallet('upi')}
-              className={`panel p-6 flex flex-col justify-between cursor-pointer transition-all ${activeWallet === 'upi' ? 'ring-1 ring-info border-info/50 bg-info/5' : 'hover:border-info/30'}`}>
+              className={`panel relative p-6 flex flex-col justify-between cursor-pointer transition-all border ${activeWallet === 'upi' ? 'border-accent/40 bg-accent/[0.02]' : 'border-white/[0.05] hover:border-white/20'}`}>
               <div className="flex items-center justify-between mb-8">
-                <div className="w-12 h-12 rounded-2xl bg-info/10 border border-info/20 flex items-center justify-center">
-                  <Smartphone size={20} className="text-info" />
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded border border-white/5 bg-[#0C0D10] flex items-center justify-center">
+                        <Smartphone size={16} className={activeWallet === 'upi' ? 'text-accent' : 'text-muted'} />
+                    </div>
+                    <span className="text-[10px] font-bold text-muted tracking-[0.2em] uppercase font-display">Linked Networks</span>
                 </div>
-                <span className="text-[10px] font-bold text-info px-2 py-0.5 rounded-full border border-info/20 uppercase tracking-widest bg-info/10">UPI</span>
+                <span className={`text-[9px] font-bold px-2 py-1 bg-[#0C0D10] border border-white/[0.05] rounded uppercase tracking-[0.1em] font-display ${activeWallet === 'upi' ? 'text-accent border-accent/20' : 'text-muted'}`}>Digital</span>
               </div>
-              <div>
-                <p className="text-3xl font-display font-bold text-foreground mb-1">{fmt(balances.upi_balance)}</p>
-                <div className="flex items-center justify-between mt-4 mb-2"><p className="text-[10px] text-muted font-bold uppercase tracking-widest">Digital Banks</p><p className="text-[10px] text-info font-bold">{upiPct.toFixed(0)}%</p></div>
-                <div className="h-1.5 bg-black/40 rounded-full border border-white/5 overflow-hidden">
-                  <div className="bg-info h-full transition-all duration-1000 ease-out" style={{ width: `${upiPct}%` }} />
+              <div className="relative">
+                <p className={`font-mono font-bold tracking-tight text-3xl mb-1 ${activeWallet === 'upi' ? 'text-accent' : 'text-foreground'}`}>{fmt(balances.upi_balance)}</p>
+                <div className="flex items-center justify-between mt-4 mb-2"><p className="text-[10px] text-muted font-bold font-display uppercase tracking-[0.2em]">Allocation</p><p className={`text-[10px] font-mono font-bold ${activeWallet === 'upi' ? 'text-accent' : 'text-muted'}`}>{upiPct.toFixed(0)}%</p></div>
+                <div className="h-1 bg-[#0A0B0E] rounded border border-white/[0.02] overflow-hidden">
+                  <div className={`${activeWallet === 'upi' ? 'bg-accent' : 'bg-muted'} h-full transition-all duration-1000 ease-out`} style={{ width: `${upiPct}%` }} />
                 </div>
               </div>
             </div>
 
             {/* Total */}
             <div onClick={() => setActiveWallet('all')}
-              className={`panel p-6 flex flex-col justify-between cursor-pointer transition-all overflow-hidden ${activeWallet === 'all' ? 'ring-1 ring-accent border-accent/50 group' : 'hover:border-accent/30 group'}`}>
-              <div className="absolute top-[-50%] right-[-10%] w-[80%] h-[150%] bg-accent/20 blur-[80px] pointer-events-none group-hover:bg-accent/30 transition-all duration-700" />
+              className={`panel relative p-6 flex flex-col justify-between cursor-pointer transition-all border ${activeWallet === 'all' ? 'border-accent/40 bg-accent/[0.02]' : 'border-white/[0.05] hover:border-white/20'}`}>
               <div className="flex items-center justify-between mb-8 relative z-10">
-                <div className="w-12 h-12 rounded-2xl bg-accent/10 border border-accent/20 flex items-center justify-center">
-                  <TrendingUp size={20} className="text-accent" />
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded border border-accent/20 bg-accent/10 flex items-center justify-center">
+                        <Layers size={16} className="text-accent" />
+                    </div>
+                    <span className="text-[10px] font-bold text-accent tracking-[0.2em] uppercase font-display">Total Liquidity</span>
                 </div>
-                <span className="text-[10px] font-bold text-accent px-2 py-0.5 rounded-full border border-accent/20 uppercase tracking-widest bg-accent/10">Total</span>
+                <span className={`text-[9px] font-bold px-2 py-1 bg-[#0C0D10] border border-white/[0.05] rounded uppercase tracking-[0.1em] font-display text-muted`}>Aggregate</span>
               </div>
               <div className="relative z-10">
-                <p className="text-3xl font-display font-bold text-foreground mb-1">{fmt(balances.total_balance)}</p>
-                <div className="flex items-center justify-between mt-4 mb-2"><p className="text-[10px] text-muted font-bold uppercase tracking-widest">Combined</p></div>
-                <div className="h-1.5 bg-black/40 rounded-full border border-white/5 overflow-hidden flex">
-                  <div className="bg-success h-full transition-all duration-1000 ease-out" style={{ width: `${cashPct}%` }} />
-                  <div className="bg-info h-full transition-all duration-1000 ease-out" style={{ width: `${upiPct}%` }} />
+                <p className={`font-mono font-bold tracking-tight text-3xl mb-1 text-foreground`}>{fmt(balances.total_balance)}</p>
+                <div className="flex items-center justify-between mt-4 mb-2"><p className="text-[10px] text-muted font-bold font-display uppercase tracking-[0.2em]">Distribution</p></div>
+                <div className="h-1 bg-[#0A0B0E] rounded border border-white/[0.02] overflow-hidden flex">
+                  <div className="bg-muted h-full transition-all duration-1000 ease-out opacity-40" style={{ width: `${cashPct}%` }} />
+                  <div className="bg-accent h-full transition-all duration-1000 ease-out" style={{ width: `${upiPct}%` }} />
                 </div>
               </div>
             </div>
+            
           </div>
 
           {/* Manage Funds Form */}
           {showManage && (
-            <div className="panel p-6 sm:p-8 animate-stagger-2 mt-6 relative overflow-hidden">
-              <h3 className="text-foreground font-display font-bold text-xl mb-6">Manage Wallet Funds</h3>
+            <div className="panel p-6 sm:p-8 animate-stagger-2 mt-6 relative overflow-hidden bg-surface/80 backdrop-blur-3xl border border-white/[0.04] shadow-2xl rounded outline outline-1 outline-white/[0.02]">
+              <div className={`absolute top-0 left-0 w-1 h-full ${manageAction === 'deposit' ? 'bg-accent' : 'bg-danger'}`} />
+              <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] font-display text-muted mb-6">INTELLIGENCE RECORD CONTROL</h3>
               
-              <div className="flex p-1.5 bg-black/40 rounded-[14px] border border-white/5 mb-6 max-w-sm relative">
-                <div className={`absolute top-1.5 bottom-1.5 w-[calc(50%-6px)] bg-surface rounded-xl border border-white/10 shadow-sm transition-all duration-300 ${manageAction === 'spend' ? 'translate-x-full' : 'translate-x-0'}`} />
-                <button type="button" onClick={() => setManageAction('deposit')} className={`flex-1 py-2.5 rounded-xl text-sm font-bold z-10 transition-colors ${manageAction === 'deposit' ? 'text-success' : 'text-muted'}`}>Deposit Money</button>
-                <button type="button" onClick={() => setManageAction('spend')} className={`flex-1 py-2.5 rounded-xl text-sm font-bold z-10 transition-colors ${manageAction === 'spend' ? 'text-danger' : 'text-muted'}`}>Record Expense</button>
+              <div className="flex p-1.5 bg-[#15161A] rounded-[4px] border border-white/5 mb-6 max-w-sm relative">
+                <div className={`absolute top-1.5 bottom-1.5 w-[calc(50%-6px)] bg-[#1A1C21] rounded shadow-[0_0_10px_rgba(0,0,0,0.5)] transition-all duration-300 ${manageAction === 'spend' ? 'translate-x-full' : 'translate-x-0'}`} />
+                <button type="button" onClick={() => setManageAction('deposit')} className={`flex-1 py-3 text-[11px] uppercase tracking-widest font-bold z-10 transition-colors ${manageAction === 'deposit' ? 'text-accent' : 'text-muted'}`}>Deposit</button>
+                <button type="button" onClick={() => setManageAction('spend')} className={`flex-1 py-3 text-[11px] uppercase tracking-widest font-bold z-10 transition-colors ${manageAction === 'spend' ? 'text-danger' : 'text-muted'}`}>Expense</button>
               </div>
 
-              <form onSubmit={handleManageFunds} className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <form onSubmit={handleManageFunds} className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-2 ml-1">Wallet</label>
-                  <select className="w-full bg-black/50 border border-white/10 rounded-2xl px-4 py-3.5 text-white text-sm font-medium focus:outline-none focus:border-accent"
+                  <label className="block text-[10px] font-bold text-muted uppercase tracking-[0.2em] font-display mb-3 ml-1">Operational Wallet</label>
+                  <select className="w-full bg-[#15161A] border border-white/5 rounded py-4 px-5 text-white font-mono text-[14px] focus:outline-none focus:border-accent transition-all shadow-inner"
                     value={manageForm.wallet} onChange={e => setManageForm({...manageForm, wallet: e.target.value})}>
-                    <option value="cash" className="bg-surface">CASH</option>
-                    <option value="upi" className="bg-surface">UPI</option>
+                    <option value="cash" className="bg-surface">RESERVES: CASH</option>
+                    <option value="upi" className="bg-surface">NETWORK: UPI</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-2 ml-1">Amount (₹)</label>
+                  <label className="block text-[10px] font-bold text-muted uppercase tracking-[0.2em] font-display mb-3 ml-1">Capital Output (₹)</label>
                   <div className="relative group">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted font-display font-bold text-lg group-focus-within:text-accent">₹</span>
+                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-muted font-display font-bold text-xl group-focus-within:text-white">₹</span>
                     <input type="number" min="1" step="0.01" required placeholder="0.00"
                       value={manageForm.amount} onChange={e => setManageForm({...manageForm, amount: e.target.value})}
-                      className="w-full bg-black/50 border border-white/10 rounded-[16px] py-3.5 pl-9 pr-4 text-white font-display text-lg font-bold focus:outline-none focus:border-accent focus:bg-accent/5 transition-all shadow-inner" />
+                      className="w-full bg-[#15161A] border border-white/5 rounded py-4 pl-12 pr-5 text-white font-mono text-xl font-bold focus:outline-none focus:border-accent transition-all shadow-inner" />
                   </div>
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-2 ml-1">{manageAction === 'deposit' ? 'Source' : 'Category'}</label>
+                  <label className="block text-[10px] font-bold text-muted uppercase tracking-[0.2em] font-display mb-3 ml-1">{manageAction === 'deposit' ? 'Source Vector' : 'Category Classification'}</label>
                   {manageAction === 'deposit' ? (
-                    <input type="text" className="w-full bg-black/50 border border-white/10 rounded-2xl px-5 py-3.5 text-white text-sm focus:outline-none focus:border-accent"
-                      placeholder="Salary, Gift, Cash..." required value={manageForm.sourceOrCategory} onChange={e => setManageForm({...manageForm, sourceOrCategory: e.target.value})} />
+                    <input type="text" className="w-full bg-[#15161A] border border-white/5 rounded py-4 px-5 text-white font-mono text-[14px] focus:outline-none focus:border-accent transition-all shadow-inner"
+                      placeholder="Salary, Gift, Return..." required value={manageForm.sourceOrCategory} onChange={e => setManageForm({...manageForm, sourceOrCategory: e.target.value})} />
                   ) : (
-                    <select className="w-full bg-black/50 border border-white/10 rounded-2xl px-5 py-3.5 text-white text-sm focus:outline-none focus:border-accent"
+                    <select className="w-full bg-[#15161A] border border-white/5 rounded py-4 px-5 text-white font-mono text-[14px] focus:outline-none focus:border-accent transition-all shadow-inner"
                       required value={manageForm.sourceOrCategory} onChange={e => setManageForm({...manageForm, sourceOrCategory: e.target.value})}>
-                      <option value="" className="bg-surface">Select Category</option>
+                      <option value="" className="bg-surface">Awaiting Classification</option>
                       {categories.map(c => <option key={c._id} value={c.name} className="bg-surface">{c.name}</option>)}
                     </select>
                   )}
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-2 ml-1">Notes (Optional)</label>
-                  <input type="text" className="w-full bg-black/50 border border-white/10 rounded-2xl px-5 py-3.5 text-white text-sm focus:outline-none focus:border-accent"
-                    placeholder="Optional notes..." value={manageForm.notes} onChange={e => setManageForm({...manageForm, notes: e.target.value})} />
+                  <label className="block text-[10px] font-bold text-muted uppercase tracking-[0.2em] font-display mb-3 ml-1">Intelligence Data (Optional)</label>
+                  <input type="text" className="w-full bg-[#15161A] border border-white/5 rounded py-4 px-5 text-white font-mono text-[14px] focus:outline-none focus:border-accent transition-all shadow-inner"
+                    placeholder="Supplementary context..." value={manageForm.notes} onChange={e => setManageForm({...manageForm, notes: e.target.value})} />
                 </div>
 
                 <div className="sm:col-span-2 flex justify-end gap-3 pt-2">
-                  <button type="button" className="px-6 py-3 border border-border rounded-xl text-muted font-bold hover:bg-white/5 transition-colors" onClick={() => setShowManage(false)}>Cancel</button>
-                  <button type="submit" disabled={managingFunds} className={`px-8 py-3 rounded-xl font-bold flex items-center gap-2 ${manageAction === 'deposit' ? 'bg-gradient-success text-white text-black' : 'bg-white text-black hover:bg-gray-200'}`}>
+                  <button type="button" className="px-8 py-3 rounded text-muted font-display uppercase font-bold text-[11px] tracking-widest hover:bg-white/5 transition-colors border border-white/5" onClick={() => setShowManage(false)}>Cancel</button>
+                  <button type="submit" disabled={managingFunds} className={`btn-primary flex items-center justify-center gap-2 ${manageAction === 'deposit' ? 'bg-accent text-black shadow-none' : 'bg-surface text-foreground shadow-none border border-white/10 hover:bg-white/5'} disabled:opacity-70`}>
                     {managingFunds ? <span className="w-4 h-4 border-2 border-[currentColor]/30 border-t-[currentColor] rounded-full animate-spin" /> : null}
-                    {manageAction === 'deposit' ? 'Add Funds' : 'Record Expense'}
+                    {manageAction === 'deposit' ? 'Commit Inflow' : 'Record Disbursement'}
                   </button>
                 </div>
               </form>
@@ -212,45 +221,46 @@ export default function Wallets() {
 
           {/* Transfer Form */}
           {showTransfer && (
-            <div className="panel p-6 sm:p-8 animate-stagger-2 mt-6 relative overflow-hidden">
-               <h3 className="text-foreground font-display font-bold text-xl mb-6">Internal Transfer</h3>
-               <form onSubmit={handleTransfer} className="grid grid-cols-1 md:grid-cols-7 gap-4 items-end">
+            <div className="panel p-6 sm:p-8 animate-stagger-2 mt-6 relative overflow-hidden bg-surface/80 backdrop-blur-3xl border border-white/[0.04] shadow-2xl rounded outline outline-1 outline-white/[0.02]">
+               <div className={`absolute top-0 left-0 w-1 h-full bg-purple-500`} />
+               <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] font-display text-muted mb-6">LIQUIDITY RELAY PROTOCOL</h3>
+               <form onSubmit={handleTransfer} className="grid grid-cols-1 md:grid-cols-7 gap-6 items-end">
                   <div className="md:col-span-3">
-                    <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-2 ml-1">From</label>
-                    <select className="w-full bg-black/50 border border-white/10 rounded-2xl px-4 py-3.5 text-white text-sm font-medium focus:outline-none focus:border-accent"
+                    <label className="block text-[10px] font-bold text-muted uppercase tracking-[0.2em] font-display mb-3 ml-1">Origin Node</label>
+                    <select className="w-full bg-[#15161A] border border-white/5 rounded py-4 px-5 text-white font-mono text-[14px] focus:outline-none focus:border-accent transition-all shadow-inner"
                       value={form.from_wallet} onChange={e => { const fw = e.target.value; setForm({ ...form, from_wallet: fw, to_wallet: fw === 'cash' ? 'upi' : 'cash' }) }}>
-                      <option value="cash" className="bg-surface">CASH</option>
-                      <option value="upi" className="bg-surface">UPI</option>
+                      <option value="cash" className="bg-surface">RESERVES: CASH</option>
+                      <option value="upi" className="bg-surface">NETWORK: UPI</option>
                     </select>
                   </div>
                   <div className="md:col-span-1 flex items-center justify-center pb-[5px]">
                     <button type="button" onClick={() => setForm({ ...form, from_wallet: form.to_wallet, to_wallet: form.from_wallet })}
-                      className="p-3 rounded-xl bg-surface border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all cursor-pointer text-muted hover:text-white">
+                      className="p-3 rounded bg-[#101115] border border-white/5 hover:bg-white/5 transition-all text-muted hover:text-white mt-1">
                       <ArrowLeftRight size={20} />
                     </button>
                   </div>
                   <div className="md:col-span-3">
-                    <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-2 ml-1">To</label>
-                    <select className="w-full bg-black/50 border border-white/10 rounded-2xl px-4 py-3.5 text-white text-sm font-medium focus:outline-none focus:border-accent"
+                    <label className="block text-[10px] font-bold text-muted uppercase tracking-[0.2em] font-display mb-3 ml-1">Destination Node</label>
+                    <select className="w-full bg-[#15161A] border border-white/5 rounded py-4 px-5 text-white font-mono text-[14px] focus:outline-none focus:border-accent transition-all shadow-inner"
                       value={form.to_wallet} onChange={e => { const tw = e.target.value; setForm({ ...form, to_wallet: tw, from_wallet: tw === 'cash' ? 'upi' : 'cash' }) }}>
-                      <option value="upi" className="bg-surface">UPI</option>
-                      <option value="cash" className="bg-surface">CASH</option>
+                      <option value="upi" className="bg-surface">NETWORK: UPI</option>
+                      <option value="cash" className="bg-surface">RESERVES: CASH</option>
                     </select>
                   </div>
                   <div className="md:col-span-7 mt-2">
-                    <label className="block text-[11px] font-bold text-muted uppercase tracking-widest mb-2 ml-1">Amount (₹)</label>
+                    <label className="block text-[10px] font-bold text-muted uppercase tracking-[0.2em] font-display mb-3 ml-1">Relay Volume (₹)</label>
                     <div className="relative group">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted font-display font-bold text-lg group-focus-within:text-accent">₹</span>
+                      <span className="absolute left-5 top-1/2 -translate-y-1/2 text-muted font-display font-bold text-xl group-focus-within:text-white">₹</span>
                       <input type="number" min="1" step="0.01" required placeholder="0.00"
                         value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })}
-                        className="w-full bg-black/50 border border-white/10 rounded-[16px] py-3.5 pl-9 pr-4 text-white font-display text-lg font-bold focus:outline-none focus:border-accent focus:bg-accent/5 transition-all shadow-inner" />
+                        className="w-full bg-[#15161A] border border-white/5 rounded py-4 pl-12 pr-5 text-white font-mono text-xl font-bold focus:outline-none focus:border-accent transition-all shadow-inner" />
                     </div>
                   </div>
                   <div className="md:col-span-7 flex justify-end gap-3 pt-4">
-                    <button type="button" className="px-6 py-3 border border-border rounded-xl text-muted font-bold hover:bg-white/5 transition-colors" onClick={() => setShowTransfer(false)}>Cancel</button>
-                    <button type="submit" disabled={submitting} className={`px-8 py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all bg-white text-black hover:bg-gray-200 disabled:opacity-70`}>
+                    <button type="button" className="px-8 py-3 rounded text-muted font-display uppercase font-bold text-[11px] tracking-widest hover:bg-white/5 transition-colors border border-white/5" onClick={() => setShowTransfer(false)}>Cancel</button>
+                    <button type="submit" disabled={submitting} className={`btn-primary flex items-center justify-center gap-2 bg-surface text-foreground shadow-none border border-white/10 hover:border-purple-500/50 hover:bg-white/5 disabled:opacity-70`}>
                       {submitting ? <span className="w-4 h-4 border-2 border-[currentColor]/30 border-t-[currentColor] rounded-full animate-spin" /> : null}
-                      Transfer Now
+                      Relay Now
                     </button>
                   </div>
                </form>
@@ -259,51 +269,84 @@ export default function Wallets() {
 
           {/* Recent TXNs */}
           <div className="mt-8">
-            <div className="flex items-center justify-between mb-5 px-1 animate-stagger-3">
-              <h3 className="text-xl font-display font-bold text-foreground flex items-center gap-2">Recent Transactions</h3>
-              {activeWallet !== 'all' && <span className="text-[10px] uppercase font-bold tracking-widest bg-white/10 text-muted px-2.5 py-1 rounded-full">{activeWallet} Wallet</span>}
+            <div className="flex items-center justify-between mb-5 animate-stagger-3">
+              <h3 className="obsidian-label text-foreground">Recent Network Activity</h3>
+              {activeWallet !== 'all' && <span className="text-[9px] font-bold uppercase tracking-[0.1em] font-display bg-[#0C0D10] border border-white/5 text-muted px-2 py-1 rounded">{activeWallet} Node</span>}
             </div>
 
             {loadingTxns ? (
-               <div className="flex justify-center py-10"><div className="w-6 h-6 border-[3px] border-accent/20 border-t-accent rounded-full animate-spin" /></div>
+               <div className="panel p-3 flex flex-col gap-2 animate-stagger-3 border-transparent">
+               {[...Array(4)].map((_, i) => (
+                 <div key={i} className="flex items-center gap-4 px-6 py-5 rounded border border-white/[0.02] bg-surface/20">
+                   <div className="skeleton w-10 h-10 rounded flex-shrink-0" />
+                   <div className="flex-1 space-y-2">
+                     <div className="skeleton h-3 w-40" />
+                     <div className="skeleton h-2 w-24" />
+                   </div>
+                 </div>
+               ))}
+             </div>
             ) : recentTxns.length === 0 ? (
-              <div className="panel p-10 flex flex-col items-center justify-center text-center animate-stagger-3 border-dashed">
-                <Search size={24} className="text-muted mb-3" />
-                <p className="text-foreground font-display font-bold">No transactions found</p>
+              <div className="panel p-16 flex flex-col items-center justify-center text-center animate-stagger-3 border-dashed">
+                <Search size={28} className="text-muted mb-4 opacity-50" />
+                <p className="text-foreground font-display font-bold text-xl mb-2">No Records Detected</p>
+                <p className="text-muted text-sm font-mono max-w-xs">Data streams for this wallet node are currently inactive.</p>
               </div>
             ) : (
-              <div className="panel divide-y divide-border/50 animate-stagger-3">
-                {recentTxns.map((txn) => {
-                  const uiType = transactionUiType(txn)
-                  const cfg = typeConfig[uiType] || typeConfig.expense
-                  const Icon = cfg.icon
-                  const isCredit = isCreditUiType(uiType)
-                  return (
-                    <div key={txn._id} className="flex flex-wrap sm:flex-nowrap items-center gap-4 px-6 py-5 hover:bg-surfaceHover transition-colors">
-                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 border ${cfg.bg} shadow-inner`}>
-                        <Icon size={20} className={cfg.color} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-foreground font-semibold text-[15px] truncate transition-colors">
-                          {txn.notes || txn.source || txn.category || cfg.label}
-                        </p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className={`text-[10px] font-bold uppercase tracking-wider ${cfg.color}`}>{cfg.label}</span>
-                          <span className="text-muted/40">•</span>
-                          <span className="text-muted text-xs font-medium">{txn.wallet === 'cash' ? 'Cash' : 'UPI'}</span>
+              <div className="panel animate-stagger-3 mt-4">
+                  <div className="grid grid-cols-12 gap-4 px-8 py-5 text-[10px] font-bold uppercase tracking-[0.2em] text-muted font-display mb-2 border-b border-white/[0.02]">
+                      <div className="col-span-12 sm:col-span-5 pl-2">Record Identifier</div>
+                      <div className="hidden sm:flex sm:col-span-4">Classification</div>
+                      <div className="hidden sm:block sm:col-span-3 text-right pr-2">Delta</div>
+                  </div>
+                  <div className="flex flex-col gap-2 px-4 pb-4 mt-2">
+                  {recentTxns.map((txn) => {
+                    const uiType = transactionUiType(txn)
+                    const cfg = typeConfig[uiType] || typeConfig.expense
+                    const Icon = cfg.icon
+                    const isCredit = isCreditUiType(uiType)
+                    
+                    const boxStyle = uiType === 'transfer'
+                      ? 'bg-purple-500/[0.02] border border-purple-500/10 hover:border-purple-500/30'
+                      : isCredit
+                      ? 'bg-accent/[0.02] border border-white/[0.04] hover:border-accent/40'
+                      : 'bg-surface/30 border border-white/[0.04] hover:border-white/10';
+
+                    return (
+                      <div key={txn._id} className={`grid grid-cols-12 gap-4 px-4 py-4 rounded items-center transition-all relative group ${boxStyle}`}>
+                        <div className="col-span-12 sm:col-span-5 flex items-center gap-4">
+                          <div className={`w-10 h-10 rounded border bg-[#0A0B0E] flex items-center justify-center flex-shrink-0 ${isCredit ? 'border-accent/20' : 'border-white/5'}`}>
+                            {uiType === 'transfer' ? <RefreshCw size={14} className="text-purple-400" /> : isCredit ? <ArrowUpRight size={14} className="text-accent" /> : <ArrowDownRight size={14} className="text-danger" />}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-foreground font-display font-semibold text-[13px] truncate">
+                              {txn.notes || txn.source || txn.category || cfg.label}
+                            </p>
+                            <p className="text-muted text-[10px] mt-1 hidden sm:block font-mono tracking-widest">{txn.timestamp ? new Date(txn.timestamp).toLocaleDateString('en-US',{month:'short', day:'2-digit'}) : ''} • {txn.wallet === 'cash' ? 'Cash' : 'UPI'}</p>
+                            <div className="sm:hidden flex items-center gap-2 mt-1">
+                              <p className={`font-mono font-bold tracking-tight text-[15px] ${isCredit ? 'text-accent' : 'text-foreground'}`}>
+                                {isCredit ? '+' : '-'}{fmt(txn.amount)}
+                              </p>
+                            </div>
+                          </div>
                         </div>
+
+                        <div className="hidden sm:flex sm:col-span-4 items-center">
+                           <span className="text-[9px] font-bold uppercase tracking-[0.1em] px-2 py-1 rounded bg-[#0B0C10] border border-white/[0.05] font-display">
+                             {cfg.label}
+                           </span>
+                        </div>
+
+                        <div className="text-right hidden sm:block sm:col-span-3 pr-2">
+                          <p className={`font-mono font-bold tracking-tight text-[15px] ${isCredit ? 'text-accent' : 'text-foreground'}`}>
+                            {isCredit ? '+' : '-'}{fmt(txn.amount)}
+                          </p>
+                        </div>
+
                       </div>
-                      <div className="text-right flex-shrink-0">
-                        <p className={`font-display font-bold text-[17px] ${isCredit ? 'text-success' : 'text-foreground'}`}>
-                          {isCredit ? '+' : '-'}{fmt(txn.amount)}
-                        </p>
-                        <p className="text-muted text-[11px] font-semibold mt-1 uppercase tracking-widest">
-                          {txn.timestamp ? new Date(txn.timestamp).toLocaleDateString('en-IN',{day:'2-digit',month:'short'}) : ''}
-                        </p>
-                      </div>
-                    </div>
-                  )
-                })}
+                    )
+                  })}
+                  </div>
               </div>
             )}
           </div>

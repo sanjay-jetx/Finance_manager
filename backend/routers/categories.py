@@ -17,6 +17,7 @@ DEFAULT_CATEGORIES = [
     {"name": "Shopping", "icon": "🛍️"},
     {"name": "Entertainment", "icon": "🎬"},
     {"name": "Health", "icon": "🏥"},
+    {"name": "Other", "icon": "📦"},
 ]
 
 async def ensure_default_categories(user_id: str, db):
