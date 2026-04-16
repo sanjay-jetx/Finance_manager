@@ -454,29 +454,38 @@ export default function Dashboard() {
           <div className="flex justify-between items-center mb-6 border-b border-white/5 pb-4">
              <h3 className="text-foreground font-bold tracking-widest text-[11px] uppercase font-display">Expense Split</h3>
           </div>
-          <div className="flex-1 flex flex-col items-center justify-center relative">
-             <ResponsiveContainer width="100%" height="100%">
-               <RePie>
-                 <Pie 
-                    data={data?.category_breakdown?.length ? data.category_breakdown : [{category:'Empty',amount:1}]} 
-                    dataKey="amount" nameKey="category" cx="50%" cy="45%" 
-                    innerRadius={70} outerRadius={88} paddingAngle={3} stroke="none"
-                  >
-                   {(data?.category_breakdown?.length ? data.category_breakdown : [{category:'Empty',amount:1}]).map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
-                 </Pie>
-                 {data?.category_breakdown?.length > 0 && <Tooltip content={<ChartTip />} cursor={{ fill:'rgba(255,255,255,0.03)' }} />}
-               </RePie>
-             </ResponsiveContainer>
-             
-             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none" style={{top:'-5%'}}>
-               {data?.category_breakdown?.length > 0 && (
-                  <>
-                     <span className="text-[9px] text-muted uppercase tracking-widest font-bold mb-1 font-display">{data.category_breakdown[0].category.substring(0, 10)}</span>
-                     <span className="font-mono font-bold tracking-tight text-lg text-foreground">{fmt(data.category_breakdown[0].amount)}</span>
-                  </>
-               )}
+          <div className="flex-1 flex flex-col min-h-0">
+             {/* Donut chart — fixed height so cy/cx 50% are perfectly centred */}
+             <div className="relative" style={{ height: 200 }}>
+               <ResponsiveContainer width="100%" height="100%">
+                 <RePie>
+                   <Pie
+                      data={data?.category_breakdown?.length ? data.category_breakdown : [{category:'Empty',amount:1}]}
+                      dataKey="amount" nameKey="category" cx="50%" cy="50%"
+                      innerRadius={68} outerRadius={86} paddingAngle={3} stroke="none"
+                   >
+                     {(data?.category_breakdown?.length ? data.category_breakdown : [{category:'Empty',amount:1}]).map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
+                   </Pie>
+                   {data?.category_breakdown?.length > 0 && <Tooltip content={<ChartTip />} cursor={{ fill:'rgba(255,255,255,0.03)' }} />}
+                 </RePie>
+               </ResponsiveContainer>
+
+               {/* Centre label — absolutely centred inside the fixed-height box */}
+               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                 {data?.category_breakdown?.length > 0 && (
+                   <>
+                     <span className="text-[9px] text-muted uppercase tracking-widest font-bold mb-1 font-display">
+                       {data.category_breakdown[0].category.substring(0, 10)}
+                     </span>
+                     <span className="font-mono font-bold tracking-tight text-lg text-foreground">
+                       {fmt(data.category_breakdown[0].amount)}
+                     </span>
+                   </>
+                 )}
+               </div>
              </div>
-             
+
+             {/* Legend — outside the chart canvas, no interference */}
              <div className="flex flex-col gap-2.5 mt-auto w-full pt-4 border-t border-white/[0.04]">
                 {data?.category_breakdown?.slice(0, 4).map((c, i) => (
                    <div key={i} className="flex items-center justify-between">
