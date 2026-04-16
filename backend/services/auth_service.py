@@ -38,6 +38,9 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 15))
 REFRESH_TOKEN_EXPIRE_DAYS = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", 7))
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 
+# Lazily initialised in verify_google_token() to avoid importing google-auth at startup
+_google_request_session = None
+
 
 # ── Password Hashing ───────────────────────────────────────────────────────
 
@@ -127,9 +130,9 @@ def verify_google_token(id_token_value: str) -> dict | None:
         from google.oauth2 import id_token as google_id_token
         from google.auth.transport import requests as google_requests
         
-        # Cache the HTTP session globally to prevent re-fetching certs
+        # Cache the HTTP session globally to prevent re-fetching certs on every call
         global _google_request_session
-        if '_google_request_session' not in globals():
+        if _google_request_session is None:
             _google_request_session = google_requests.Request()
 
         id_info = google_id_token.verify_oauth2_token(
