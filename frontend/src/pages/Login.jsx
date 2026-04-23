@@ -257,23 +257,4 @@ export default function Login() {
       `}</style>
     </div>
   )
-}acity: 0.8; transform: scale(1.03); }
-        }
-        @keyframes orbSpin {
-          from { transform: rotate(0deg); }
-          to   { transform: rotate(360deg); }
-        }
-        @keyframes auroraShift {
-          from { transform: scale(1) rotate(0deg); }
-          to   { transform: scale(1.1) rotate(3deg); }
-        }
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-        #login-email::placeholder,
-        #login-password::placeholder { color: rgba(100,116,139,0.4); }
-        #login-submit:disabled { opacity: 0.6; }
-      `}</style>
-    </div>
-  )
 }

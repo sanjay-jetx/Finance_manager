@@ -152,13 +152,13 @@ export default function Budgets() {
                 </div>
 
                 <div className="w-full bg-[#0A0B0E] rounded border border-white/[0.04] h-1.5 mb-3 flex overflow-hidden relative z-10">
-                  <div className={`${barColor} h-full transition-all duration-1000 ease-out ${safe ? 'shadow-[0_0_10px_rgba(0,255,163,0.5)]' : ''}`} style={{ width: \`\${pct}%\` }} />
+                  <div className={`${barColor} h-full transition-all duration-1000 ease-out ${safe ? 'shadow-[0_0_10px_rgba(0,255,163,0.5)]' : ''}`} style={{ width: `${pct}%` }} />
                 </div>
 
                 <div className="flex justify-between text-[11px] uppercase tracking-widest font-display font-bold text-muted mt-2 relative z-10">
                   <span className="opacity-70">{pct.toFixed(0)}% Depleted</span>
                   <span className={danger ? 'text-danger' : 'text-foreground'}>
-                    {danger ? 'CRITICAL DEPLETION' : \`\${fmt(remaining)} ALLOWANCE\`}
+                    {danger ? 'CRITICAL DEPLETION' : `${fmt(remaining)} ALLOWANCE`}
                   </span>
                 </div>
               </div>

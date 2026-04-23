@@ -57,7 +57,7 @@ export function AuthProvider({ children }) {
       localStorage.setItem('token', data.access_token)
       setToken(data.access_token)
       // Schedule next refresh
-      scheduleRefresh(data.expires_in)
+      if (scheduleRefreshRef.current) scheduleRefreshRef.current(data.expires_in)
       return data.access_token
     } catch {
       return null
@@ -72,6 +72,12 @@ export function AuthProvider({ children }) {
       refreshAccessToken()
     }, delay)
   }, [refreshAccessToken])
+
+  // Keep a mutable ref to the latest scheduleRefresh to avoid circular dependencies
+  const scheduleRefreshRef = useRef(scheduleRefresh)
+  useEffect(() => {
+    scheduleRefreshRef.current = scheduleRefresh
+  }, [scheduleRefresh])
 
   // On mount: schedule refresh based on stored token's remaining lifetime
   useEffect(() => {

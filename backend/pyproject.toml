@@ -17,3 +17,6 @@ select = [
     "B",  # flake8-bugbear
 ]
 ignore = []
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
