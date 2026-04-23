@@ -12,7 +12,6 @@ router = APIRouter(tags=["Dashboard"])
 async def get_dashboard(user_id: str = Depends(get_current_user)):
     db = get_db()
 
-    from routers.budgets import get_budgets
     import asyncio
 
     # Setup time bounds
@@ -71,7 +70,6 @@ async def get_dashboard(user_id: str = Depends(get_current_user)):
         days_info.append({"day": day.strftime("%a"), "date": day.strftime("%d %b")})
 
     # Execute all core queries simultaneously (MASSIVE speedup)
-    (
         wallet, 
         (pending_amount, pending_count), 
         metals_data, 
@@ -80,7 +78,6 @@ async def get_dashboard(user_id: str = Depends(get_current_user)):
         today_spending, 
         (categories, top_category), 
         recent, 
-        budget_res
     ) = await asyncio.gather(
         get_or_create_wallet(user_id),
         _get_pending(),
@@ -90,7 +87,6 @@ async def get_dashboard(user_id: str = Depends(get_current_user)):
         _sum([{"$match": {"user_id": user_id, "type": "expense", "timestamp": {"$gte": today_start}}}, {"$group": {"_id": None, "total": {"$sum": "$amount"}}}]),
         _get_cats(),
         _get_recent(),
-        get_budgets(user_id=user_id)
     )
 
     # Execute all 7 weekly queries simultaneously
@@ -108,9 +104,6 @@ async def get_dashboard(user_id: str = Depends(get_current_user)):
     if monthly_income > 0:
         savings_rate = round(((monthly_income - monthly_expense) / monthly_income) * 100, 1)
 
-    budgets = budget_res.get("budgets", [])
-    budget_alerts = [b["category"] for b in budgets if b.get("limit", 0) > 0 and (b.get("spent", 0) / b["limit"]) >= 0.8]
-
     return {
         "cash_balance":              cash_balance,
         "upi_balance":               upi_balance,
@@ -126,6 +119,4 @@ async def get_dashboard(user_id: str = Depends(get_current_user)):
         "weekly_spending":           week_data,
         "category_breakdown":        categories,
         "recent_transactions":       recent,
-        "budgets":                   budgets,
-        "budget_alerts":             budget_alerts,
     }
