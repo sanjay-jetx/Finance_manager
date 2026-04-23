@@ -47,7 +47,7 @@ function StatCard({ icon: Icon, label, value, sub, accentClass, valueClass = 'te
 
 /* ── Quick Add Modal ───────────────────────────────────────────────────────── */
 const EXPENSE_CATS = ['Food','Petrol','Transport','Shopping','Entertainment','Health','Bills & Utilities','Education','Travel','Groceries','Snacks','Gym','Other']
-const INCOME_SRCS  = ['Salary','Freelance','Business','Gift','Refund','Pocket Money','Other']
+const INCOME_SRCS  = ['Pocket Money','Salary','Freelance','Business','Gift','Refund','Other']
 
 function QuickAddModal({ onClose, onSuccess }) {
   const [type, setType]     = useState('income')
@@ -105,7 +105,7 @@ function QuickAddModal({ onClose, onSuccess }) {
         <div className={`absolute top-0 left-0 w-1 h-full ${typeColors[type]}`} />
 
         <div className="flex items-center justify-between mb-6">
-          <h3 className="obsidian-label text-foreground">ADD TRANSACTION</h3>
+          <h3 className="obsidian-label text-foreground">RECORD TRANSACTION</h3>
           <button onClick={onClose} className="p-1.5 rounded bg-[#15161A] border border-white/5 text-muted hover:text-foreground transition-colors"><X size={15} /></button>
         </div>
 
@@ -201,7 +201,7 @@ function QuickAddModal({ onClose, onSuccess }) {
           <div className="flex justify-end gap-3 pt-1">
             <button type="button" onClick={onClose}
               className="px-6 py-3 rounded text-muted font-display uppercase font-bold text-[10px] tracking-widest hover:bg-white/5 transition-colors border border-white/5">
-              Cancel
+              Abort
             </button>
             <button type="submit" disabled={loading || done}
               className={`flex-1 py-3 rounded font-display uppercase font-bold text-[11px] tracking-widest flex items-center justify-center gap-2 transition-all ${
@@ -210,7 +210,7 @@ function QuickAddModal({ onClose, onSuccess }) {
                 isIncome ? 'bg-accent text-black hover:bg-accent/80' :
                 'bg-danger/10 border border-danger/20 text-danger hover:bg-danger/20'
               } disabled:opacity-70`}>
-              {done ? 'Saved!' : loading ? <span className="w-4 h-4 border-2 border-[currentColor]/30 border-t-[currentColor] rounded-full animate-spin" /> : 'Save Transaction'}
+              {done ? 'Saved!' : loading ? <span className="w-4 h-4 border-2 border-[currentColor]/30 border-t-[currentColor] rounded-full animate-spin" /> : 'Commit Record'}
             </button>
           </div>
         </form>
@@ -272,20 +272,20 @@ export default function Dashboard() {
       {/* ── HEADER ── */}
       <div className="flex flex-wrap items-center justify-between gap-4 animate-stagger-1 border-b border-white/[0.05] pb-6">
         <div>
-          <h1 className="text-2xl font-display font-bold tracking-widest uppercase text-foreground">Dashboard</h1>
+          <h1 className="text-2xl font-display font-bold tracking-widest uppercase text-foreground">Overview</h1>
           <div className="flex items-center gap-2.5 mt-2">
              <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse shadow-[0_0_8px_rgba(0,255,163,0.8)]" />
-             <p className="text-[10px] uppercase font-mono tracking-widest font-bold text-muted">Personal Finance Dashboard</p>
+             <p className="text-[10px] uppercase font-mono tracking-widest font-bold text-muted">Financial Intelligence Center</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <button onClick={refresh} className="panel px-4 py-3 bg-transparent hover:bg-surface border border-white/5 text-muted hover:text-foreground flex items-center gap-3 font-display uppercase tracking-widest font-bold text-[10px] rounded h-[42px] transition-all">
-            <RefreshCw size={14} className={refreshing ? 'animate-spin text-accent' : ''} /> <span className="hidden sm:inline">Refresh</span>
+            <RefreshCw size={14} className={refreshing ? 'animate-spin text-accent' : ''} /> <span className="hidden sm:inline">Refresh Data</span>
           </button>
           
           <button onClick={() => setShowQuickAdd(true)} className="btn-primary flex items-center gap-2 h-[42px] rounded uppercase font-bold text-[11px] tracking-widest">
             <Plus size={14} />
-            Add Transaction
+            Commit Entry
           </button>
         </div>
       </div>
@@ -303,7 +303,7 @@ export default function Dashboard() {
                      <div className="bg-accent/10 border border-accent/20 p-2 rounded text-accent">
                         <Target size={14} />
                      </div>
-                     <span className="text-[11px] font-bold uppercase tracking-[0.2em] font-display text-muted">Total Balance</span>
+                     <span className="text-[11px] font-bold uppercase tracking-[0.2em] font-display text-muted">System Balance</span>
                   </div>
                </div>
                
@@ -317,7 +317,7 @@ export default function Dashboard() {
              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-8 lg:gap-12 mt-auto pt-6 border-t border-white/5 w-full">
                <div className="flex-1 w-full relative">
                  <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-accent/50" />
-                 <p className="text-muted text-[10px] font-bold font-display uppercase tracking-[0.15em] mb-3 ml-4">Cash</p>
+                 <p className="text-muted text-[10px] font-bold font-display uppercase tracking-[0.15em] mb-3 ml-4">Cash Reserve</p>
                  <div className="flex items-center gap-4 ml-4">
                     <p className="font-mono font-bold text-2xl tracking-tight text-white">{fmt(data?.cash_balance)}</p>
                  </div>
@@ -327,7 +327,7 @@ export default function Dashboard() {
                
                <div className="flex-1 w-full relative">
                  <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-[#38BDF8]/50" />
-                 <p className="text-muted text-[10px] font-bold font-display uppercase tracking-[0.15em] mb-3 ml-4">UPI / Online</p>
+                 <p className="text-muted text-[10px] font-bold font-display uppercase tracking-[0.15em] mb-3 ml-4">Digi-Wallet (UPI)</p>
                  <div className="flex items-center gap-4 ml-4">
                     <p className="font-mono font-bold text-2xl tracking-tight text-white">{fmt(data?.upi_balance)}</p>
                  </div>
@@ -341,7 +341,7 @@ export default function Dashboard() {
            <div className="relative z-10 flex flex-col h-full justify-between">
              <div>
                <div className="flex justify-between items-start mb-6 text-muted">
-                  <span className="text-[11px] font-bold uppercase tracking-[0.2em] font-display">Net Worth</span>
+                  <span className="text-[11px] font-bold uppercase tracking-[0.2em] font-display">Net Worth Vector</span>
                   <div className="text-white/20"><ArrowUpRight size={16} /></div>
                </div>
                
@@ -353,7 +353,7 @@ export default function Dashboard() {
              </div>
 
              <div className="mt-auto pt-6 border-t border-white/5 w-full">
-                <p className="text-muted text-[10px] font-bold uppercase font-display tracking-[0.2em] mb-3">Receivables Pending</p>
+                <p className="text-muted text-[10px] font-bold uppercase font-display tracking-[0.2em] mb-3">Pending Capital</p>
                 <div className="flex items-center justify-between">
                    <p className="font-mono font-bold text-2xl tracking-tight text-accent">{fmt(data?.pending_amount)}</p>
                    {data?.pending_receivables_count > 0 && (
@@ -371,9 +371,9 @@ export default function Dashboard() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 animate-stagger-2">
         <StatCard 
           icon={ArrowDownRight} 
-          label="Monthly Expenses" 
+          label="Monthly Outflow" 
           value={fmt(data?.monthly_expense)} 
-          sub="Spent this month"
+          sub="This month's spending"
           accentClass="text-danger" 
           valueClass="text-foreground"
           borderClass="border-danger/10"
@@ -382,9 +382,9 @@ export default function Dashboard() {
         />
         <StatCard 
           icon={ArrowUpRight} 
-          label="Monthly Income" 
+          label="Monthly Inflow" 
           value={`+${fmt(data?.monthly_income)}`} 
-          sub="Earned this month"
+          sub="This month's earnings"
           accentClass="text-accent" 
           valueClass="text-accent"
           borderClass="border-accent/10"
@@ -395,7 +395,7 @@ export default function Dashboard() {
           icon={Zap} 
           label="Savings Rate" 
           value={`${data?.savings_rate ?? 0}%`} 
-          sub={savingsGood ? "Good Savings" : "Needs Attention"}
+          sub={savingsGood ? "Optimal Performance" : "Needs Attention"}
           accentClass={savingsGood ? "text-accent" : "text-warning"}
           valueClass={savingsGood ? "text-accent" : "text-warning"}
           borderClass={savingsGood ? "border-accent/10" : "border-warning/10"}
@@ -405,7 +405,7 @@ export default function Dashboard() {
           icon={TrendingDown} 
           label="Today's Spend" 
           value={`-${fmt(data?.today_spending)}`} 
-          sub="Today's expenses"
+          sub="Rolling 24h window"
           accentClass="text-muted" 
           valueClass="text-foreground"
           delayIdx={4} 
@@ -418,7 +418,7 @@ export default function Dashboard() {
         {/* Left Column (70%): Weekly Spending */}
         <div className="panel bg-[#0B0C10] border border-white/[0.04] col-span-1 lg:col-span-7 p-6 md:p-8 h-[380px] flex flex-col rounded outline outline-1 outline-white/[0.02]">
           <div className="flex justify-between items-center mb-6 border-b border-white/5 pb-4">
-             <h3 className="text-foreground font-bold tracking-widest text-[11px] uppercase font-display">Weekly Spending — Last 7 Days</h3>
+             <h3 className="text-foreground font-bold tracking-widest text-[11px] uppercase font-display">Weekly Trajectory — Last 7 Days</h3>
              <span className="text-[9px] px-2.5 py-1 rounded border border-white/10 text-muted font-bold font-display uppercase tracking-[0.1em] bg-surface">Spending</span>
           </div>
           <div className="flex-1 w-full min-h-0 pt-2 pb-2">
@@ -505,7 +505,7 @@ export default function Dashboard() {
       {data?.recent_transactions?.length > 0 && (
         <div className="panel bg-[#0B0C10] border border-white/[0.04] p-6 md:p-8 animate-stagger-4 rounded outline outline-1 outline-white/[0.02]">
           <div className="flex items-center justify-between mb-6 border-b border-white/5 pb-4">
-            <h3 className="text-foreground font-bold tracking-widest text-[11px] uppercase font-display">Recent Transactions</h3>
+            <h3 className="text-foreground font-bold tracking-widest text-[11px] uppercase font-display">Recent Activity</h3>
             <button onClick={() => navigate('/transactions')} className="text-[9px] font-display font-bold uppercase tracking-widest text-muted hover:text-accent transition-colors flex items-center gap-1.5">
               View All <ArrowRight size={10} />
             </button>

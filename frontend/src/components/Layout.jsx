@@ -12,7 +12,7 @@ const NAV_GROUPS = [
   {
     label: 'Core',
     items: [
-      { name: 'Dashboard',    path: '/dashboard',    icon: LayoutDashboard },
+      { name: 'Overview',      path: '/dashboard',    icon: LayoutDashboard },
       { name: 'Transactions',  path: '/transactions', icon: RefreshCw },
       { name: 'Wallets',       path: '/wallets',      icon: Wallet },
     ]
@@ -48,7 +48,7 @@ export default function Layout() {
 
   const handleLogout = () => {
     logout()
-    toast.success('Signed out successfully.')
+    toast.success('Session terminated.')
   }
 
   const currentPage = ALL_NAV.find(n => n.path === pathname)
@@ -66,7 +66,7 @@ export default function Layout() {
           </div>
           <div className="flex flex-col">
              <span className="text-white font-display font-bold text-[17px] tracking-tight">FinTrack</span>
-             <span className="text-accent text-[8px] font-bold tracking-[0.4em] mt-0.5 uppercase opacity-70">Personal Finance</span>
+             <span className="text-accent text-[8px] font-bold tracking-[0.4em] mt-0.5 uppercase opacity-70">Terminal v2</span>
           </div>
         </div>
 
@@ -109,10 +109,10 @@ export default function Layout() {
                {user?.email?.[0]?.toUpperCase() || 'U'}
             </div>
             <div className="flex flex-col flex-1 overflow-hidden">
-               <span className="text-white text-[11px] font-mono font-bold truncate">{user?.email?.split('@')[0] || 'User'}</span>
+               <span className="text-white text-[11px] font-mono font-bold truncate">{user?.email?.split('@')[0] || 'Operator'}</span>
                <div className="flex items-center gap-1.5 mt-0.5">
                  <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
-                 <span className="text-muted text-[8px] font-display uppercase tracking-widest">Logged In</span>
+                 <span className="text-muted text-[8px] font-display uppercase tracking-widest">Active Session</span>
                </div>
             </div>
           </div>
@@ -120,7 +120,7 @@ export default function Layout() {
           <button onClick={handleLogout}
             className="flex items-center justify-center gap-2 px-4 py-2.5 bg-danger/[0.05] border border-danger/[0.15] text-danger/70 hover:bg-danger/10 hover:text-danger hover:border-danger/30 rounded transition-all font-display uppercase text-[10px] tracking-widest font-bold w-full">
             <LogOut size={12} />
-            <span>Sign Out</span>
+            <span>Disconnect</span>
           </button>
         </div>
       </aside>
@@ -179,14 +179,14 @@ export default function Layout() {
                  {user?.email?.[0]?.toUpperCase() || 'U'}
               </div>
               <div>
-                <p className="text-white text-[12px] font-mono font-bold">{user?.email?.split('@')[0] || 'User'}</p>
-                <p className="text-muted/50 text-[9px] font-display uppercase tracking-widest">Signed In</p>
+                <p className="text-white text-[12px] font-mono font-bold">{user?.email?.split('@')[0] || 'Operator'}</p>
+                <p className="text-muted/50 text-[9px] font-display uppercase tracking-widest">Authenticated</p>
               </div>
             </div>
             <button onClick={() => { setMobileMenuOpen(false); handleLogout() }}
               className="flex items-center justify-center gap-3 px-4 py-4 bg-danger/[0.06] border border-danger/15 text-danger/80 w-full rounded font-display uppercase font-bold text-[10px] tracking-widest active:bg-danger/20 transition-colors">
               <LogOut size={14} />
-              <span>Sign Out</span>
+              <span>Terminate Session</span>
             </button>
           </div>
         </div>
@@ -206,9 +206,12 @@ export default function Layout() {
             )}
           </div>
           <div className="flex items-center gap-4">
-              <span className="text-[9px] font-mono text-muted/40">Live</span>
+            <div className="text-[9px] font-mono text-muted/40 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
+              {time.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: false })} IST
+            </div>
             <div className="h-4 w-px bg-white/[0.06]" />
-            <div className="text-[9px] font-mono text-muted/40">LIVE</div>
+            <div className="text-[9px] font-mono text-muted/40">SYSTEM ONLINE</div>
           </div>
         </div>
         
