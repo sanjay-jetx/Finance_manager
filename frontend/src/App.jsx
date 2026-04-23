@@ -12,9 +12,6 @@ const Wallets = lazy(() => import('./pages/Wallets'))
 const Metals = lazy(() => import('./pages/Metals'))
 const Stocks = lazy(() => import('./pages/Stocks'))
 const Profile = lazy(() => import('./pages/Profile'))
-const Budgets = lazy(() => import('./pages/Budgets'))
-const Goals = lazy(() => import('./pages/Goals'))
-const Subscriptions = lazy(() => import('./pages/Subscriptions'))
 const Layout = lazy(() => import('./components/Layout'))
 
 function PageFallback() {
@@ -75,14 +72,11 @@ export default function App() {
               <Route index element={<Navigate to="/dashboard" replace />} />
               <Route path="dashboard"      element={<Dashboard />} />
               <Route path="transactions"   element={<Transactions />} />
-              <Route path="budgets"        element={<Budgets />} />
-              <Route path="goals"          element={<Goals />} />
               <Route path="receivables"    element={<Receivables />} />
               <Route path="lending"        element={<Navigate to="/receivables" replace />} />
               <Route path="wallets"        element={<Wallets />} />
               <Route path="stocks"         element={<Stocks />} />
               <Route path="metals"         element={<Metals />} />
-              <Route path="subscriptions"  element={<Subscriptions />} />
               <Route path="profile"        element={<Profile />} />
             </Route>
             <Route path="*" element={<Navigate to="/dashboard" replace />} />

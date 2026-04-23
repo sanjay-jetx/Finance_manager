@@ -1,0 +1,34 @@
+﻿node.exe : [31mx[39m Build failed in 1.93s
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Users\sanja\AppData\Roaming\ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([31mx[39m Build failed in 1.93s:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[31merror during build:
+[31m[vite:esbuild] Transform failed with 1 error:
+C:/Users/sanja/.vscode/VSCODE_GITHUB/Finance_app/frontend/src/pages/Login.jsx:260:37: ERROR: Unexpected "}"[31m
+file: [36mC:/Users/sanja/.vscode/VSCODE_GITHUB/Finance_app/frontend/src/pages/Login.jsx:260:37[31m
+[33m
+[33mUnexpected "}"[33m
+258|      </div>
+259|    )
+260|  }acity: 0.8; transform: scale(1.03); }
+   |                                       ^
+261|          }
+262|          @keyframes orbSpin {
+[31m
+    at failureErrorWithLog 
+(C:\Users\sanja\.vscode\VSCODE_GITHUB\Finance_app\frontend\node_modules\esbuild\lib\main.js:1472:15)
+    at C:\Users\sanja\.vscode\VSCODE_GITHUB\Finance_app\frontend\node_modules\esbuild\lib\main.js:755:50
+    at responseCallbacks.<computed> 
+(C:\Users\sanja\.vscode\VSCODE_GITHUB\Finance_app\frontend\node_modules\esbuild\lib\main.js:622:9)
+    at handleIncomingPacket 
+(C:\Users\sanja\.vscode\VSCODE_GITHUB\Finance_app\frontend\node_modules\esbuild\lib\main.js:677:12)
+    at Socket.readFromStdout 
+(C:\Users\sanja\.vscode\VSCODE_GITHUB\Finance_app\frontend\node_modules\esbuild\lib\main.js:600:7)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)[39m

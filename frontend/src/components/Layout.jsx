@@ -1,8 +1,8 @@
 import { Link, useLocation, Outlet } from 'react-router-dom'
 import {
-  LayoutDashboard, RefreshCw, Wallet, Users, Target,
-  LogOut, PieChart as PieChartIcon, Menu, X, Layers,
-  Activity, CreditCard, Bell, ChevronRight, Gem
+  LayoutDashboard, RefreshCw, Wallet, Users,
+  LogOut, Menu, X, Layers,
+  Activity, ChevronRight, Gem
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
@@ -21,8 +21,6 @@ const NAV_GROUPS = [
     label: 'Finance',
     items: [
       { name: 'Receivables',   path: '/receivables',  icon: Users },
-      { name: 'Budgets',       path: '/budgets',      icon: PieChartIcon },
-      { name: 'Goals',         path: '/goals',        icon: Target },
     ]
   },
   {
@@ -30,7 +28,6 @@ const NAV_GROUPS = [
     items: [
       { name: 'Stocks',        path: '/stocks',       icon: Activity },
       { name: 'Metals',        path: '/metals',       icon: Gem },
-      { name: 'Subscriptions', path: '/subscriptions',icon: CreditCard },
     ]
   }
 ]
